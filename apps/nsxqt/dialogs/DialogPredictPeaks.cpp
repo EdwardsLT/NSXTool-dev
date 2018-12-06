@@ -9,9 +9,10 @@
 #include "DialogPredictPeaks.h"
 #include "ExperimentItem.h"
 #include "LibraryItem.h"
+#include "MetaTypes.h"
 #include "PeakListItem.h"
 #include "PeaksItem.h"
-#include "MetaTypes.h"
+#include "ProgressView.h"
 
 DialogPredictPeaks* DialogPredictPeaks::_instance = nullptr;
 

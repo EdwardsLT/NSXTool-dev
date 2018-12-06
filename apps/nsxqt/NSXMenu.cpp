@@ -7,6 +7,7 @@
 #include <QMenuBar>
 
 #include "ColorMap.h"
+#include "DetectorScene.h"
 #include "DialogAbout.h"
 #include "DialogIsotopesDatabase.h"
 #include "GlobalInfo.h"
@@ -48,92 +49,175 @@ void NSXMenu::createActions()
     connect(_view_detector_from_behind_action,&QAction::triggered,_main_window,&MainWindow::onViewDetectorFromBehind);
 
     _cursor_mode_action_group = new QActionGroup(_main_window);
+    _cursor_mode_action_group->setExclusive(true);
 
-    _pixel_position_cursor_mode_action = new QAction("pixel position",_main_window);
-    _pixel_position_cursor_mode_action->setStatusTip("Show pixel position when mouse pointing the detector view");
-    _pixel_position_cursor_mode_action->setCheckable(true);
-    _pixel_position_cursor_mode_action->setChecked(true);
-    _pixel_position_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
-    connect(_pixel_position_cursor_mode_action,&QAction::triggered,_main_window,&MainWindow::onSelectPixelPositionCursorMode);
+    auto *pixel_position_cursor_mode_action(new QAction("pixel position",_main_window));
+    pixel_position_cursor_mode_action->setStatusTip("Show pixel position when mouse pointing the detector view");
+    pixel_position_cursor_mode_action->setCheckable(true);
+    pixel_position_cursor_mode_action->setChecked(true);
+    pixel_position_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
+    _cursor_mode_actions.append(pixel_position_cursor_mode_action);
 
-    _gamma_nu_cursor_mode_action = new QAction(QString("%1 %2").arg(QChar(0x03B3)).arg(QChar(0x03B7)),_main_window);
-    _gamma_nu_cursor_mode_action->setStatusTip(QString("Show %1 and %2 when mouse pointing the detector view").arg(QChar(0x03B3)).arg(QChar(0x03B7)));
-    _gamma_nu_cursor_mode_action->setCheckable(true);
-    _gamma_nu_cursor_mode_action->setChecked(false);
-    _gamma_nu_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
-    connect(_gamma_nu_cursor_mode_action,&QAction::triggered,_main_window,&MainWindow::onSelectGammaNuCursorMode);
+    auto *gamma_nu_cursor_mode_action(new QAction(QString("%1 %2").arg(QChar(0x03B3)).arg(QChar(0x03B7)),_main_window));
+    gamma_nu_cursor_mode_action->setStatusTip(QString("Show %1 and %2 when mouse pointing the detector view").arg(QChar(0x03B3)).arg(QChar(0x03B7)));
+    gamma_nu_cursor_mode_action->setCheckable(true);
+    gamma_nu_cursor_mode_action->setChecked(false);
+    gamma_nu_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
+    _cursor_mode_actions.append(gamma_nu_cursor_mode_action);
 
-    _two_theta_cursor_mode_action = new QAction(QString("2%1").arg(QChar(0x03B8)),_main_window);
-    _two_theta_cursor_mode_action->setStatusTip(QString("Show 2%1 when mouse pointing the detector view").arg(QChar(0x03B8)));
-    _two_theta_cursor_mode_action->setCheckable(true);
-    _two_theta_cursor_mode_action->setChecked(false);
-    _two_theta_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
-    connect(_two_theta_cursor_mode_action,&QAction::triggered,_main_window,&MainWindow::onSelect2ThetaCursorMode);
+    auto *two_theta_cursor_mode_action(new QAction(QString("2%1").arg(QChar(0x03B8)),_main_window));
+    two_theta_cursor_mode_action->setStatusTip(QString("Show 2%1 when mouse pointing the detector view").arg(QChar(0x03B8)));
+    two_theta_cursor_mode_action->setCheckable(true);
+    two_theta_cursor_mode_action->setChecked(false);
+    two_theta_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
+    _cursor_mode_actions.append(two_theta_cursor_mode_action);
 
-    _d_spacing_cursor_mode_action = new QAction("d spacing",_main_window);
-    _d_spacing_cursor_mode_action->setStatusTip("Show d-spacing when mouse pointing the detector view");
-    _d_spacing_cursor_mode_action->setCheckable(true);
-    _d_spacing_cursor_mode_action->setChecked(false);
-    _d_spacing_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
-    connect(_d_spacing_cursor_mode_action,&QAction::triggered,_main_window,&MainWindow::onSelectDSpacingCursorMode);
+    auto *d_spacing_cursor_mode_action(new QAction("d spacing",_main_window));
+    d_spacing_cursor_mode_action->setStatusTip("Show d-spacing when mouse pointing the detector view");
+    d_spacing_cursor_mode_action->setCheckable(true);
+    d_spacing_cursor_mode_action->setChecked(false);
+    d_spacing_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
+    _cursor_mode_actions.append(d_spacing_cursor_mode_action);
 
-    _miller_indices_cursor_mode_action = new QAction("miller indices",_main_window);
-    _miller_indices_cursor_mode_action->setStatusTip("Show miller indices when mouse pointing the detector view");
-    _miller_indices_cursor_mode_action->setCheckable(true);
-    _miller_indices_cursor_mode_action->setChecked(false);
-    _miller_indices_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
-    connect(_miller_indices_cursor_mode_action,&QAction::triggered,_main_window,&MainWindow::onSelectMillerIndicesCursorMode);
+    auto *miller_indices_cursor_mode_action(new QAction("miller indices",_main_window));
+    miller_indices_cursor_mode_action->setStatusTip("Show miller indices when mouse pointing the detector view");
+    miller_indices_cursor_mode_action->setCheckable(true);
+    miller_indices_cursor_mode_action->setChecked(false);
+    miller_indices_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
+    _cursor_mode_actions.append(miller_indices_cursor_mode_action);
+    connect(_cursor_mode_action_group,&QActionGroup::triggered,this,&NSXMenu::onChangeCursorMode);
+
+    // Interaction modes settings
+
+    _interaction_mode_action_group = new QActionGroup(_main_window);
+    _interaction_mode_action_group->setExclusive(true);
+
+    auto *select_interaction_mode_action(new QAction("select",_main_window));
+    select_interaction_mode_action->setStatusTip("Switch mouse interaction mode to select");
+    select_interaction_mode_action->setCheckable(true);
+    select_interaction_mode_action->setChecked(true);
+    select_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
+    _interaction_mode_actions.append(select_interaction_mode_action);
+
+    auto *zoom_interaction_mode_action(new QAction(QString("zoom"),_main_window));
+    zoom_interaction_mode_action->setStatusTip(QString("Switch mouse interaction mode to zoom"));
+    zoom_interaction_mode_action->setCheckable(true);
+    zoom_interaction_mode_action->setChecked(false);
+    zoom_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
+    _interaction_mode_actions.append(zoom_interaction_mode_action);
+
+    auto *cutline_interaction_mode_action(new QAction(QString("cutline"),_main_window));
+    cutline_interaction_mode_action->setStatusTip(QString("Switch mouse interaction mode to cutline"));
+    cutline_interaction_mode_action->setCheckable(true);
+    cutline_interaction_mode_action->setChecked(false);
+    cutline_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
+    _interaction_mode_actions.append(cutline_interaction_mode_action);
+
+    auto *horizontal_slice_interaction_mode_action(new QAction(QString("horizontal slice"),_main_window));
+    horizontal_slice_interaction_mode_action->setStatusTip("Switch mouse interaction mode to horizontal slice");
+    horizontal_slice_interaction_mode_action->setCheckable(true);
+    horizontal_slice_interaction_mode_action->setChecked(false);
+    horizontal_slice_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
+    _interaction_mode_actions.append(horizontal_slice_interaction_mode_action);
+
+    auto *vertical_slice_interaction_mode_action(new QAction(QString("vertical slice"),_main_window));
+    vertical_slice_interaction_mode_action->setStatusTip("Switch mouse interaction mode to vertical slice");
+    vertical_slice_interaction_mode_action->setCheckable(true);
+    vertical_slice_interaction_mode_action->setChecked(false);
+    vertical_slice_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
+    _interaction_mode_actions.append(vertical_slice_interaction_mode_action);
+
+    auto *rectangular_mask_interaction_mode_action(new QAction(QString("rectangular mask"),_main_window));
+    rectangular_mask_interaction_mode_action->setStatusTip("Switch mouse interaction mode to rectangular mask");
+    rectangular_mask_interaction_mode_action->setCheckable(true);
+    rectangular_mask_interaction_mode_action->setChecked(false);
+    rectangular_mask_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
+    _interaction_mode_actions.append(rectangular_mask_interaction_mode_action);
+
+    auto *ellipsoidal_mask_interaction_mode_action(new QAction(QString("ellipsoidal mask"),_main_window));
+    ellipsoidal_mask_interaction_mode_action->setStatusTip("Switch mouse interaction mode to ellipsoidal mask");
+    ellipsoidal_mask_interaction_mode_action->setCheckable(true);
+    ellipsoidal_mask_interaction_mode_action->setChecked(false);
+    ellipsoidal_mask_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
+    _interaction_mode_actions.append(ellipsoidal_mask_interaction_mode_action);
+
+    connect(_interaction_mode_action_group,&QActionGroup::triggered,this,&NSXMenu::onChangeInteractionMode);
 
     _display_peak_labels_action = new QAction("Display peak labels",_main_window);
     _display_peak_labels_action->setCheckable(true);
     _display_peak_labels_action->setChecked(false);
-    connect(_display_peak_labels_action,&QAction::triggered,_main_window,&MainWindow::onDisplayPeakLabels);
+    connect(_display_peak_labels_action,&QAction::triggered,[=](bool flag){_main_window->detectorSceneModel()->showPeakLabels(flag);});
 
-    _display_peak_centers_action = new QAction("Display peak areas",_main_window);
+    _display_peak_centers_action = new QAction("Display peak center",_main_window);
     _display_peak_centers_action->setCheckable(true);
     _display_peak_centers_action->setChecked(false);
-    connect(_display_peak_centers_action,&QAction::triggered,_main_window,&MainWindow::onDisplayPeakAreas);
+    connect(_display_peak_centers_action,&QAction::triggered,[=](bool flag){_main_window->detectorSceneModel()->showPeakCenters(flag);});
 
     _display_peak_integration_areas_action = new QAction("Display peak integration areas",_main_window);
     _display_peak_integration_areas_action->setCheckable(true);
     _display_peak_integration_areas_action->setChecked(false);
-    connect(_display_peak_integration_areas_action,&QAction::triggered,_main_window,&MainWindow::onDisplayPeakIntegrationAreas);
+    connect(_display_peak_integration_areas_action,&QAction::triggered,[=](bool flag){_main_window->detectorSceneModel()->showPeakIntegrationAreas(flag);});
+
+    // Color map menu settings
 
     auto color_maps = ColorMap::colorMaps();
-
     _color_map_action_group = new QActionGroup(_main_window);
-
     for (auto&& color_map : color_maps) {
-
         QAction* color_map_action = new QAction(color_map.c_str(),_main_window);
         color_map_action->setCheckable(true);
         color_map_action->setChecked(false);
         color_map_action->setActionGroup(_color_map_action_group);
-        _color_map_actions.push_back(color_map_action);
-        connect(color_map_action, &QAction::triggered,[=]() -> void {_main_window->onSetColorMap(color_map);});
+        _color_map_actions.append(color_map_action);
     }
+
     auto idx = std::distance(_color_map_actions.begin(),std::find_if(_color_map_actions.begin(),
                                                                      _color_map_actions.end(),
                                                                      [](QAction* action){return action->text().toStdString().compare("blue white") == 0;}));
     _color_map_actions[idx]->setChecked(true);
 
-    _monitor_action = new QAction("Monitor panel",_main_window);
-    _monitor_action->setStatusTip("Show/hide monitor panel");
-    _monitor_action->setCheckable(true);
-    _monitor_action->setChecked(true);
-    connect(_monitor_action,&QAction::triggered,_main_window,&MainWindow::onToggleMonitorPanel);
+    connect(_color_map_action_group,&QActionGroup::triggered,this,&NSXMenu::onChangeColorMap);
 
-    _plotter_action = new QAction("Logger panel",_main_window);
-    _plotter_action->setStatusTip("Show/hide plotter panel");
-    _plotter_action->setCheckable(true);
-    _plotter_action->setChecked(true);
-    connect(_plotter_action,&QAction::triggered,_main_window,&MainWindow::onTogglePlotterPanel);
+    // Dockable widgets menu settings
 
-    _widget_property_action = new QAction("Widget property panel",_main_window);
-    _widget_property_action->setStatusTip("Show/hide widget property panel");
-    _widget_property_action->setCheckable(true);
-    _widget_property_action->setChecked(true);
-    connect(_widget_property_action,&QAction::triggered,_main_window,&MainWindow::onToggleWidgetPropertyPanel);
+    _dockable_widget_state_group = new QActionGroup(_main_window);
+    _dockable_widget_state_group->setExclusive(false);
+
+    auto *session_action(new QAction("Session panel",_main_window));
+    session_action->setStatusTip("Show/hide session panel");
+    session_action->setCheckable(true);
+    session_action->setChecked(true);
+    session_action->setActionGroup(_dockable_widget_state_group);
+    _dockable_widget_state_actions.append(session_action);
+
+    auto *task_manager_action(new QAction("Task manager panel",_main_window));
+    task_manager_action->setStatusTip("Show/hide monitor panel");
+    task_manager_action->setCheckable(true);
+    task_manager_action->setChecked(true);
+    task_manager_action->setActionGroup(_dockable_widget_state_group);
+    _dockable_widget_state_actions.append(task_manager_action);
+
+    auto *logger_action = new QAction("Logger panel",_main_window);
+    logger_action->setStatusTip("Show/hide monitor panel");
+    logger_action->setCheckable(true);
+    logger_action->setChecked(true);
+    logger_action->setActionGroup(_dockable_widget_state_group);
+    _dockable_widget_state_actions.append(logger_action);
+
+    auto *plotter_action(new QAction("Plotter panel",_main_window));
+    plotter_action->setStatusTip("Show/hide plotter panel");
+    plotter_action->setCheckable(true);
+    plotter_action->setChecked(true);
+    plotter_action->setActionGroup(_dockable_widget_state_group);
+    _dockable_widget_state_actions.append(plotter_action);
+
+    auto *widget_property_action(new QAction("Widget property panel",_main_window));
+    widget_property_action->setStatusTip("Show/hide widget property panel");
+    widget_property_action->setCheckable(true);
+    widget_property_action->setChecked(true);
+    widget_property_action->setActionGroup(_dockable_widget_state_group);
+    _dockable_widget_state_actions.append(widget_property_action);
+
+    connect(_dockable_widget_state_group,&QActionGroup::triggered,this,&NSXMenu::onToggleDockableWidgetState);
 
     _display_isotopes_database_action = new QAction("Display isotopes database",_main_window);
     _display_isotopes_database_action->setStatusTip("Display isotopes database");
@@ -165,11 +249,10 @@ void NSXMenu::createMenus()
     _view_from_menu->addAction(_view_detector_from_behind_action);
 
     _cursor_mode_menu = _detector_menu->addMenu("Cursor mode");
-    _cursor_mode_menu->addAction(_pixel_position_cursor_mode_action);
-    _cursor_mode_menu->addAction(_gamma_nu_cursor_mode_action);
-    _cursor_mode_menu->addAction(_two_theta_cursor_mode_action);
-    _cursor_mode_menu->addAction(_d_spacing_cursor_mode_action);
-    _cursor_mode_menu->addAction(_miller_indices_cursor_mode_action);
+    _cursor_mode_menu->addActions(_cursor_mode_actions);
+
+    _interaction_mode_menu = _detector_menu->addMenu("Mouse interaction mode");
+    _interaction_mode_menu->addActions(_interaction_mode_actions);
 
     _peaks_menu = _detector_menu->addMenu("Peaks");
     _peaks_menu->addAction(_display_peak_labels_action);
@@ -183,10 +266,8 @@ void NSXMenu::createMenus()
         _color_map_menu->addAction(color_map_action);
     }
 
-    _panels_menu = _menu_bar->addMenu("&Panels");
-    _panels_menu->addAction(_monitor_action);
-    _panels_menu->addAction(_plotter_action);
-    _panels_menu->addAction(_widget_property_action);
+    _dockable_widgets_menu = _menu_bar->addMenu("&Dockable widgets");
+    _dockable_widgets_menu->addActions(_dockable_widget_state_actions);
 
     _chemistry_menu = _menu_bar->addMenu("&Chemistry");
     _chemistry_menu->addAction(_display_isotopes_database_action);
@@ -206,4 +287,46 @@ void NSXMenu::onDisplayIsotopesDatabase()
     DialogIsotopesDatabase dlg;
 
     dlg.exec();
+}
+
+void NSXMenu::onChangeColorMap(QAction *color_map_action)
+{
+    _main_window->detectorSceneModel()->changeColorMap(color_map_action->text().toStdString());
+}
+
+void NSXMenu::onChangeCursorMode(QAction *cursor_mode_action)
+{
+    auto it = std::find(_cursor_mode_actions.begin(),_cursor_mode_actions.end(),cursor_mode_action);
+    if (it == _cursor_mode_actions.end()) {
+        return;
+    }
+
+    auto cursor_mode_index = static_cast<DetectorScene::CURSOR_MODE>(std::distance(_cursor_mode_actions.begin(),it));
+
+    _main_window->detectorSceneModel()->changeCursorMode(cursor_mode_index);
+
+}
+
+void NSXMenu::onChangeInteractionMode(QAction *interaction_mode_action)
+{
+    auto it = std::find(_interaction_mode_actions.begin(),_interaction_mode_actions.end(),interaction_mode_action);
+    if (it == _interaction_mode_actions.end()) {
+        return;
+    }
+
+    auto interaction_mode_index = static_cast<DetectorScene::INTERACTION_MODE>(std::distance(_interaction_mode_actions.begin(),it));
+
+    _main_window->detectorSceneModel()->changeInteractionMode(interaction_mode_index);
+}
+
+void NSXMenu::onToggleDockableWidgetState(QAction *dockable_widget_action)
+{
+    auto it = std::find(_dockable_widget_state_actions.begin(),_dockable_widget_state_actions.end(),dockable_widget_action);
+    if (it == _dockable_widget_state_actions.end()) {
+        return;
+    }
+
+    auto dockable_widget_index = static_cast<MainWindow::DOCKABLE_WIDGETS>(std::distance(_dockable_widget_state_actions.begin(),it));
+
+    _main_window->toggleDockableWidgetState(dockable_widget_index,dockable_widget_action->isChecked());
 }

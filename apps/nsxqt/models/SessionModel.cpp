@@ -99,15 +99,16 @@
 #include "TreeItem.h"
 #include "UnitCellItem.h"
 
-#include "ui_MainWindow.h"
-
 SessionModel::SessionModel()
 {
     connect(this,SIGNAL(itemChanged(QStandardItem*)),this,SLOT(onItemChanged(QStandardItem*)));
 }
 
-SessionModel::~SessionModel()
+bool SessionModel::removeRows(int row, int count, const QModelIndex& parent)
 {
+    emit signalResetScene();
+
+    return QStandardItemModel::removeRows(row,count,parent);
 }
 
 ExperimentItem* SessionModel::selectExperiment(nsx::sptrDataSet data)

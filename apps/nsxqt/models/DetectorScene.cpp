@@ -36,17 +36,19 @@
 #include "MaskGraphicsItem.h"
 #include "MetaTypes.h"
 #include "PeakGraphicsItem.h"
+#include "SessionModel.h"
 #include "UnitCellItem.h"
 #include "UnitCellsItem.h"
 
-DetectorScene::DetectorScene(QObject *parent)
-: QGraphicsScene(parent),
+DetectorScene::DetectorScene(SessionModel *session_model)
+: QGraphicsScene(nullptr),
+  _session_model(session_model),
   _currentData(nullptr),
-  _currentFrameIndex(-1),
-  _currentIntensity(10),
+  _currentFrameIndex(0),
+  _max_intensity(10),
   _currentFrame(),
-  _cursorMode(PIXEL),
-  _mode(ZOOM),
+  _cursor_mode(CURSOR_MODE::PIXEL),
+  _interaction_mode(INTERACTION_MODE::SELECT),
   _zoomstart(0,0),
   _zoomend(0,0),
   _zoomrect(nullptr),
@@ -59,29 +61,15 @@ DetectorScene::DetectorScene(QObject *parent)
   _drawIntegrationRegion(false),
   _colormap(new ColorMap()),
   _integrationRegion(nullptr),
-  _session(nullptr),
   _selected_peak_gi(nullptr),
   _peak_graphics_items(),
   _selected_peak(nullptr)
 {
-}
-
-SessionModel* DetectorScene::session()
-{
-    return _session;
-}
-
-void DetectorScene::setSession(SessionModel* session)
-{
-    _session = session;
-
-    connect(_session,SIGNAL(signalSelectedDataChanged(nsx::sptrDataSet,int)),this,SLOT(slotChangeSelectedData(nsx::sptrDataSet,int)));
-
-    connect(_session,SIGNAL(signalSelectedPeakChanged(nsx::sptrPeak3D)),this,SLOT(slotChangeSelectedPeak(nsx::sptrPeak3D)));
-
-    connect(_session,SIGNAL(signalEnabledPeakChanged(nsx::sptrPeak3D)),this,SLOT(slotChangeEnabledPeak(nsx::sptrPeak3D)));
-
-    connect(_session,SIGNAL(signalMaskedPeaksChanged(const nsx::PeakList&)),this,SLOT(slotChangeMaskedPeaks(const nsx::PeakList&)));
+    connect(_session_model,&SessionModel::signalEnabledPeakChanged,this,&DetectorScene::changeEnabledPeak);
+    connect(_session_model,&SessionModel::signalMaskedPeaksChanged,this,&DetectorScene::changeMaskedPeaks);
+    connect(_session_model,&SessionModel::signalSelectedDataChanged,this,&DetectorScene::changeSelectedData);
+    connect(_session_model,&SessionModel::signalSelectedPeakChanged,this,&DetectorScene::changeSelectedPeak);
+    connect(_session_model,&SessionModel::updatePeaks,this,&DetectorScene::resetPeakGraphicsItems);
 }
 
 void DetectorScene::clearPeakGraphicsItems()
@@ -106,7 +94,7 @@ void DetectorScene::resetPeakGraphicsItems()
 
     clearPeakGraphicsItems();
 
-    auto peaks = _session->peaks(_currentData);
+    auto peaks = _session_model->peaks(_currentData);
 
     // Loop over the peaks found for this dataset
     for (auto peak : peaks) {
@@ -179,21 +167,21 @@ void DetectorScene::resetPeakGraphicsItems()
     }
 }
 
-void DetectorScene::slotChangeEnabledPeak(nsx::sptrPeak3D peak)
+void DetectorScene::changeEnabledPeak(nsx::sptrPeak3D peak)
 {
     Q_UNUSED(peak)
 
     loadCurrentImage();
 }
 
-void DetectorScene::slotChangeMaskedPeaks(const nsx::PeakList& peaks)
+void DetectorScene::changeMaskedPeaks(const nsx::PeakList& peaks)
 {
     Q_UNUSED(peaks)
 
     loadCurrentImage();
 }
 
-void DetectorScene::slotChangeSelectedData(nsx::sptrDataSet data, int frame)
+void DetectorScene::changeSelectedData(nsx::sptrDataSet data, int frame)
 {
     _currentData = data;
 
@@ -211,10 +199,10 @@ void DetectorScene::slotChangeSelectedData(nsx::sptrDataSet data, int frame)
         _lastClickedGI=nullptr;
     }
 
-    slotChangeSelectedFrame(frame);
+    changeSelectedFrame(frame);
 }
 
-void DetectorScene::slotChangeSelectedPeak(nsx::sptrPeak3D peak)
+void DetectorScene::changeSelectedPeak(nsx::sptrPeak3D peak)
 {
     if (peak == _selected_peak) {
         return;
@@ -229,12 +217,12 @@ void DetectorScene::slotChangeSelectedPeak(nsx::sptrPeak3D peak)
     // Get frame number to adjust the data
     size_t frame = size_t(std::lround(peak_ellipsoid.aabb().center()[2]));
 
-    slotChangeSelectedData(data,frame);
+    changeSelectedData(data,frame);
 
     update();
 }
 
-void DetectorScene::slotChangeSelectedFrame(int frame)
+void DetectorScene::changeSelectedFrame(int frame)
 {
     if (!_currentData) {
         return;
@@ -253,16 +241,23 @@ void DetectorScene::slotChangeSelectedFrame(int frame)
     updateMasks();
 }
 
-void DetectorScene::setMaxIntensity(int intensity)
+int DetectorScene::maxIntensity() const
 {
-    if (_currentIntensity==intensity) {
+    return _max_intensity;
+}
+
+void DetectorScene::changeMaxIntensity(int max_intensity)
+{
+    if (_max_intensity == max_intensity) {
         return;
     }
-    _currentIntensity = intensity;
+
+    _max_intensity = max_intensity;
 
     if (!_currentData) {
         return;
     }
+
     if (!_currentData->isOpened()) {
         _currentData->open();
     }
@@ -286,7 +281,7 @@ void DetectorScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         }
 
         // Case of the Zoom mode, update the scene
-        if (_mode==ZOOM) {
+        if (_interaction_mode == INTERACTION_MODE::ZOOM) {
             QRectF zoom=_zoomrect->rect();
             zoom.setBottomRight(event->lastScenePos());
             _zoomrect->setRect(zoom);
@@ -301,7 +296,7 @@ void DetectorScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
         auto p = dynamic_cast<PlottableGraphicsItem*>(_lastClickedGI);
         if (p != nullptr) {
-            emit updatePlot(p);
+            emit signalHoverPlottableGraphicsItem(p);
         }
     }
     // No button was pressed, just a mouse move
@@ -313,11 +308,11 @@ void DetectorScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         if (!gItem) {
             return;
         }
-        auto p = dynamic_cast<PlottableGraphicsItem*>(gItem);
-        if (p) {
-            emit updatePlot(p);
-            QGraphicsScene::mouseMoveEvent(event);
-        }
+//        auto p = dynamic_cast<PlottableGraphicsItem*>(gItem);
+//        if (p) {
+//            emit signalHoverPlottableGraphicsItem(p);
+//            QGraphicsScene::mouseMoveEvent(event);
+//        }
     }
 }
 
@@ -350,12 +345,12 @@ void DetectorScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 return;
             }
         }
-        switch(_mode) {
+        switch(_interaction_mode) {
 
-        case SELECT: {
+        case INTERACTION_MODE::SELECT: {
             break;
         }
-        case ZOOM: {
+        case INTERACTION_MODE::ZOOM: {
             _zoomstart = event->lastScenePos().toPoint();
             _zoomend = _zoomstart;
             _zoomrect = addRect(QRect(_zoomstart,_zoomend));
@@ -367,19 +362,19 @@ void DetectorScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             _zoomrect->setBrush(QBrush(QColor(255,0,0,30)));
             break;
         }
-        case HORIZONTALSLICE: {
+        case INTERACTION_MODE::HORIZONTAL_SLICE: {
             cutter = new CutSliceGraphicsItem(_currentData,true);
             break;
         }
-        case VERTICALSLICE: {
+        case INTERACTION_MODE::VERTICAL_SLICE: {
             cutter = new CutSliceGraphicsItem(_currentData,false);
             break;
         }
-        case LINE: {
+        case INTERACTION_MODE::CUTLINE: {
             cutter=new CutLineGraphicsItem(_currentData);
             break;
         }
-        case MASK: {
+        case INTERACTION_MODE::RECTANGULAR_MASK: {
             mask = new MaskGraphicsItem(_currentData, new nsx::AABB);
             mask->setFrom(event->lastScenePos());
             mask->setTo(event->lastScenePos());
@@ -388,7 +383,7 @@ void DetectorScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             _masks.emplace_back(mask, nullptr);
             break;
         }
-        case ELLIPSE_MASK: {
+        case INTERACTION_MODE::ELLIPSOIDAL_MASK: {
             ellipse_mask = new EllipseMaskGraphicsItem(_currentData, new nsx::AABB);
             ellipse_mask->setFrom(event->lastScenePos());
             ellipse_mask->setTo(event->lastScenePos());
@@ -432,7 +427,7 @@ void DetectorScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             return;
         }
 
-        if (_mode == SELECT) {
+        if (_interaction_mode == INTERACTION_MODE::SELECT) {
             auto item = itemAt(event->lastScenePos(),QTransform());
 
             auto peak_item = dynamic_cast<PeakGraphicsItem*>(item);
@@ -443,9 +438,9 @@ void DetectorScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
             auto peak = peak_item->peak();
 
-            emit _session->signalSelectedPeakChanged(peak);
+            emit _session_model->signalSelectedPeakChanged(peak);
 
-        } else if (_mode == ZOOM) {
+        } else if (_interaction_mode == INTERACTION_MODE::ZOOM) {
 
             qreal top = _zoomrect->rect().top();
             qreal bot = _zoomrect->rect().bottom();
@@ -494,19 +489,14 @@ void DetectorScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
         } else {
 
-            auto peaks = _session->peaks(_currentData);
+            auto peaks = _session_model->peaks(_currentData);
 
-            if (auto p=dynamic_cast<CutterGraphicsItem*>(_lastClickedGI)) {
-                if (true) {
-                    // delete p....
-                     _lastClickedGI = nullptr;
-                    removeItem(p);
-                }
-                else {
-                    emit updatePlot(p);
-                }
+            if (auto p = dynamic_cast<CutterGraphicsItem*>(_lastClickedGI)) {
+                // delete p....
+                 _lastClickedGI = nullptr;
+                removeItem(p);
             } else if (auto p=dynamic_cast<PlottableGraphicsItem*>(_lastClickedGI)) {
-                emit updatePlot(p);
+                emit signalHoverPlottableGraphicsItem(p);
             } else if (auto p=dynamic_cast<MaskGraphicsItem*>(_lastClickedGI)) {
                 // add a new mask
                 auto it = findMask(p);
@@ -518,7 +508,7 @@ void DetectorScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 _currentData->maskPeaks(peaks);
                 update();
                 updateMasks();
-                emit _session->signalMaskedPeaksChanged(peaks);
+                emit _session_model->signalMaskedPeaksChanged(peaks);
             }else if (auto p=dynamic_cast<EllipseMaskGraphicsItem*>(_lastClickedGI)) {
                 auto it = findMask(p);
                 if (it != _masks.end()) {
@@ -529,7 +519,7 @@ void DetectorScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 _currentData->maskPeaks(peaks);
                 update();
                 updateMasks();
-                emit _session->signalMaskedPeaksChanged(peaks);
+                emit _session_model->signalMaskedPeaksChanged(peaks);
             }
         }
     }
@@ -554,7 +544,7 @@ void DetectorScene::wheelEvent(QGraphicsSceneWheelEvent* event)
     auto q = dynamic_cast<CutterGraphicsItem*>(item);
     if (q != nullptr) {
         q->wheelEvent(event);
-        emit updatePlot(q);
+        emit signalHoverPlottableGraphicsItem(q);
     }
 }
 
@@ -591,11 +581,11 @@ void DetectorScene::keyPressEvent(QKeyEvent* event)
                 if (it != _masks.end()) {
                     _currentData->removeMask(it->second);
                     _masks.erase(it);
-                    auto peaks = _session->peaks(_currentData);
+                    auto peaks = _session_model->peaks(_currentData);
                     _currentData->maskPeaks(peaks);
                     update();
                     updateMasks();
-                    emit _session->signalMaskedPeaksChanged(peaks);
+                    emit _session_model->signalMaskedPeaksChanged(peaks);
                 }
             }
             else if (auto p = dynamic_cast<EllipseMaskGraphicsItem*>(item)) {
@@ -603,11 +593,11 @@ void DetectorScene::keyPressEvent(QKeyEvent* event)
                 if (it != _masks.end()) {
                     _currentData->removeMask(it->second);
                     _masks.erase(it);
-                    auto peaks =  _session->peaks(_currentData);
+                    auto peaks =  _session_model->peaks(_currentData);
                     _currentData->maskPeaks(peaks);
                     update();
                     updateMasks();
-                    emit _session->signalMaskedPeaksChanged(peaks);
+                    emit _session_model->signalMaskedPeaksChanged(peaks);
                 }
             }
             if (p == _lastClickedGI) {
@@ -641,7 +631,8 @@ void DetectorScene::createToolTipText(QGraphicsSceneMouseEvent* event)
     if (col<0 || col>ncols-1 || row<0 || row>nrows-1) {
         return;
     }
-    int intensity = _currentFrame(row,col);
+
+    int count = _currentFrame(row,col);
 
     nsx::InstrumentState state = _currentData->interpolatedState(_currentFrameIndex);
 
@@ -656,26 +647,26 @@ void DetectorScene::createToolTipText(QGraphicsSceneMouseEvent* event)
     double nu = state.nu(pos);
     double th2 = state.twoTheta(pos);
 
-    switch (_cursorMode) {
-    case PIXEL: {
-        ttip = QString("(%1,%2) I:%3").arg(col).arg(row).arg(intensity);
+    switch (_cursor_mode) {
+    case CURSOR_MODE::PIXEL: {
+        ttip = QString("(%1,%2) I:%3").arg(col).arg(row).arg(count);
         break;
     }
-    case GAMMA_NU: {
-        ttip = QString("(%1,%2) I: %3").arg(gamma/nsx::deg,0,'f',3).arg(nu/nsx::deg,0,'f',3).arg(intensity);
+    case CURSOR_MODE::GAMMA_NU: {
+        ttip = QString("(%1,%2) I: %3").arg(gamma/nsx::deg,0,'f',3).arg(nu/nsx::deg,0,'f',3).arg(count);
         break;
     }
-    case THETA: {
-        ttip = QString("(%1) I: %2").arg(th2/nsx::deg,0,'f',3).arg(intensity);
+    case CURSOR_MODE::THETA: {
+        ttip = QString("(%1) I: %2").arg(th2/nsx::deg,0,'f',3).arg(count);
         break;
     }
-    case D_SPACING: {
-        ttip = QString("(%1) I: %2").arg(wave/(2*sin(0.5*th2)),0,'f',3).arg(intensity);
+    case CURSOR_MODE::D_SPACING: {
+        ttip = QString("(%1) I: %2").arg(wave/(2*sin(0.5*th2)),0,'f',3).arg(count);
         break;
     }
-    case MILLER_INDICES: {
+    case CURSOR_MODE::MILLER_INDICES: {
 
-        auto experiment_item = _session->selectExperiment(_currentData);
+        auto experiment_item = _session_model->selectExperiment(_currentData);
         if (!experiment_item) {
             ttip = QString("No experiment found");
         } else {
@@ -685,7 +676,7 @@ void DetectorScene::createToolTipText(QGraphicsSceneMouseEvent* event)
                 auto miller_indices = nsx::MillerIndex(q,*(selected_unit_cell_item->data(Qt::UserRole).value<nsx::sptrUnitCell>()));
 
                 Eigen::RowVector3d hkl = miller_indices.rowVector().cast<double>() + miller_indices.error();
-                ttip = QString("(%1,%2,%3) I: %4").arg(hkl[0],0,'f',2).arg(hkl[1],0,'f',2).arg(hkl[2],0,'f',2).arg(intensity);
+                ttip = QString("(%1,%2,%3) I: %4").arg(hkl[0],0,'f',2).arg(hkl[1],0,'f',2).arg(hkl[2],0,'f',2).arg(count);
             } else {
                 ttip = QString("No unit cell selected");
             }
@@ -696,9 +687,9 @@ void DetectorScene::createToolTipText(QGraphicsSceneMouseEvent* event)
     QToolTip::showText(event->screenPos(),ttip);
 }
 
-void DetectorScene::changeInteractionMode(int mode)
+void DetectorScene::changeInteractionMode(INTERACTION_MODE interaction_mode)
 {
-    _mode = static_cast<MODE>(mode);
+    _interaction_mode = interaction_mode;
 }
 
 // TODO: fix this whole method, it should be using IntegrationRegion::updateMask()
@@ -724,10 +715,10 @@ void DetectorScene::loadCurrentImage()
     _currentFrame =_currentData->frame(_currentFrameIndex);
 
     if (_image == nullptr) {
-        _image = addPixmap(QPixmap::fromImage(_colormap->matToImage(_currentFrame.cast<double>(), full, _currentIntensity, _logarithmic)));
+        _image = addPixmap(QPixmap::fromImage(_colormap->matToImage(_currentFrame.cast<double>(), full, _max_intensity, _logarithmic)));
         _image->setZValue(-2);
     } else {
-        _image->setPixmap(QPixmap::fromImage(_colormap->matToImage(_currentFrame.cast<double>(), full, _currentIntensity, _logarithmic)));
+        _image->setPixmap(QPixmap::fromImage(_colormap->matToImage(_currentFrame.cast<double>(), full, _max_intensity, _logarithmic)));
     }
 
     // update the integration region pixmap
@@ -738,7 +729,7 @@ void DetectorScene::loadCurrentImage()
         Eigen::MatrixXi mask(nrows, ncols);
         mask.setConstant(int(EventType::EXCLUDED));
 
-        auto peaks = _session->peaks(_currentData);
+        auto peaks = _session_model->peaks(_currentData);
         for (auto peak : peaks) {
             if (peak->enabled()) {
                 // IntegrationRegion constructor can throw if the region is invalid
@@ -787,7 +778,7 @@ void DetectorScene::loadCurrentImage()
     emit dataChanged();
 
     if (auto p = dynamic_cast<PlottableGraphicsItem*>(_lastClickedGI)) {
-        emit updatePlot(p);
+        emit signalHoverPlottableGraphicsItem(p);
     }
 }
 
@@ -801,9 +792,9 @@ const rowMatrix& DetectorScene::getCurrentFrame() const
     return _currentFrame;
 }
 
-void DetectorScene::changeCursorMode(int mode)
+void DetectorScene::changeCursorMode(CURSOR_MODE cursor_mode)
 {
-    _cursorMode = static_cast<CURSORMODE>(mode);
+    _cursor_mode = cursor_mode;
 }
 
 int DetectorScene::currentFrame() const
@@ -832,7 +823,7 @@ void DetectorScene::showPeakCenters(bool flag)
     update();
 }
 
-void DetectorScene::drawIntegrationRegion(bool flag)
+void DetectorScene::showPeakIntegrationAreas(bool flag)
 {
     // clear the background if necessary
     if (_integrationRegion && flag == false) {
@@ -851,13 +842,13 @@ void DetectorScene::setLogarithmic(bool checked)
     _logarithmic = checked;
 }
 
-void DetectorScene::setColorMap(const std::string &name)
+void DetectorScene::changeColorMap(const std::string &name)
 {
     _colormap = std::unique_ptr<ColorMap>(new ColorMap(name));
     loadCurrentImage();
 }
 
-void DetectorScene::resetScene()
+void DetectorScene::onResetScene()
 {
     clearPeakGraphicsItems();
     clear();

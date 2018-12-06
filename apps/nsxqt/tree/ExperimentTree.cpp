@@ -38,6 +38,7 @@
 #include "DialogTransformationMatrix.h"
 #include "ExperimentItem.h"
 #include "ExperimentTree.h"
+#include "FramePeakFinder.h"
 #include "GLSphere.h"
 #include "GLWidget.h"
 #include "InstrumentItem.h"
@@ -58,12 +59,7 @@
 #include "UnitCellItem.h"
 #include "UnitCellsItem.h"
 
-#include "ui_MainWindow.h"
-
-#include <QDebug>
-
-ExperimentTree::ExperimentTree(QWidget *parent)
-    : QTreeView(parent)
+ExperimentTree::ExperimentTree(MainWindow *main_window) : QTreeView(main_window), _main_window(main_window), _session_model(main_window->sessionModel())
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -80,36 +76,21 @@ ExperimentTree::ExperimentTree(QWidget *parent)
     connect(this,SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(onCustomMenuRequested(const QPoint&)));
     connect(this,SIGNAL(doubleClicked(const QModelIndex&)),this,SLOT(onDoubleClick(const QModelIndex&)));
     connect(this,SIGNAL(clicked(QModelIndex)),this,SLOT(onSingleClick(QModelIndex)));
-}
 
-ExperimentTree::~ExperimentTree()
-{
-}
-
-void ExperimentTree::setMainWindow(MainWindow *main_window)
-{
-    _main_window = main_window;
-}
-
-SessionModel* ExperimentTree::session()
-{
-    auto session_model = dynamic_cast<SessionModel*>(model());
-
-    return session_model;
+    connect(_session_model,&SessionModel::signalResetScene,_main_window->detectorSceneModel(),&DetectorScene::onResetScene);
 }
 
 void ExperimentTree::onCustomMenuRequested(const QPoint& point)
 {
     QModelIndex index = indexAt(point);
     QMenu* menu = new QMenu(this);
-    SessionModel* session = dynamic_cast<SessionModel*>(model());
     auto triggered = &QAction::triggered;
 
     if (index == rootIndex()) {
         QAction* newexp = menu->addAction("Add new experiment");
         connect(newexp, triggered, [=]() {_main_window->onNewExperiment();});
     } else {
-        QStandardItem* item = session->itemFromIndex(index);
+        QStandardItem* item = _session_model->itemFromIndex(index);
         
         if (auto exp_item = dynamic_cast<ExperimentItem*>(item)) {
             QAction* log = menu->addAction("Write detailed log files");
@@ -132,7 +113,7 @@ void ExperimentTree::onCustomMenuRequested(const QPoint& point)
             connect(open_instrument_states_dialog, &QAction::triggered, [=](){ditem->openInstrumentStatesDialog();});
 
             QAction* find_peaks = menu->addAction("Find peaks in data");
-            connect(find_peaks, &QAction::triggered, [=](){emit openPeakFindDialog(ditem);});
+            connect(find_peaks, &QAction::triggered, [=](){openPeakFinderDialog(ditem);});
         }
         else if (auto pitem = dynamic_cast<PeaksItem*>(item)) {
 
@@ -223,19 +204,19 @@ void ExperimentTree::onCustomMenuRequested(const QPoint& point)
 void ExperimentTree::onDoubleClick(const QModelIndex& index)
 {
     // Get the current item and check that is actually a Numor item. Otherwise, return.
-    QStandardItem* item=dynamic_cast<SessionModel*>(model())->itemFromIndex(index);
-    if (auto ptr=dynamic_cast<DataItem*>(item)) {
-        if (ptr->model()->rowCount(ptr->index())==0) {
-            ptr->importData();
+    QStandardItem* item = _session_model->itemFromIndex(index);
+    if (auto data_item = dynamic_cast<DataItem*>(item)) {
+        if (_session_model->rowCount(data_item->index())==0) {
+            data_item->importData();
         } else {
-            for (auto i = 0; i < ptr->model()->rowCount(ptr->index());++i) {
-                auto ci = ptr->child(i);                
+            for (auto i = 0; i < _session_model->rowCount(data_item->index());++i) {
+                auto ci = data_item->child(i);
                 Qt::CheckState new_state = ci->checkState() == Qt::Unchecked ? Qt::Checked : Qt::Unchecked;
                 ci->setCheckState(new_state);
             }
         }
     } else if (auto ptr=dynamic_cast<NumorItem*>(item)) {
-        session()->selectData(ptr->data(Qt::UserRole).value<nsx::sptrDataSet>());
+        _session_model->selectData(ptr->data(Qt::UserRole).value<nsx::sptrDataSet>());
     }
 }
 
@@ -247,13 +228,11 @@ void ExperimentTree::keyPressEvent(QKeyEvent *event)
         QListIterator<QModelIndex> it(selIndexes);
         it.toBack();
         while (it.hasPrevious()) {
-            auto item = dynamic_cast<SessionModel*>(model())->itemFromIndex(it.previous());
+            auto item = _session_model->itemFromIndex(it.previous());
             if (!item->parent()) {
-                model()->removeRow(item->row());
-                emit resetScene();
+                _session_model->removeRow(item->row());
             } else {
-                model()->removeRow(item->row(),item->parent()->index());
-                emit resetScene();
+                _session_model->removeRow(item->row(),item->parent()->index());
             }
         }
     }
@@ -262,12 +241,28 @@ void ExperimentTree::keyPressEvent(QKeyEvent *event)
 void ExperimentTree::onSingleClick(const QModelIndex &index)
 {
     // Inspect this item if it is inspectable
-    InspectableTreeItem* item = dynamic_cast<InspectableTreeItem*>(dynamic_cast<SessionModel*>(model())->itemFromIndex(index));
+    InspectableTreeItem* item = dynamic_cast<InspectableTreeItem*>(_session_model->itemFromIndex(index));
     if (item) {
         emit inspectWidget(item->inspectItem());
     } else {
         QWidget* widget = new QWidget();
         emit inspectWidget(widget);
     }
+}
+
+void ExperimentTree::openPeakFinderDialog(DataItem *data_item)
+{
+    nsx::DataList data = data_item->selectedData();
+
+    if (data.empty()) {
+        nsx::error()<<"No numors selected for finding peaks";
+        return;
+    }
+
+    auto experiment_item = data_item->experimentItem();
+
+    FramePeakFinder* frame = FramePeakFinder::create(_main_window,experiment_item,data);
+
+    frame->show();
 }
 

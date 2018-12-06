@@ -2,14 +2,14 @@
 #include <QMessageBox>
 #include <QScrollBar>
 
+#include "MainWindow.h"
 #include "TaskManagerModel.h"
 #include "TaskManagerView.h"
 #include "TaskManagerViewDelegate.h"
 
-TaskManagerView::TaskManagerView(QWidget *parent)
-    : QTableView(parent)
+TaskManagerView::TaskManagerView(MainWindow *main_window) : QTableView(main_window)
 {
-    auto delegate = new TaskManagerViewDelegate(parent);
+    auto delegate = new TaskManagerViewDelegate(main_window);
 
     setItemDelegate(delegate);
 

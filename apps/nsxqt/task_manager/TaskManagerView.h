@@ -3,8 +3,7 @@
 #include <QModelIndex>
 #include <QTableView>
 
-class QWidget;
-class QResizeEvent;
+class MainWindow;
 class TaskManagerModel;
 
 class TaskManagerView : public QTableView
@@ -13,7 +12,7 @@ class TaskManagerView : public QTableView
 
 public:
 
-    TaskManagerView(QWidget *parent);
+    TaskManagerView(MainWindow *main_window);
 
     void setModel(TaskManagerModel *task_manager_model);
 

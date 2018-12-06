@@ -37,6 +37,7 @@
 #include "PeakListItem.h"
 #include "PeaksItem.h"
 #include "PeakTableView.h"
+#include "TaskManagerModel.h"
 #include "WidgetFoundPeaks.h"
 
 #include "ui_FramePeakFinder.h"

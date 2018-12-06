@@ -16,15 +16,15 @@
 #include <nsxlib/IMask.h>
 
 #include "ColorMap.h"
-#include "models/SessionModel.h"
 
+class CutterGraphicsItem;
+class EllipseMaskGraphicsItem;
 class QImage;
 class QGraphicsSceneWheelEvent;
-class PeakGraphicsItem;
-class CutterGraphicsItem;
 class MaskGraphicsItem;
-class EllipseMaskGraphicsItem;
+class PeakGraphicsItem;
 class PlottableGraphicsItem;
+class SessionModel;
 class SXGraphicsItem;
 
 // For the plotting part, better to have RowMajor matrix to use QImage scanline function and
@@ -38,29 +38,44 @@ class DetectorScene: public QGraphicsScene
     Q_OBJECT
 
 public:
-    enum MODE {SELECT=0, ZOOM=1, LINE=2, HORIZONTALSLICE=3, VERTICALSLICE=4, MASK=5, ELLIPSE_MASK=6};
+    enum class INTERACTION_MODE {SELECT=0, ZOOM=1, CUTLINE=2, HORIZONTAL_SLICE=3, VERTICAL_SLICE=4, RECTANGULAR_MASK=5, ELLIPSOIDAL_MASK=6};
 
     //! Which mode is the cursor diplaying
-    enum CURSORMODE {PIXEL=0, THETA=1, GAMMA_NU=2, D_SPACING=3, MILLER_INDICES=4};
+    enum class CURSOR_MODE {PIXEL=0, GAMMA_NU=1, THETA=2, D_SPACING=3, MILLER_INDICES=4};
 
-    explicit DetectorScene(QObject *parent = 0);
+    explicit DetectorScene(SessionModel *session_model);
 
     nsx::sptrDataSet getData();
 
     const rowMatrix& getCurrentFrame() const;
 
+    void changeColorMap(const std::string& name);
+
     void setLogarithmic(bool checked);
 
-    void setColorMap(const std::string& name);
-
-    void setSession(SessionModel* session);
-
-    SessionModel* session();
-
-    //! Load image from current Data and frame
     void loadCurrentImage();
 
     void clearPeakGraphicsItems();
+
+    void changeMaxIntensity(int max_intensity);
+
+    void changeSelectedData(nsx::sptrDataSet peak, int frame);
+
+    void changeSelectedFrame(int frame);
+
+    void changeSelectedPeak(nsx::sptrPeak3D peak);
+
+    void changeEnabledPeak(nsx::sptrPeak3D peak);
+
+    void changeMaskedPeaks(const nsx::PeakList& peaks);
+
+    void showPeakLabels(bool flag);
+
+    void showPeakCenters(bool flag);
+
+    void showPeakIntegrationAreas(bool);
+
+    int maxIntensity() const;
 
 protected:
 
@@ -76,31 +91,13 @@ protected:
 
 public slots:
 
-    void resetScene();
+    void onResetScene();
 
     void resetPeakGraphicsItems();
 
-    void setMaxIntensity(int);
+    void changeInteractionMode(INTERACTION_MODE interaction_mode);
 
-    void slotChangeSelectedData(nsx::sptrDataSet peak, int frame);
-
-    void slotChangeSelectedFrame(int frame);
-
-    void slotChangeSelectedPeak(nsx::sptrPeak3D peak);
-
-    void slotChangeEnabledPeak(nsx::sptrPeak3D peak);
-
-    void slotChangeMaskedPeaks(const nsx::PeakList& peaks);
-
-    void changeInteractionMode(int);
-
-    void changeCursorMode(int);
-
-    void showPeakLabels(bool flag);
-
-    void showPeakCenters(bool flag);
-
-    void drawIntegrationRegion(bool);
+    void changeCursorMode(CURSOR_MODE cursor_mode);
 
     void updateMasks();
 
@@ -110,7 +107,7 @@ signals:
      //! Signal emitted for all changes of the image
     void dataChanged();
 
-    void updatePlot(PlottableGraphicsItem* cutter);
+    void signalHoverPlottableGraphicsItem(PlottableGraphicsItem* cutter);
 
     void signalChangeSelectedData(nsx::sptrDataSet data);
 
@@ -125,19 +122,23 @@ private:
 
     // find the iterator corresponding to given graphics item
     std::vector<std::pair<QGraphicsItem*, nsx::IMask*>>::iterator findMask(QGraphicsItem* item);
-    
+
+private:
+
+    SessionModel* _session_model;
+
     nsx::sptrDataSet _currentData;
 
     unsigned long _currentFrameIndex;
 
-    int _currentIntensity;
+    int _max_intensity;
 
     rowMatrix _currentFrame;
 
-    CURSORMODE _cursorMode;
+    CURSOR_MODE _cursor_mode;
 
     //! Current interaction mode
-    MODE _mode;
+    INTERACTION_MODE _interaction_mode;
 
     //! Point coordinates of the start of zoom region
     QPoint _zoomstart;
@@ -166,8 +167,6 @@ private:
     std::unique_ptr<ColorMap> _colormap;
 
     QGraphicsPixmapItem* _integrationRegion;
-
-    SessionModel* _session;
 
     QGraphicsRectItem* _selected_peak_gi;
 

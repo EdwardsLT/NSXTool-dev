@@ -19,9 +19,7 @@ class SessionModel: public QStandardItemModel {
 
 public:
 
-    explicit SessionModel();
-
-    ~SessionModel();
+    SessionModel();
 
     nsx::PeakList peaks(nsx::sptrDataSet data) const;
 
@@ -31,6 +29,8 @@ public:
 
     void addExperiment(nsx::sptrExperiment experiment);
 
+    bool removeRows(int row, int count, const QModelIndex& parent) override;
+
 signals:
 
     void plotData(nsx::sptrDataSet);
@@ -38,6 +38,8 @@ signals:
     void inspectWidget(QWidget*);
 
     void updatePeaks();
+
+    void signalResetScene();
 
     void signalSelectedDataChanged(nsx::sptrDataSet, int frame);
 

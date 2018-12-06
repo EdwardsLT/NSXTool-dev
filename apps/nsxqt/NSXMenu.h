@@ -1,8 +1,7 @@
 #pragma once
 
-#include <vector>
-
 #include <QObject>
+#include <QList>
 
 class QAction;
 class QActionGroup;
@@ -21,7 +20,15 @@ private slots:
 
     void onAboutApplication();
 
+    void onChangeColorMap(QAction *color_map_action);
+
+    void onChangeCursorMode(QAction *cursor_mode_action);
+
+    void onChangeInteractionMode(QAction *interaction_mode_action);
+
     void onDisplayIsotopesDatabase();
+
+    void onToggleDockableWidgetState(QAction *dockable_widget_action);
 
 private:
 
@@ -47,11 +54,11 @@ private:
 
     QMenu *_cursor_mode_menu;
     QActionGroup *_cursor_mode_action_group;
-    QAction *_pixel_position_cursor_mode_action;
-    QAction *_gamma_nu_cursor_mode_action;
-    QAction *_two_theta_cursor_mode_action;
-    QAction *_d_spacing_cursor_mode_action;
-    QAction *_miller_indices_cursor_mode_action;
+    QList<QAction*> _cursor_mode_actions;
+
+    QMenu *_interaction_mode_menu;
+    QActionGroup *_interaction_mode_action_group;
+    QList<QAction*> _interaction_mode_actions;
 
     QMenu *_peaks_menu;
     QAction *_display_peak_labels_action;
@@ -60,12 +67,11 @@ private:
 
     QMenu *_color_map_menu;
     QActionGroup *_color_map_action_group;
-    std::vector<QAction*> _color_map_actions;
+    QList<QAction*> _color_map_actions;
 
-    QMenu *_panels_menu;
-    QAction *_monitor_action;
-    QAction *_plotter_action;
-    QAction *_widget_property_action;
+    QMenu *_dockable_widgets_menu;
+    QActionGroup *_dockable_widget_state_group;
+    QList<QAction*> _dockable_widget_state_actions;
 
     QMenu *_chemistry_menu;
     QAction *_display_isotopes_database_action;

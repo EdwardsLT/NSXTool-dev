@@ -10,6 +10,8 @@
 #include <QTextEdit>
 #include <QUrl>
 
+class MainWindow;
+
 /*
  * A QtextEdit inherited class in which image and text can be dragged and dropped in.
  * */
@@ -17,7 +19,7 @@ class NoteBook : public QTextEdit
 {
     Q_OBJECT
 public:
-    NoteBook(QWidget* parent=0);
+    NoteBook(MainWindow *parent);
     virtual ~NoteBook();
 
     bool canInsertFromMimeData(const QMimeData* source) const;

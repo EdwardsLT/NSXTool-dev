@@ -18,33 +18,39 @@ class SessionModel;
 
 class ExperimentTree: public QTreeView {
     Q_OBJECT
+
 public:
-    explicit ExperimentTree(QWidget *parent);
 
-    ~ExperimentTree();
+    explicit ExperimentTree(MainWindow *main_window);
 
-    void setMainWindow(MainWindow *main_window);
-
-    SessionModel* session();
+    SessionModel* model();
 
 signals:
-    void plotData(nsx::sptrDataSet);
+
     void inspectWidget(QWidget*);
-    void resetScene();
-    void openPeakFindDialog(DataItem *data_item);
+
+    void plotData(nsx::sptrDataSet);
 
 public slots:
+
     void keyPressEvent(QKeyEvent* event);
+
+
     void onCustomMenuRequested(const QPoint& point);
+
     void onDoubleClick(const QModelIndex& index);
 
     void onSingleClick(const QModelIndex& index);
 
 private:
 
+    void openPeakFinderDialog(DataItem *data_item);
+
     void openInstrumentStatesDialog();
 
 private:
 
     MainWindow *_main_window;
+
+    SessionModel *_session_model;
 };
