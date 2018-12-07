@@ -64,20 +64,6 @@ void DetectorSceneView::keyPressEvent(QKeyEvent* event)
     QGraphicsView::keyPressEvent(event);
 }
 
-void DetectorSceneView::fixDetectorAspectRatio(bool value)
-{
-    const auto* detector = _detector_scene_model->getData()->reader()->diffractometer()->detector();
-
-    if (value) {
-        int h = this->height();
-        double dw = detector->width();
-        double dh = detector->height();
-        resize(int(h*dw/dh),h);
-    } else {
-        fitInView(_detector_scene_model->sceneRect());
-    }
-}
-
 void DetectorSceneView::fitScene()
 {
     fitInView(_detector_scene_model->sceneRect());

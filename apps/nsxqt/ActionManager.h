@@ -60,6 +60,8 @@ private:
     QActionGroup *_interaction_mode_action_group;
     QList<QAction*> _interaction_mode_actions;
 
+    QAction *_logarithmic_scale_action;
+
     QMenu *_peaks_menu;
     QAction *_display_peak_labels_action;
     QAction *_display_peak_centers_action;

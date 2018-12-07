@@ -51,8 +51,6 @@ public:
 
     void changeColorMap(const std::string& name);
 
-    void setLogarithmic(bool checked);
-
     void loadCurrentImage();
 
     void clearPeakGraphicsItems();
@@ -76,6 +74,8 @@ public:
     void showPeakIntegrationAreas(bool);
 
     int maxIntensity() const;
+
+    int currentFrame() const;
 
 protected:
 
@@ -101,7 +101,7 @@ public slots:
 
     void updateMasks();
 
-    int currentFrame() const;
+    void onSetLogarithmicScale(bool flag);
 
 signals:
      //! Signal emitted for all changes of the image
@@ -160,7 +160,7 @@ private:
     
     SXGraphicsItem* _lastClickedGI;
 
-    bool _logarithmic;
+    bool _logarithmic_scale;
 
     bool _drawIntegrationRegion;
 

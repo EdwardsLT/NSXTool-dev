@@ -57,7 +57,7 @@ DetectorSceneModel::DetectorSceneModel(SessionModel *session_model)
   _image(nullptr),
   _masks(),
   _lastClickedGI(nullptr),
-  _logarithmic(false),
+  _logarithmic_scale(false),
   _drawIntegrationRegion(false),
   _colormap(new ColorMap()),
   _integrationRegion(nullptr),
@@ -714,10 +714,10 @@ void DetectorSceneModel::loadCurrentImage()
     _currentFrame =_currentData->frame(_currentFrameIndex);
 
     if (_image == nullptr) {
-        _image = addPixmap(QPixmap::fromImage(_colormap->matToImage(_currentFrame.cast<double>(), full, _max_intensity, _logarithmic)));
+        _image = addPixmap(QPixmap::fromImage(_colormap->matToImage(_currentFrame.cast<double>(), full, _max_intensity, _logarithmic_scale)));
         _image->setZValue(-2);
     } else {
-        _image->setPixmap(QPixmap::fromImage(_colormap->matToImage(_currentFrame.cast<double>(), full, _max_intensity, _logarithmic)));
+        _image->setPixmap(QPixmap::fromImage(_colormap->matToImage(_currentFrame.cast<double>(), full, _max_intensity, _logarithmic_scale)));
     }
 
     // update the integration region pixmap
@@ -836,9 +836,11 @@ void DetectorSceneModel::showPeakIntegrationAreas(bool flag)
     loadCurrentImage();
 }
 
-void DetectorSceneModel::setLogarithmic(bool checked)
+void DetectorSceneModel::onSetLogarithmicScale(bool flag)
 {
-    _logarithmic = checked;
+    _logarithmic_scale = flag;
+
+    loadCurrentImage();
 }
 
 void DetectorSceneModel::changeColorMap(const std::string &name)

@@ -458,13 +458,3 @@ void MainWindow::onDisplaySessionItemPropertyWidget(QWidget* w)
 //    // Assign current property Widget
 //    _ui->dockWidget_Property->setWidget(w);
 }
-
-void MainWindow::on_checkBox_AspectRatio_toggled(bool checked)
-{
-//    _ui->dview->fixDetectorAspectRatio(checked);
-}
-
-void MainWindow::on_actionLogarithmic_Scale_triggered(bool checked)
-{
-//    _ui->dview->getScene()->setLogarithmic(checked);
-}

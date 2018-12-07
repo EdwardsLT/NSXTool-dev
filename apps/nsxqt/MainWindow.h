@@ -71,10 +71,6 @@ public slots:
 
     void onViewDetectorFromSample();
 
-    void on_checkBox_AspectRatio_toggled(bool checked);
-
-    void on_actionLogarithmic_Scale_triggered(bool checked);
-
 private:
 
     void createActions();

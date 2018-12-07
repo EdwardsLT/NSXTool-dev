@@ -20,10 +20,6 @@ public:
 
     void keyPressEvent(QKeyEvent* event);
 
-public:
-
-    void fixDetectorAspectRatio(bool);
-
     void fitScene();
 
 private:

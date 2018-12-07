@@ -48,6 +48,8 @@ void ActionManager::createActions()
     _view_detector_from_behind_action->setActionGroup(_view_action_group);
     connect(_view_detector_from_behind_action,&QAction::triggered,_main_window,&MainWindow::onViewDetectorFromBehind);
 
+    // Cursor mode settings
+
     _cursor_mode_action_group = new QActionGroup(_main_window);
     _cursor_mode_action_group->setExclusive(true);
 
@@ -92,49 +94,49 @@ void ActionManager::createActions()
     _interaction_mode_action_group = new QActionGroup(_main_window);
     _interaction_mode_action_group->setExclusive(true);
 
-    auto *select_interaction_mode_action(new QAction("select",_main_window));
+    auto *select_interaction_mode_action(new QAction(QIcon(":/resources/selectIcon.png"),"select",_main_window));
     select_interaction_mode_action->setStatusTip("Switch mouse interaction mode to select");
     select_interaction_mode_action->setCheckable(true);
     select_interaction_mode_action->setChecked(true);
     select_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
     _interaction_mode_actions.append(select_interaction_mode_action);
 
-    auto *zoom_interaction_mode_action(new QAction(QString("zoom"),_main_window));
+    auto *zoom_interaction_mode_action(new QAction(QIcon(":/resources/zoomIcon.png"),"zoom",_main_window));
     zoom_interaction_mode_action->setStatusTip(QString("Switch mouse interaction mode to zoom"));
     zoom_interaction_mode_action->setCheckable(true);
     zoom_interaction_mode_action->setChecked(false);
     zoom_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
     _interaction_mode_actions.append(zoom_interaction_mode_action);
 
-    auto *cutline_interaction_mode_action(new QAction(QString("cutline"),_main_window));
+    auto *cutline_interaction_mode_action(new QAction(QIcon(":/resources/cutlineIcon.png"),"cutline",_main_window));
     cutline_interaction_mode_action->setStatusTip(QString("Switch mouse interaction mode to cutline"));
     cutline_interaction_mode_action->setCheckable(true);
     cutline_interaction_mode_action->setChecked(false);
     cutline_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
     _interaction_mode_actions.append(cutline_interaction_mode_action);
 
-    auto *horizontal_slice_interaction_mode_action(new QAction(QString("horizontal slice"),_main_window));
+    auto *horizontal_slice_interaction_mode_action(new QAction(QIcon(":/resources/horizontalSliceIcon.png"),"horizontal slice",_main_window));
     horizontal_slice_interaction_mode_action->setStatusTip("Switch mouse interaction mode to horizontal slice");
     horizontal_slice_interaction_mode_action->setCheckable(true);
     horizontal_slice_interaction_mode_action->setChecked(false);
     horizontal_slice_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
     _interaction_mode_actions.append(horizontal_slice_interaction_mode_action);
 
-    auto *vertical_slice_interaction_mode_action(new QAction(QString("vertical slice"),_main_window));
+    auto *vertical_slice_interaction_mode_action(new QAction(QIcon(":/resources/verticalSliceIcon.png"),"vertical slice",_main_window));
     vertical_slice_interaction_mode_action->setStatusTip("Switch mouse interaction mode to vertical slice");
     vertical_slice_interaction_mode_action->setCheckable(true);
     vertical_slice_interaction_mode_action->setChecked(false);
     vertical_slice_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
     _interaction_mode_actions.append(vertical_slice_interaction_mode_action);
 
-    auto *rectangular_mask_interaction_mode_action(new QAction(QString("rectangular mask"),_main_window));
+    auto *rectangular_mask_interaction_mode_action(new QAction(QIcon(":/resources/rectangularMaskIcon.png"),"rectangular mask",_main_window));
     rectangular_mask_interaction_mode_action->setStatusTip("Switch mouse interaction mode to rectangular mask");
     rectangular_mask_interaction_mode_action->setCheckable(true);
     rectangular_mask_interaction_mode_action->setChecked(false);
     rectangular_mask_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
     _interaction_mode_actions.append(rectangular_mask_interaction_mode_action);
 
-    auto *ellipsoidal_mask_interaction_mode_action(new QAction(QString("ellipsoidal mask"),_main_window));
+    auto *ellipsoidal_mask_interaction_mode_action(new QAction(QIcon(":/resources/ellipsoidalMaskIcon.png"),"ellipsoidal mask",_main_window));
     ellipsoidal_mask_interaction_mode_action->setStatusTip("Switch mouse interaction mode to ellipsoidal mask");
     ellipsoidal_mask_interaction_mode_action->setCheckable(true);
     ellipsoidal_mask_interaction_mode_action->setChecked(false);
@@ -176,6 +178,14 @@ void ActionManager::createActions()
     _color_map_actions[idx]->setChecked(true);
 
     connect(_color_map_action_group,&QActionGroup::triggered,this,&ActionManager::onChangeColorMap);
+
+    // Logarithmic scale action
+
+    _logarithmic_scale_action = new QAction("Set logarithmic scale",_main_window);
+    _logarithmic_scale_action->setStatusTip("Toggle detector view between normal/logarithmic scale");
+    _logarithmic_scale_action->setCheckable(true);
+    _logarithmic_scale_action->setChecked(false);
+    connect(_logarithmic_scale_action,&QAction::triggered,_main_window->detectorSceneModel(),&DetectorSceneModel::onSetLogarithmicScale);
 
     // Dockable widgets menu settings
 
@@ -248,6 +258,8 @@ void ActionManager::createMenus()
     _view_from_menu->addAction(_view_detector_from_sample_action);
     _view_from_menu->addAction(_view_detector_from_behind_action);
 
+    _detector_menu->addSeparator();
+
     _cursor_mode_menu = _detector_menu->addMenu("Cursor mode");
     _cursor_mode_menu->addActions(_cursor_mode_actions);
 
@@ -265,6 +277,8 @@ void ActionManager::createMenus()
     for (auto color_map_action : _color_map_actions) {
         _color_map_menu->addAction(color_map_action);
     }
+
+    _detector_menu->addAction(_logarithmic_scale_action);
 
     _dockable_widgets_menu = _menu_bar->addMenu("&Dockable widgets");
     _dockable_widgets_menu->addActions(_dockable_widget_state_actions);

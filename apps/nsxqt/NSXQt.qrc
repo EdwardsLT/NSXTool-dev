@@ -40,7 +40,6 @@
         <file>resources/detectorAspectRatioOffIcon.png</file>
         <file>resources/slice3D.png</file>
         <file>resources/reciprocal_space.png</file>
-        <file>resources/ellipsoidalMask.png</file>
         <file>resources/unitCellsIcon.png</file>
         <file>resources/selectIcon.png</file>
         <file>resources/numorIcon.png</file>
@@ -52,5 +51,6 @@
         <file>resources/frm2_logo.png</file>
         <file>resources/ill_logo.png</file>
         <file>resources/jcns_logo.png</file>
+        <file>resources/ellipsoidalMaskIcon.png</file>
     </qresource>
 </RCC>
