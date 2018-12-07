@@ -10,7 +10,6 @@
 #include <nsxlib/AABB.h>
 #include <nsxlib/BoxMask.h>
 #include <nsxlib/DataSet.h>
-#include <nsxlib/EllipseMask.h>
 #include <nsxlib/Detector.h>
 #include <nsxlib/Diffractometer.h>
 #include <nsxlib/Gonio.h>
@@ -31,7 +30,6 @@
 #include "CutLineGraphicsItem.h"
 #include "CutSliceGraphicsItem.h"
 #include "DetectorSceneModel.h"
-#include "EllipseMaskGraphicsItem.h"
 #include "ExperimentItem.h"
 #include "MaskGraphicsItem.h"
 #include "MetaTypes.h"
@@ -57,13 +55,16 @@ DetectorSceneModel::DetectorSceneModel(SessionModel *session_model)
   _itemSelected(false),
   _image(nullptr),
   _masks(),
-  _lastClickedGI(nullptr),
+  _current_graphics_item(nullptr),
   _logarithmic_scale(false),
   _drawIntegrationRegion(false),
   _integrationRegion(nullptr),
   _selected_peak_gi(nullptr),
   _peak_graphics_items(),
-  _selected_peak(nullptr)
+  _selected_peak(nullptr),
+  _plottable_graphics_item(),
+  _graphic_item_initial_pos(),
+  _graphic_item_final_pos()
 {
     connect(_session_model,&SessionModel::signalEnabledPeakChanged,this,&DetectorSceneModel::onChangeEnabledPeak);
     connect(_session_model,&SessionModel::signalMaskedPeaksChanged,this,&DetectorSceneModel::changeMaskedPeaks);
@@ -195,9 +196,9 @@ void DetectorSceneModel::changeSelectedData(nsx::sptrDataSet data, int frame)
     _zoomStack.clear();
     _zoomStack.push_back(QRect(0,0,int(det->nCols()),int(det->nRows())));
 
-    if (_lastClickedGI != nullptr) {
-        removeItem(_lastClickedGI);
-        _lastClickedGI=nullptr;
+    if (_current_graphics_item != nullptr) {
+        removeItem(_current_graphics_item);
+        _current_graphics_item = nullptr;
     }
 
     changeSelectedFrame(frame);
@@ -289,13 +290,13 @@ void DetectorSceneModel::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             return;
         }
 
-        if (!_lastClickedGI) {
+        if (!_current_graphics_item) {
             return;
         }
 
-        _lastClickedGI->mouseMoveEvent(event);
+        _current_graphics_item->mouseMoveEvent(event);
 
-        auto plottable_graphics_item = dynamic_cast<PlottableGraphicsItem*>(_lastClickedGI);
+        auto plottable_graphics_item = dynamic_cast<PlottableGraphicsItem*>(_current_graphics_item);
         if (plottable_graphics_item) {
             emit _session_model->signalChangePlot(plottable_graphics_item->plot());
         }
@@ -316,8 +317,6 @@ void DetectorSceneModel::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     CutterGraphicsItem* cutter(nullptr);
     MaskGraphicsItem* mask(nullptr);
-    EllipseMaskGraphicsItem* ellipse_mask(nullptr);
-    //_masks.emplace_back(new graphicsItem(nullptr));
     
     QPen pen1;
 
@@ -334,19 +333,22 @@ void DetectorSceneModel::mousePressEvent(QGraphicsSceneMouseEvent *event)
             item->setSelected(!item->isSelected());
             return;
         }
-        // If the item is a NSXTools GI and is selected it will become the current active GI
-        if (auto p = dynamic_cast<SXGraphicsItem*>(item)) {
-            if (p->isSelected()) {
-                _lastClickedGI = p;
+
+        // If the item is a graphics item and is selected it will become the current graphics item
+        if (auto graphics_item = dynamic_cast<SXGraphicsItem*>(item)) {
+            if (graphics_item->isSelected()) {
+                _current_graphics_item = graphics_item;
                 return;
             }
         }
+
+        _graphic_item_initial_pos = event->lastScenePos().toPoint();
+
         switch(_interaction_mode) {
 
-        case INTERACTION_MODE::SELECT: {
+        case INTERACTION_MODE::SELECT:
             break;
-        }
-        case INTERACTION_MODE::ZOOM: {
+        case INTERACTION_MODE::ZOOM:
             _zoomstart = event->lastScenePos().toPoint();
             _zoomend = _zoomstart;
             _zoomrect = addRect(QRect(_zoomstart,_zoomend));
@@ -357,42 +359,25 @@ void DetectorSceneModel::mousePressEvent(QGraphicsSceneMouseEvent *event)
             _zoomrect->setPen(pen1);
             _zoomrect->setBrush(QBrush(QColor(255,0,0,30)));
             break;
-        }
-        case INTERACTION_MODE::HORIZONTAL_SLICE: {
+        case INTERACTION_MODE::HORIZONTAL_SLICE:
             cutter = new CutSliceGraphicsItem(_currentData,true);
             break;
-        }
-        case INTERACTION_MODE::VERTICAL_SLICE: {
+        case INTERACTION_MODE::VERTICAL_SLICE:
             cutter = new CutSliceGraphicsItem(_currentData,false);
             break;
-        }
-        case INTERACTION_MODE::CUTLINE: {
+        case INTERACTION_MODE::CUTLINE:
             cutter = new CutLineGraphicsItem(_currentData);
             break;
-        }
-        case INTERACTION_MODE::RECTANGULAR_MASK: {
-            mask = new MaskGraphicsItem(_currentData, new nsx::AABB);
-            mask->setFrom(event->lastScenePos());
-            mask->setTo(event->lastScenePos());
+        case INTERACTION_MODE::RECTANGULAR_MASK:
             addItem(mask);
-            _lastClickedGI = mask;
+            _current_graphics_item = mask;
             _masks.emplace_back(mask, nullptr);
             break;
-        }
-        case INTERACTION_MODE::ELLIPSOIDAL_MASK: {
-            ellipse_mask = new EllipseMaskGraphicsItem(_currentData, new nsx::AABB);
-            ellipse_mask->setFrom(event->lastScenePos());
-            ellipse_mask->setTo(event->lastScenePos());
-            addItem(ellipse_mask);
-            _lastClickedGI = ellipse_mask;
-            _masks.emplace_back(ellipse_mask, nullptr);
-            break;
-        }
         }
         if (cutter != nullptr) {
             cutter->setFrom(event->lastScenePos());
             addItem(cutter);
-            _lastClickedGI = cutter;
+            _current_graphics_item = cutter;
         }
     }
     // The right button was pressed
@@ -422,6 +407,8 @@ void DetectorSceneModel::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         if (event->modifiers() == Qt::ControlModifier) {
             return;
         }
+
+        _graphic_item_final_pos = event->lastScenePos().toPoint();
 
         if (_interaction_mode == INTERACTION_MODE::ZOOM) {
 
@@ -470,62 +457,41 @@ void DetectorSceneModel::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             delete _zoomrect;
             emit dataChanged();
 
+        } else if (_interaction_mode == INTERACTION_MODE::RECTANGULAR_MASK) {
+
+            nsx::AABB aabb;
+            aabb.setLower({_graphic_item_initial_pos.x(),_graphic_item_initial_pos.y(),0});
+            aabb.setUpper({_graphic_item_final_pos.x(),_graphic_item_final_pos.y(),static_cast<double>(_currentData->nFrames())});
+
+            MaskGraphicsItem *mask_graphics_item = new MaskGraphicsItem(_currentData,aabb);
+            addItem(mask_graphics_item);
+
         } else {
-
-            auto peaks = _session_model->peaks(_currentData);
-
-            if (auto p = dynamic_cast<CutterGraphicsItem*>(_lastClickedGI)) {
-                // delete p....
-                 _lastClickedGI = nullptr;
-                removeItem(p);
-            } else if (auto p=dynamic_cast<MaskGraphicsItem*>(_lastClickedGI)) {
-                // add a new mask
-                auto it = findMask(p);
-                if (it != _masks.end()) {
-                    it->second = new nsx::BoxMask(*p->getAABB());
-                    _currentData->addMask(it->second);                    
-                    _lastClickedGI = nullptr;
-                }
-                _currentData->maskPeaks(peaks);
-                update();
-                updateMasks();
-                emit _session_model->signalMaskedPeaksChanged(peaks);
-            }else if (auto p=dynamic_cast<EllipseMaskGraphicsItem*>(_lastClickedGI)) {
-                auto it = findMask(p);
-                if (it != _masks.end()) {
-                    it->second = new nsx::EllipseMask(*p->getAABB());
-                    _currentData->addMask(it->second);                    
-                    _lastClickedGI = nullptr;
-                }
-                _currentData->maskPeaks(peaks);
-                update();
-                updateMasks();
-                emit _session_model->signalMaskedPeaksChanged(peaks);
+            if (auto plottable_graphics_item = dynamic_cast<PlottableGraphicsItem*>(_current_graphics_item)) {
+                _plottable_graphics_item.insert(plottable_graphics_item);
+                 _current_graphics_item = nullptr;
             }
+
+//            auto peaks = _session_model->peaks(_currentData);
+
+//            if (auto plottable_graphics_item = dynamic_cast<PlottableGraphicsItem*>(_current_graphics_item)) {
+//                _plottable_graphics_item.insert(plottable_graphics_item);
+//                 _current_graphics_item = nullptr;
+//            } else if (auto p=dynamic_cast<MaskGraphicsItem*>(_current_graphics_item)) {
+//                // add a new mask
+//                auto it = findMask(p);
+//                if (it != _masks.end()) {
+//                    it->second = new nsx::BoxMask(*p->getAABB());
+//                    _currentData->addMask(it->second);
+//                    _current_graphics_item = nullptr;
+//                }
+//                _currentData->maskPeaks(peaks);
+//                update();
+//                updateMasks();
+//                emit _session_model->signalMaskedPeaksChanged(peaks);
+//            }
+
         }
-    }
-}
-
-void DetectorSceneModel::wheelEvent(QGraphicsSceneWheelEvent* event)
-{
-    // If no data, returns
-    if (!_currentData) {
-        return;
-    }
-    // Get the graphics item on which the user has performed the wheel event
-    auto item=itemAt(event->scenePos(),QTransform());
-    auto p = dynamic_cast<SXGraphicsItem*>(item);
-
-    if (p == nullptr) {
-        return;
-    }
-    if (!(p->isSelected())) {
-        return;
-    }
-    auto q = dynamic_cast<CutterGraphicsItem*>(item);
-    if (q != nullptr) {
-        q->wheelEvent(event);
-//        emit signalHoverPlottableGraphicsItem(q);
     }
 }
 
@@ -569,20 +535,8 @@ void DetectorSceneModel::keyPressEvent(QKeyEvent* event)
                     emit _session_model->signalMaskedPeaksChanged(peaks);
                 }
             }
-            else if (auto p = dynamic_cast<EllipseMaskGraphicsItem*>(item)) {
-                auto it = findMask(p);
-                if (it != _masks.end()) {
-                    _currentData->removeMask(it->second);
-                    _masks.erase(it);
-                    auto peaks =  _session_model->peaks(_currentData);
-                    _currentData->maskPeaks(peaks);
-                    update();
-                    updateMasks();
-                    emit _session_model->signalMaskedPeaksChanged(peaks);
-                }
-            }
-            if (p == _lastClickedGI) {
-                _lastClickedGI=nullptr;
+            if (p == _current_graphics_item) {
+                _current_graphics_item = nullptr;
             }
             // Remove the item from the scene
             removeItem(item);
@@ -780,7 +734,7 @@ int DetectorSceneModel::currentFrameIndex() const
 
 void DetectorSceneModel::updateMasks()
 {
-    _lastClickedGI = nullptr;
+    _current_graphics_item = nullptr;
 }
 
 void DetectorSceneModel::showPeakLabels(bool flag)
@@ -837,7 +791,7 @@ void DetectorSceneModel::onResetScene()
     _image = nullptr;
     _integrationRegion = nullptr;
     _masks.clear();
-    _lastClickedGI = nullptr;
+    _current_graphics_item = nullptr;
 }
 
 std::vector<std::pair<QGraphicsItem*, nsx::IMask*>>::iterator DetectorSceneModel::findMask(QGraphicsItem* item)

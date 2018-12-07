@@ -38,7 +38,7 @@ class DetectorSceneModel: public QGraphicsScene
     Q_OBJECT
 
 public:
-    enum class INTERACTION_MODE {SELECT=0, ZOOM=1, CUTLINE=2, HORIZONTAL_SLICE=3, VERTICAL_SLICE=4, RECTANGULAR_MASK=5, ELLIPSOIDAL_MASK=6};
+    enum class INTERACTION_MODE {SELECT=0, ZOOM=1, CUTLINE=2, HORIZONTAL_SLICE=3, VERTICAL_SLICE=4, RECTANGULAR_MASK=5};
 
     //! Which mode is the cursor diplaying
     enum class CURSOR_MODE {PIXEL=0, GAMMA_NU=1, THETA=2, D_SPACING=3, MILLER_INDICES=4};
@@ -84,8 +84,6 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 
     void keyPressEvent(QKeyEvent *event);
-
-    void wheelEvent(QGraphicsSceneWheelEvent *event);
 
 public slots:
 
@@ -160,7 +158,7 @@ private:
 
     std::vector<std::pair<QGraphicsItem*, nsx::IMask*>> _masks;
     
-    SXGraphicsItem* _lastClickedGI;
+    SXGraphicsItem* _current_graphics_item;
 
     bool _logarithmic_scale;
 
@@ -173,4 +171,10 @@ private:
     std::map<nsx::sptrPeak3D,PeakGraphicsItem*> _peak_graphics_items;
 
     nsx::sptrPeak3D _selected_peak;
+
+    std::set<PlottableGraphicsItem*> _plottable_graphics_item;
+
+    QPoint _graphic_item_initial_pos;
+
+    QPoint _graphic_item_final_pos;
 };

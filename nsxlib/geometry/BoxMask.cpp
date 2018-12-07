@@ -49,4 +49,9 @@ IMask* BoxMask::clone() const
     return new BoxMask(*this);
 }
 
+const AABB& BoxMask::aabb() const
+{
+    return _aabb;
+}
+
 } // end namespace nsx

@@ -137,13 +137,6 @@ void ActionManager::createActions()
     rectangular_mask_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
     _interaction_mode_actions.append(rectangular_mask_interaction_mode_action);
 
-    auto *ellipsoidal_mask_interaction_mode_action(new QAction(QIcon(":/resources/ellipsoidalMaskIcon.png"),"ellipsoidal mask",_main_window));
-    ellipsoidal_mask_interaction_mode_action->setStatusTip("Switch mouse interaction mode to ellipsoidal mask");
-    ellipsoidal_mask_interaction_mode_action->setCheckable(true);
-    ellipsoidal_mask_interaction_mode_action->setChecked(false);
-    ellipsoidal_mask_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
-    _interaction_mode_actions.append(ellipsoidal_mask_interaction_mode_action);
-
     connect(_interaction_mode_action_group,&QActionGroup::triggered,this,&ActionManager::onChangeInteractionMode);
 
     _display_peak_labels_action = new QAction("Display peak labels",_main_window);
