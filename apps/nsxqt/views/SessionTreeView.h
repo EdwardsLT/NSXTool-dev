@@ -27,7 +27,7 @@ public:
 
 signals:
 
-    void inspectWidget(QWidget*);
+    void signalSelectSessionTreeItem(QWidget*);
 
     void plotData(nsx::sptrDataSet);
 

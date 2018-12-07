@@ -19,10 +19,11 @@ class NoteBook : public QTextEdit
 {
     Q_OBJECT
 public:
+
     NoteBook(MainWindow *parent);
-    virtual ~NoteBook();
 
     bool canInsertFromMimeData(const QMimeData* source) const;
+
     void insertFromMimeData(const QMimeData* source);
 
 public slots:
@@ -32,10 +33,12 @@ public slots:
 private:
 
     void dropImage(const QUrl& url, const QImage& image);
+
     void dropTextFile(const QUrl& url);
 
 public slots:
     void customMenuRequested(QPoint pos);
+
     void write2pdf();
 
 };

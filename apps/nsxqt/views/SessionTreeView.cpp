@@ -243,10 +243,10 @@ void SessionTreeView::onSingleClick(const QModelIndex &index)
     // Inspect this item if it is inspectable
     InspectableTreeItem* item = dynamic_cast<InspectableTreeItem*>(_session_model->itemFromIndex(index));
     if (item) {
-        emit inspectWidget(item->inspectItem());
+        emit signalSelectSessionTreeItem(item->inspectItem());
     } else {
         QWidget* widget = new QWidget();
-        emit inspectWidget(widget);
+        emit signalSelectSessionTreeItem(widget);
     }
 }
 

@@ -11,6 +11,7 @@
 SXPlot::SXPlot(QWidget *parent) : QCustomPlot(parent)
 {
    legend->setSelectableParts(QCPLegend::spItems);
+
    connect(this, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
    connect(this, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
    connect(this, SIGNAL(titleDoubleClick(QMouseEvent*,QCPPlotTitle*)), this, SLOT(titleDoubleClick(QMouseEvent*,QCPPlotTitle*)));

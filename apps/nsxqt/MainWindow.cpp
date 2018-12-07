@@ -85,7 +85,7 @@ void MainWindow::createConnections()
 
     connect(_detector_scene_model,&DetectorSceneModel::signalHoverPlottableGraphicsItem,this,&MainWindow::onPlotDetectorItem);
 
-    connect(_session_tree_view,&SessionTreeView::inspectWidget,this,&MainWindow::onDisplaySessionItemPropertyWidget);
+    connect(_session_tree_view,&SessionTreeView::signalSelectSessionTreeItem,this,&MainWindow::onDisplaySessionItemPropertyWidget);
 }
 
 void MainWindow::createDockWindows()
@@ -433,12 +433,14 @@ void MainWindow::onPlotDetectorItem(PlottableGraphicsItem* item)
 
 void MainWindow::onDisplaySessionItemPropertyWidget(QWidget* w)
 {
-//    // Ensure that previous Property Widget is deleted.
-//    auto previous_widget = _ui->dockWidget_Property->widget();
-//    if (previous_widget) {
-//        delete previous_widget;
-//    }
+    auto *property_dock_widget = _dockable_widgets[static_cast<int>(DOCKABLE_WIDGETS::PROPERTY)];
 
-//    // Assign current property Widget
-//    _ui->dockWidget_Property->setWidget(w);
+    // Ensure that previous Property Widget is deleted.
+    auto previous_widget = property_dock_widget->widget();
+    if (previous_widget) {
+        delete previous_widget;
+    }
+
+    // Assign current property Widget
+    property_dock_widget->setWidget(w);
 }
