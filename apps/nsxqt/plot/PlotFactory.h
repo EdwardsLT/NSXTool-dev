@@ -1,21 +1,21 @@
 #pragma once
 
+#include <functional>
+#include <map>
 #include <string>
 
-#include <nsxlib/Factory.h>
-#include <nsxlib/Singleton.h>
-
-#include "SXPlot.h"
-
 class QWidget;
+class SXPlot;
 
-class PlotFactory : public nsx::Factory<SXPlot,std::string,QWidget*>, public nsx::Singleton<PlotFactory,nsx::Constructor,nsx::Destructor>
-{
+class PlotterFactory{
+
+public:
+
+    PlotterFactory();
+
+    SXPlot* create(const std::string& plotter_type, QWidget *parent) const;
 
 private:
 
-    friend class nsx::Constructor<PlotFactory>;
-    friend class nsx::Destructor<PlotFactory>;
-    PlotFactory();
-    ~PlotFactory();
+    std::map<std::string,std::function<SXPlot*(QWidget*)>> _callbacks;
 };

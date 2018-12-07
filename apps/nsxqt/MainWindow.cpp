@@ -396,39 +396,46 @@ void MainWindow::plotData(const QVector<double>& x,const QVector<double>& y,cons
 //    _ui->plot1D->replot();
 }
 
-void MainWindow::onPlotDetectorItem(PlottableGraphicsItem* item)
+void MainWindow::onPlotDetectorItem(PlottableGraphicsItem* plottable_graphics_item)
 {
-//    if (!item) {
-//        return;
-//    }
+    if (!plottable_graphics_item) {
+        return;
+    }
 
-//    if (!item->isPlottable(_ui->plot1D)) {
-//        // Store the old size policy
-//        QSizePolicy oldSizePolicy = _ui->plot1D->sizePolicy();
-//        // Remove the current plotter from the ui
-//        _ui->horizontalLayout_4->removeWidget(_ui->plot1D);
-//        // Delete the plotter instance
-//        delete _ui->plot1D;
+    QDockWidget *plotter_dock_widget = _dockable_widgets[static_cast<int>(DOCKABLE_WIDGETS::PLOTTER)];
 
-//        PlotFactory* pFactory=PlotFactory::Instance();
+    QSizePolicy old_size_policy;
 
-//        _ui->plot1D = pFactory->create(item->getPlotType(),_ui->dockWidgetContents_4);
+    if (_plotter) {
+        // Store the old size policy
+        old_size_policy = _plotter->sizePolicy();
 
-//        // Restore the size policy
-//        _ui->plot1D->setSizePolicy(oldSizePolicy);
+        // Remove the current plotter from the ui
+        plotter_dock_widget->setWidget(nullptr);
 
-//        // Sets some properties of the plotter
-//        _ui->plot1D->setObjectName(QStringLiteral("1D plotter"));
-//        _ui->plot1D->setFocusPolicy(Qt::StrongFocus);
-//        _ui->plot1D->setStyleSheet(QStringLiteral(""));
+        // Delete the plotter instance
+        delete _plotter;
+    }
 
-//        // Add the plot to the ui
-//        _ui->horizontalLayout_4->addWidget(_ui->plot1D);
-//    }
+    PlotterFactory plotter_factory;
 
-//    // Plot the data
-//    item->plot(_ui->plot1D);
-//    update();
+    _plotter = plotter_factory.create(plottable_graphics_item->getPlotType(),plotter_dock_widget);
+
+    // Restore the size policy
+    _plotter->setSizePolicy(old_size_policy);
+
+    // Sets some properties of the plotter
+    _plotter->setObjectName(QStringLiteral("1D plotter"));
+    _plotter->setFocusPolicy(Qt::StrongFocus);
+    _plotter->setStyleSheet(QStringLiteral(""));
+
+    // Add the plot to the ui
+    plotter_dock_widget->setWidget(_plotter);
+
+    // Plot the data
+    plottable_graphics_item->plot(_plotter);
+
+    update();
 }
 
 void MainWindow::onDisplaySessionItemPropertyWidget(QWidget* w)

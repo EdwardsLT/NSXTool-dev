@@ -65,7 +65,7 @@ public slots:
 
     void onNewExperiment();
 
-    void onPlotDetectorItem(PlottableGraphicsItem *cutter);
+    void onPlotDetectorItem(PlottableGraphicsItem *plottable_graphics_item);
 
 private:
 

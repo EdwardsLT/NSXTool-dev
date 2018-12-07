@@ -19,8 +19,6 @@ public:
 
     //! Constructs a data cutter
     CutterGraphicsItem(nsx::sptrDataSet data);
-    //! Destructor
-    virtual ~CutterGraphicsItem();
 
     // Events
 

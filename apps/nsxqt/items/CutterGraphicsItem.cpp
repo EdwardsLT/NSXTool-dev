@@ -22,10 +22,6 @@ CutterGraphicsItem::CutterGraphicsItem(nsx::sptrDataSet data)
 
 }
 
-CutterGraphicsItem::~CutterGraphicsItem()
-{
-}
-
 void CutterGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
 
@@ -34,12 +30,12 @@ void CutterGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         // If the cutter is not selected, the move event corresponds to a modification of the size of cutter
         if (!isSelected())
         {
-            if (isInScene(event->lastScenePos()))
+            if (isInScene(event->lastScenePos())) {
                 setTo(event->lastScenePos());
-        }
-        // Otherwise it is a standard move of the item
-        else
+            }
+        } else {
             SXGraphicsItem::mouseMoveEvent(event);
+        }
     }
 }
 

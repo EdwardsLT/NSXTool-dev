@@ -9,15 +9,3 @@ PlottableGraphicsItem::PlottableGraphicsItem(QGraphicsItem *parent, bool deletab
 : SXGraphicsItem(parent, deletable, movable)
 {
 }
-
-PlottableGraphicsItem::~PlottableGraphicsItem()
-{
-}
-
-bool PlottableGraphicsItem::isPlottable(SXPlot* plot) const
-{
-    if (!plot)
-        return false;
-    else
-        return (getPlotType().compare(plot->getType())==0);
-}
