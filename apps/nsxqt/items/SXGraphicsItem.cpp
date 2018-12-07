@@ -2,7 +2,6 @@
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
 
-#include "DetectorScene.h"
 #include "SXGraphicsItem.h"
 #include "SXPlot.h"
 

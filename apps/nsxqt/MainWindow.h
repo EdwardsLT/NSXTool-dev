@@ -10,11 +10,10 @@
 #include <nsxlib/DataTypes.h>
 #include <nsxlib/UtilsTypes.h>
 
-class DetectorGraphicsView;
-class DetectorScene;
-class ExperimentTree;
+class ActionManager;
+class DetectorSceneModel;
+class DetectorSceneView;
 class NoteBook;
-class NSXMenu;
 class PlottableGraphicsItem;
 class QCloseEvent;
 class QDockWidget;
@@ -24,6 +23,7 @@ class QStatusBar;
 class QVBoxLayout;
 class QWidget;
 class SessionModel;
+class SessionTreeView;
 class SXPlot;
 class TaskManagerModel;
 class TaskManagerView;
@@ -41,7 +41,7 @@ public:
 
     virtual void closeEvent(QCloseEvent *event) override;
 
-    DetectorScene* detectorSceneModel();
+    DetectorSceneModel* detectorSceneModel();
 
     SessionModel* sessionModel();
 
@@ -93,7 +93,7 @@ private:
 
 private:
 
-    DetectorScene *_detector_scene_model;
+    DetectorSceneModel *_detector_scene_model;
 
     SessionModel *_session_model;
 
@@ -103,7 +103,7 @@ private:
 
     std::vector<QDockWidget*> _dockable_widgets;
 
-    DetectorGraphicsView *_detector_view;
+    DetectorSceneView *_detector_scene_view;
 
     QSlider *_frame_slider;
 
@@ -113,7 +113,7 @@ private:
 
     QSpinBox *_intensity_value;
 
-    ExperimentTree *_session_view;
+    SessionTreeView *_session_tree_view;
 
     TaskManagerView *_task_manager_view;
 
@@ -123,5 +123,5 @@ private:
 
     QWidget *_property_widget;
 
-    NSXMenu *_menu_bar;
+    ActionManager *_action_manager;
 };

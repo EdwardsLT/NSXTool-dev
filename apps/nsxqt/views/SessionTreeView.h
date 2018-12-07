@@ -16,12 +16,12 @@ class ExperimentItem;
 class MainWindow;
 class SessionModel;
 
-class ExperimentTree: public QTreeView {
+class SessionTreeView: public QTreeView {
     Q_OBJECT
 
 public:
 
-    explicit ExperimentTree(MainWindow *main_window);
+    explicit SessionTreeView(MainWindow *main_window);
 
     SessionModel* model();
 

@@ -30,14 +30,13 @@
 
 #include "DataItem.h"
 #include "DetectorItem.h"
-#include "DetectorScene.h"
+#include "DetectorSceneModel.h"
 #include "DialogExperiment.h"
 #include "DialogIsotopesDatabase.h"
 #include "DialogRawData.h"
 #include "DialogSpaceGroup.h"
 #include "DialogTransformationMatrix.h"
 #include "ExperimentItem.h"
-#include "ExperimentTree.h"
 #include "FramePeakFinder.h"
 #include "GLSphere.h"
 #include "GLWidget.h"
@@ -54,12 +53,13 @@
 #include "SampleItem.h"
 #include "SessionModel.h"
 #include "SessionModelDelegate.h"
+#include "SessionTreeView.h"
 #include "SourceItem.h"
 #include "TreeItem.h"
 #include "UnitCellItem.h"
 #include "UnitCellsItem.h"
 
-ExperimentTree::ExperimentTree(MainWindow *main_window) : QTreeView(main_window), _main_window(main_window), _session_model(main_window->sessionModel())
+SessionTreeView::SessionTreeView(MainWindow *main_window) : QTreeView(main_window), _main_window(main_window), _session_model(main_window->sessionModel())
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -77,10 +77,10 @@ ExperimentTree::ExperimentTree(MainWindow *main_window) : QTreeView(main_window)
     connect(this,SIGNAL(doubleClicked(const QModelIndex&)),this,SLOT(onDoubleClick(const QModelIndex&)));
     connect(this,SIGNAL(clicked(QModelIndex)),this,SLOT(onSingleClick(QModelIndex)));
 
-    connect(_session_model,&SessionModel::signalResetScene,_main_window->detectorSceneModel(),&DetectorScene::onResetScene);
+    connect(_session_model,&SessionModel::signalResetScene,_main_window->detectorSceneModel(),&DetectorSceneModel::onResetScene);
 }
 
-void ExperimentTree::onCustomMenuRequested(const QPoint& point)
+void SessionTreeView::onCustomMenuRequested(const QPoint& point)
 {
     QModelIndex index = indexAt(point);
     QMenu* menu = new QMenu(this);
@@ -201,7 +201,7 @@ void ExperimentTree::onCustomMenuRequested(const QPoint& point)
     menu->popup(viewport()->mapToGlobal(point));
 }
 
-void ExperimentTree::onDoubleClick(const QModelIndex& index)
+void SessionTreeView::onDoubleClick(const QModelIndex& index)
 {
     // Get the current item and check that is actually a Numor item. Otherwise, return.
     QStandardItem* item = _session_model->itemFromIndex(index);
@@ -220,7 +220,7 @@ void ExperimentTree::onDoubleClick(const QModelIndex& index)
     }
 }
 
-void ExperimentTree::keyPressEvent(QKeyEvent *event)
+void SessionTreeView::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Delete) {
         QList<QModelIndex> selIndexes = selectedIndexes();
@@ -238,7 +238,7 @@ void ExperimentTree::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void ExperimentTree::onSingleClick(const QModelIndex &index)
+void SessionTreeView::onSingleClick(const QModelIndex &index)
 {
     // Inspect this item if it is inspectable
     InspectableTreeItem* item = dynamic_cast<InspectableTreeItem*>(_session_model->itemFromIndex(index));
@@ -250,7 +250,7 @@ void ExperimentTree::onSingleClick(const QModelIndex &index)
     }
 }
 
-void ExperimentTree::openPeakFinderDialog(DataItem *data_item)
+void SessionTreeView::openPeakFinderDialog(DataItem *data_item)
 {
     nsx::DataList data = data_item->selectedData();
 

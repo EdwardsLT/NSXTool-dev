@@ -4,19 +4,19 @@
 #include <QKeyEvent>
 #include <QResizeEvent>
 
-class DetectorScene;
+class DetectorSceneModel;
 class MainWindow;
 
-class DetectorGraphicsView : public QGraphicsView
+class DetectorSceneView : public QGraphicsView
 {
     Q_OBJECT
 public:
 
-    explicit DetectorGraphicsView(MainWindow *main_window);
+    explicit DetectorSceneView(MainWindow *main_window);
 
     void resizeEvent(QResizeEvent *event);
 
-    DetectorScene* getScene();
+    DetectorSceneModel* getScene();
 
     void keyPressEvent(QKeyEvent* event);
 
@@ -32,5 +32,5 @@ private:
 
 private:
 
-    DetectorScene* _detector_scene_model;
+    DetectorSceneModel* _detector_scene_model;
 };

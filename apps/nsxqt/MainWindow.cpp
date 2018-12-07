@@ -1,35 +1,25 @@
-#include <cmath>
 #include <fstream>
 #include <functional>
 #include <stdexcept>
 
-#include <Eigen/Dense>
-
 #include <QDateTime>
 #include <QDockWidget>
 #include <QFileDialog>
-#include <QGraphicsBlurEffect>
-#include <QGraphicsEllipseItem>
 #include <QMouseEvent>
 #include <QProgressDialog>
 #include <QSlider>
 #include <QSpinBox>
 #include <QStatusBar>
-#include <QShortcut>
-#include <QThread>
 #include <QTransform>
 #include <QLayout>
 
 #include <nsxlib/AggregateStreamWrapper.h>
 #include <nsxlib/CrystalTypes.h>
 #include <nsxlib/Detector.h>
-#include <nsxlib/Diffractometer.h>
 #include <nsxlib/LogFileStreamWrapper.h>
 #include <nsxlib/Logger.h>
 #include <nsxlib/Path.h>
 #include <nsxlib/Peak3D.h>
-#include <nsxlib/PeakFilter.h>
-#include <nsxlib/PeakFinder.h>
 #include <nsxlib/ProgressHandler.h>
 #include <nsxlib/Sample.h>
 #include <nsxlib/Source.h>
@@ -38,23 +28,23 @@
 #include <nsxlib/Units.h>
 #include <nsxlib/Version.h>
 
+#include "ActionManager.h"
 #include "DataItem.h"
-#include "DetectorGraphicsView.h"
-#include "DetectorScene.h"
+#include "DetectorSceneModel.h"
+#include "DetectorSceneView.h"
 #include "DialogExperiment.h"
 #include "DialogIntegrate.h"
 #include "DialogPeakFilter.h"
-#include "ExperimentTree.h"
 #include "MainWindow.h"
 #include "MouseInteractionModeModel.h"
 #include "NoteBook.h"
-#include "NSXMenu.h"
 #include "PeakGraphicsItem.h"
 #include "PlottableGraphicsItem.h"
 #include "PeakTableView.h"
 #include "PlotFactory.h"
 #include "QtStreamWrapper.h"
 #include "SessionModel.h"
+#include "SessionTreeView.h"
 #include "SXPlot.h"
 #include "TaskManagerModel.h"
 #include "TaskManagerView.h"
@@ -79,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::createActions()
 {
-    _menu_bar = new NSXMenu(this);
+    _action_manager = new ActionManager(this);
 }
 
 void MainWindow::createConnections()
@@ -93,23 +83,23 @@ void MainWindow::createConnections()
     connect(_intensity_slider,&QSlider::valueChanged,this,&MainWindow::onChangeMaxIntensity);
     connect(_intensity_value,static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),this,&MainWindow::onChangeMaxIntensity);
 
-    connect(_detector_scene_model,&DetectorScene::signalHoverPlottableGraphicsItem,this,&MainWindow::onPlotDetectorItem);
+    connect(_detector_scene_model,&DetectorSceneModel::signalHoverPlottableGraphicsItem,this,&MainWindow::onPlotDetectorItem);
 
-    connect(_session_view,&ExperimentTree::inspectWidget,this,&MainWindow::onDisplaySessionItemPropertyWidget);
+    connect(_session_tree_view,&SessionTreeView::inspectWidget,this,&MainWindow::onDisplaySessionItemPropertyWidget);
 }
 
 void MainWindow::createDockWindows()
 {
     // Setup the session tree widget
-    auto *session_view_dock_widget = new QDockWidget("session",this);
-    session_view_dock_widget->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
-    session_view_dock_widget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    _session_view = new ExperimentTree(this);
-    _session_view->header()->hide();
-    _session_view->setModel(_session_model);
-    session_view_dock_widget->setWidget(_session_view);
-    addDockWidget(Qt::LeftDockWidgetArea,session_view_dock_widget);
-    _dockable_widgets.push_back(session_view_dock_widget);
+    auto *session_tree_view_dock_widget = new QDockWidget("session",this);
+    session_tree_view_dock_widget->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
+    session_tree_view_dock_widget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    _session_tree_view = new SessionTreeView(this);
+    _session_tree_view->header()->hide();
+    _session_tree_view->setModel(_session_model);
+    session_tree_view_dock_widget->setWidget(_session_tree_view);
+    addDockWidget(Qt::LeftDockWidgetArea,session_tree_view_dock_widget);
+    _dockable_widgets.push_back(session_tree_view_dock_widget);
 
     // Setup the task manager widget
     auto *task_manager_view_dock_widget = new QDockWidget("tasks",this);
@@ -194,8 +184,8 @@ void MainWindow::createLoggers()
 
 void MainWindow::createMainWindow()
 {
-    _detector_view = new DetectorGraphicsView(this);
-    _detector_view->setScene(_detector_scene_model);
+    _detector_scene_view = new DetectorSceneView(this);
+    _detector_scene_view->setScene(_detector_scene_model);
 
     // The frame control settings
 
@@ -239,7 +229,7 @@ void MainWindow::createMainWindow()
     control_layout->setColumnStretch(2,0);
 
     _main_layout = new QVBoxLayout();
-    _main_layout->addWidget(_detector_view);
+    _main_layout->addWidget(_detector_scene_view);
     _main_layout->addLayout(control_layout);
     _main_layout->setStretch(0,1);
     _main_layout->setStretch(1,0);
@@ -253,7 +243,7 @@ void MainWindow::createMainWindow()
 void MainWindow::createModels()
 {
     _session_model = new SessionModel();
-    _detector_scene_model = new DetectorScene(_session_model);
+    _detector_scene_model = new DetectorSceneModel(_session_model);
     _task_manager_model = new TaskManagerModel();
 }
 
@@ -314,7 +304,7 @@ MainWindow::~MainWindow()
     qInstallMessageHandler(0);
 }
 
-DetectorScene* MainWindow::detectorSceneModel()
+DetectorSceneModel* MainWindow::detectorSceneModel()
 {
     return _detector_scene_model;
 }

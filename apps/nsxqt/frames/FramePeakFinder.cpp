@@ -90,7 +90,7 @@ FramePeakFinder::FramePeakFinder(MainWindow *main_window, ExperimentItem *experi
 
     QGraphicsScene* scene = new QGraphicsScene();
     _ui->preview->setScene(scene);
-    // flip the image vertically to conform with DetectorScene
+    // flip the image vertically to conform with DetectorSceneModel
     _ui->preview->scale(1, -1);
 
     updateConvolutionParameters();

@@ -8,16 +8,16 @@
 #include <nsxlib/Diffractometer.h>
 #include <nsxlib/IDataReader.h>
 
-#include "DetectorGraphicsView.h"
-#include "DetectorScene.h"
+#include "DetectorSceneModel.h"
+#include "DetectorSceneView.h"
 #include "MainWindow.h"
 
-DetectorGraphicsView::DetectorGraphicsView(MainWindow *main_window) : QGraphicsView(main_window), _detector_scene_model(main_window->detectorSceneModel())
+DetectorSceneView::DetectorSceneView(MainWindow *main_window) : QGraphicsView(main_window), _detector_scene_model(main_window->detectorSceneModel())
 {
     setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing);
 
     // Make sure that first views are rescaled, especially first created one
-    connect(_detector_scene_model,&DetectorScene::dataChanged,this,[&](){fitInView(_detector_scene_model->sceneRect());});
+    connect(_detector_scene_model,&DetectorSceneModel::dataChanged,this,[&](){fitInView(_detector_scene_model->sceneRect());});
 
     setMouseTracking(true);
 
@@ -32,18 +32,18 @@ DetectorGraphicsView::DetectorGraphicsView(MainWindow *main_window) : QGraphicsV
     setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
-void DetectorGraphicsView::resizeEvent(QResizeEvent *event)
+void DetectorSceneView::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
     fitInView(_detector_scene_model->sceneRect());
 }
 
-DetectorScene* DetectorGraphicsView::getScene()
+DetectorSceneModel* DetectorSceneView::getScene()
 {
     return _detector_scene_model;
 }
 
-void DetectorGraphicsView::copyViewToClipboard()
+void DetectorSceneView::copyViewToClipboard()
 {
     // Create the image with the exact size of the shrunk scene
     QImage image(this->rect().size(), QImage::Format_ARGB32);
@@ -56,7 +56,7 @@ void DetectorGraphicsView::copyViewToClipboard()
     QApplication::clipboard()->setImage(image,QClipboard::Clipboard);
 }
 
-void DetectorGraphicsView::keyPressEvent(QKeyEvent* event)
+void DetectorSceneView::keyPressEvent(QKeyEvent* event)
 {
     if (event->matches(QKeySequence::Copy)) {
         copyViewToClipboard();
@@ -64,7 +64,7 @@ void DetectorGraphicsView::keyPressEvent(QKeyEvent* event)
     QGraphicsView::keyPressEvent(event);
 }
 
-void DetectorGraphicsView::fixDetectorAspectRatio(bool value)
+void DetectorSceneView::fixDetectorAspectRatio(bool value)
 {
     const auto* detector = _detector_scene_model->getData()->reader()->diffractometer()->detector();
 
@@ -78,7 +78,7 @@ void DetectorGraphicsView::fixDetectorAspectRatio(bool value)
     }
 }
 
-void DetectorGraphicsView::fitScene()
+void DetectorSceneView::fitScene()
 {
     fitInView(_detector_scene_model->sceneRect());
 }

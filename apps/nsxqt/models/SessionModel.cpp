@@ -80,7 +80,6 @@
 
 #include "DataItem.h"
 #include "DetectorItem.h"
-#include "DetectorScene.h"
 #include "DialogExperiment.h"
 #include "ExperimentItem.h"
 #include "GLSphere.h"

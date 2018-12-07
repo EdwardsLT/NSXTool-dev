@@ -20,7 +20,6 @@
 #include <nsxlib/UnitCell.h>
 #include <nsxlib/Units.h>
 
-#include "DetectorScene.h"
 #include "PeakGraphicsItem.h"
 #include "PeakPlot.h"
 #include "SXPlot.h"

@@ -30,7 +30,7 @@
 #include "ColorMap.h"
 #include "CutLineGraphicsItem.h"
 #include "CutSliceGraphicsItem.h"
-#include "DetectorScene.h"
+#include "DetectorSceneModel.h"
 #include "EllipseMaskGraphicsItem.h"
 #include "ExperimentItem.h"
 #include "MaskGraphicsItem.h"
@@ -40,7 +40,7 @@
 #include "UnitCellItem.h"
 #include "UnitCellsItem.h"
 
-DetectorScene::DetectorScene(SessionModel *session_model)
+DetectorSceneModel::DetectorSceneModel(SessionModel *session_model)
 : QGraphicsScene(nullptr),
   _session_model(session_model),
   _currentData(nullptr),
@@ -65,14 +65,14 @@ DetectorScene::DetectorScene(SessionModel *session_model)
   _peak_graphics_items(),
   _selected_peak(nullptr)
 {
-    connect(_session_model,&SessionModel::signalEnabledPeakChanged,this,&DetectorScene::changeEnabledPeak);
-    connect(_session_model,&SessionModel::signalMaskedPeaksChanged,this,&DetectorScene::changeMaskedPeaks);
-    connect(_session_model,&SessionModel::signalSelectedDataChanged,this,&DetectorScene::changeSelectedData);
-    connect(_session_model,&SessionModel::signalSelectedPeakChanged,this,&DetectorScene::changeSelectedPeak);
-    connect(_session_model,&SessionModel::updatePeaks,this,&DetectorScene::resetPeakGraphicsItems);
+    connect(_session_model,&SessionModel::signalEnabledPeakChanged,this,&DetectorSceneModel::changeEnabledPeak);
+    connect(_session_model,&SessionModel::signalMaskedPeaksChanged,this,&DetectorSceneModel::changeMaskedPeaks);
+    connect(_session_model,&SessionModel::signalSelectedDataChanged,this,&DetectorSceneModel::changeSelectedData);
+    connect(_session_model,&SessionModel::signalSelectedPeakChanged,this,&DetectorSceneModel::changeSelectedPeak);
+    connect(_session_model,&SessionModel::updatePeaks,this,&DetectorSceneModel::resetPeakGraphicsItems);
 }
 
-void DetectorScene::clearPeakGraphicsItems()
+void DetectorSceneModel::clearPeakGraphicsItems()
 {
     if (!_currentData) {
         return;
@@ -86,7 +86,7 @@ void DetectorScene::clearPeakGraphicsItems()
     _peak_graphics_items.clear();
 }
 
-void DetectorScene::resetPeakGraphicsItems()
+void DetectorSceneModel::resetPeakGraphicsItems()
 {
     if (!_currentData) {
         return;
@@ -167,21 +167,21 @@ void DetectorScene::resetPeakGraphicsItems()
     }
 }
 
-void DetectorScene::changeEnabledPeak(nsx::sptrPeak3D peak)
+void DetectorSceneModel::changeEnabledPeak(nsx::sptrPeak3D peak)
 {
     Q_UNUSED(peak)
 
     loadCurrentImage();
 }
 
-void DetectorScene::changeMaskedPeaks(const nsx::PeakList& peaks)
+void DetectorSceneModel::changeMaskedPeaks(const nsx::PeakList& peaks)
 {
     Q_UNUSED(peaks)
 
     loadCurrentImage();
 }
 
-void DetectorScene::changeSelectedData(nsx::sptrDataSet data, int frame)
+void DetectorSceneModel::changeSelectedData(nsx::sptrDataSet data, int frame)
 {
     _currentData = data;
 
@@ -202,7 +202,7 @@ void DetectorScene::changeSelectedData(nsx::sptrDataSet data, int frame)
     changeSelectedFrame(frame);
 }
 
-void DetectorScene::changeSelectedPeak(nsx::sptrPeak3D peak)
+void DetectorSceneModel::changeSelectedPeak(nsx::sptrPeak3D peak)
 {
     if (peak == _selected_peak) {
         return;
@@ -222,7 +222,7 @@ void DetectorScene::changeSelectedPeak(nsx::sptrPeak3D peak)
     update();
 }
 
-void DetectorScene::changeSelectedFrame(int frame)
+void DetectorSceneModel::changeSelectedFrame(int frame)
 {
     if (!_currentData) {
         return;
@@ -241,12 +241,12 @@ void DetectorScene::changeSelectedFrame(int frame)
     updateMasks();
 }
 
-int DetectorScene::maxIntensity() const
+int DetectorSceneModel::maxIntensity() const
 {
     return _max_intensity;
 }
 
-void DetectorScene::changeMaxIntensity(int max_intensity)
+void DetectorSceneModel::changeMaxIntensity(int max_intensity)
 {
     if (_max_intensity == max_intensity) {
         return;
@@ -265,7 +265,7 @@ void DetectorScene::changeMaxIntensity(int max_intensity)
     loadCurrentImage();
 }
 
-void DetectorScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void DetectorSceneModel::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     // If no data is loaded, do nothing
     if (!_currentData) {
@@ -316,7 +316,7 @@ void DetectorScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void DetectorScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void DetectorSceneModel::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     CutterGraphicsItem* cutter(nullptr);
     MaskGraphicsItem* mask(nullptr);
@@ -413,7 +413,7 @@ void DetectorScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void DetectorScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void DetectorSceneModel::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     // If no data is loaded, do nothing
     if (!_currentData) {
@@ -525,7 +525,7 @@ void DetectorScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void DetectorScene::wheelEvent(QGraphicsSceneWheelEvent* event)
+void DetectorSceneModel::wheelEvent(QGraphicsSceneWheelEvent* event)
 {
     // If no data, returns
     if (!_currentData) {
@@ -548,7 +548,7 @@ void DetectorScene::wheelEvent(QGraphicsSceneWheelEvent* event)
     }
 }
 
-void DetectorScene::keyPressEvent(QKeyEvent* event)
+void DetectorSceneModel::keyPressEvent(QKeyEvent* event)
 {
     // If no data, returns
     if (!_currentData)
@@ -614,7 +614,7 @@ void DetectorScene::keyPressEvent(QKeyEvent* event)
     }
 }
 
-void DetectorScene::createToolTipText(QGraphicsSceneMouseEvent* event)
+void DetectorSceneModel::createToolTipText(QGraphicsSceneMouseEvent* event)
 {
     if (!_currentData) {
         return;
@@ -687,13 +687,12 @@ void DetectorScene::createToolTipText(QGraphicsSceneMouseEvent* event)
     QToolTip::showText(event->screenPos(),ttip);
 }
 
-void DetectorScene::changeInteractionMode(INTERACTION_MODE interaction_mode)
+void DetectorSceneModel::changeInteractionMode(INTERACTION_MODE interaction_mode)
 {
     _interaction_mode = interaction_mode;
 }
 
-// TODO: fix this whole method, it should be using IntegrationRegion::updateMask()
-void DetectorScene::loadCurrentImage()
+void DetectorSceneModel::loadCurrentImage()
 {
     if (!_currentData) {
         return;
@@ -782,32 +781,32 @@ void DetectorScene::loadCurrentImage()
     }
 }
 
-nsx::sptrDataSet DetectorScene::getData()
+nsx::sptrDataSet DetectorSceneModel::getData()
 {
     return _currentData;
 }
 
-const rowMatrix& DetectorScene::getCurrentFrame() const
+const rowMatrix& DetectorSceneModel::getCurrentFrame() const
 {
     return _currentFrame;
 }
 
-void DetectorScene::changeCursorMode(CURSOR_MODE cursor_mode)
+void DetectorSceneModel::changeCursorMode(CURSOR_MODE cursor_mode)
 {
     _cursor_mode = cursor_mode;
 }
 
-int DetectorScene::currentFrame() const
+int DetectorSceneModel::currentFrame() const
 {
     return _currentFrameIndex;
 }
 
-void DetectorScene::updateMasks()
+void DetectorSceneModel::updateMasks()
 {
     _lastClickedGI = nullptr;
 }
 
-void DetectorScene::showPeakLabels(bool flag)
+void DetectorSceneModel::showPeakLabels(bool flag)
 {
     for (auto p : _peak_graphics_items) {
         p.second->showLabel(flag);
@@ -815,7 +814,7 @@ void DetectorScene::showPeakLabels(bool flag)
     update();
 }
 
-void DetectorScene::showPeakCenters(bool flag)
+void DetectorSceneModel::showPeakCenters(bool flag)
 {
     for (auto p : _peak_graphics_items) {
         p.second->showCenter(flag);
@@ -823,7 +822,7 @@ void DetectorScene::showPeakCenters(bool flag)
     update();
 }
 
-void DetectorScene::showPeakIntegrationAreas(bool flag)
+void DetectorSceneModel::showPeakIntegrationAreas(bool flag)
 {
     // clear the background if necessary
     if (_integrationRegion && flag == false) {
@@ -837,18 +836,18 @@ void DetectorScene::showPeakIntegrationAreas(bool flag)
     loadCurrentImage();
 }
 
-void DetectorScene::setLogarithmic(bool checked)
+void DetectorSceneModel::setLogarithmic(bool checked)
 {
     _logarithmic = checked;
 }
 
-void DetectorScene::changeColorMap(const std::string &name)
+void DetectorSceneModel::changeColorMap(const std::string &name)
 {
     _colormap = std::unique_ptr<ColorMap>(new ColorMap(name));
     loadCurrentImage();
 }
 
-void DetectorScene::onResetScene()
+void DetectorSceneModel::onResetScene()
 {
     clearPeakGraphicsItems();
     clear();
@@ -862,7 +861,7 @@ void DetectorScene::onResetScene()
     _lastClickedGI = nullptr;
 }
 
-std::vector<std::pair<QGraphicsItem*, nsx::IMask*>>::iterator DetectorScene::findMask(QGraphicsItem* item)
+std::vector<std::pair<QGraphicsItem*, nsx::IMask*>>::iterator DetectorSceneModel::findMask(QGraphicsItem* item)
 {
     return std::find_if(_masks.begin(), _masks.end(), [item](const std::pair<QGraphicsItem*, nsx::IMask*>& x) {return x.first == item;});
 }

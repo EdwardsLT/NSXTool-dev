@@ -33,7 +33,7 @@ typedef Eigen::Matrix<int,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> rowMatr
 
 //! Master Scene containing the pixmap of the detector counts
 //! and overlayed graphics items (peaks, data cutters, masks ...)
-class DetectorScene: public QGraphicsScene
+class DetectorSceneModel: public QGraphicsScene
 {
     Q_OBJECT
 
@@ -43,7 +43,7 @@ public:
     //! Which mode is the cursor diplaying
     enum class CURSOR_MODE {PIXEL=0, GAMMA_NU=1, THETA=2, D_SPACING=3, MILLER_INDICES=4};
 
-    explicit DetectorScene(SessionModel *session_model);
+    explicit DetectorSceneModel(SessionModel *session_model);
 
     nsx::sptrDataSet getData();
 

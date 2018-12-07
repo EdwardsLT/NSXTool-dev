@@ -12,7 +12,6 @@
 #include <nsxlib/AABB.h>
 #include <nsxlib/DataSet.h>
 
-#include "DetectorScene.h"
 #include "MaskGraphicsItem.h"
 
 MaskGraphicsItem::MaskGraphicsItem(nsx::sptrDataSet data, nsx::AABB* aabb)

@@ -16,7 +16,7 @@
 #include <nsxlib/Detector.h>
 
 #include "CutLineGraphicsItem.h"
-#include "DetectorScene.h"
+#include "DetectorSceneModel.h"
 #include "SimplePlot.h"
 #include "SXPlot.h"
 
@@ -40,7 +40,7 @@ void CutLineGraphicsItem::plot(SXPlot* plot)
     p->yAxis->setLabel("Intensity (counts)");
 
     // Set the pointer to the detector scene to the scene that holds the cutter
-    auto detPtr = dynamic_cast<DetectorScene*>(scene());
+    auto detPtr = dynamic_cast<DetectorSceneModel*>(scene());
     if (!detPtr) {
         return;
     }

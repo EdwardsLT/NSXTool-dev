@@ -6,21 +6,21 @@
 #include <QMenu>
 #include <QMenuBar>
 
+#include "ActionManager.h"
 #include "ColorMap.h"
-#include "DetectorScene.h"
+#include "DetectorSceneModel.h"
 #include "DialogAbout.h"
 #include "DialogIsotopesDatabase.h"
 #include "GlobalInfo.h"
 #include "MainWindow.h"
-#include "NSXMenu.h"
 
-NSXMenu::NSXMenu(MainWindow *main_window) : _main_window(main_window)
+ActionManager::ActionManager(MainWindow *main_window) : _main_window(main_window)
 {
     createActions();
     createMenus();
 }
 
-void NSXMenu::createActions()
+void ActionManager::createActions()
 {
     _new_experiment_action = new QAction("&New experiment",_main_window);
     _new_experiment_action->setStatusTip("Create new experiment");
@@ -85,7 +85,7 @@ void NSXMenu::createActions()
     miller_indices_cursor_mode_action->setChecked(false);
     miller_indices_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
     _cursor_mode_actions.append(miller_indices_cursor_mode_action);
-    connect(_cursor_mode_action_group,&QActionGroup::triggered,this,&NSXMenu::onChangeCursorMode);
+    connect(_cursor_mode_action_group,&QActionGroup::triggered,this,&ActionManager::onChangeCursorMode);
 
     // Interaction modes settings
 
@@ -141,7 +141,7 @@ void NSXMenu::createActions()
     ellipsoidal_mask_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
     _interaction_mode_actions.append(ellipsoidal_mask_interaction_mode_action);
 
-    connect(_interaction_mode_action_group,&QActionGroup::triggered,this,&NSXMenu::onChangeInteractionMode);
+    connect(_interaction_mode_action_group,&QActionGroup::triggered,this,&ActionManager::onChangeInteractionMode);
 
     _display_peak_labels_action = new QAction("Display peak labels",_main_window);
     _display_peak_labels_action->setCheckable(true);
@@ -175,7 +175,7 @@ void NSXMenu::createActions()
                                                                      [](QAction* action){return action->text().toStdString().compare("blue white") == 0;}));
     _color_map_actions[idx]->setChecked(true);
 
-    connect(_color_map_action_group,&QActionGroup::triggered,this,&NSXMenu::onChangeColorMap);
+    connect(_color_map_action_group,&QActionGroup::triggered,this,&ActionManager::onChangeColorMap);
 
     // Dockable widgets menu settings
 
@@ -217,20 +217,20 @@ void NSXMenu::createActions()
     widget_property_action->setActionGroup(_dockable_widget_state_group);
     _dockable_widget_state_actions.append(widget_property_action);
 
-    connect(_dockable_widget_state_group,&QActionGroup::triggered,this,&NSXMenu::onToggleDockableWidgetState);
+    connect(_dockable_widget_state_group,&QActionGroup::triggered,this,&ActionManager::onToggleDockableWidgetState);
 
     _display_isotopes_database_action = new QAction("Display isotopes database",_main_window);
     _display_isotopes_database_action->setStatusTip("Display isotopes database");
-    connect(_display_isotopes_database_action,&QAction::triggered,this,&NSXMenu::onDisplayIsotopesDatabase);
+    connect(_display_isotopes_database_action,&QAction::triggered,this,&ActionManager::onDisplayIsotopesDatabase);
     _display_isotopes_database_action->setShortcut(QKeySequence("Ctrl+I"));
 
     _about_action = new QAction("&About",_main_window);
     _about_action->setStatusTip("About application");
     _about_action->setShortcut(QKeySequence("Ctrl+A"));
-    connect(_about_action,&QAction::triggered,this,&NSXMenu::onAboutApplication);
+    connect(_about_action,&QAction::triggered,this,&ActionManager::onAboutApplication);
 }
 
-void NSXMenu::createMenus()
+void ActionManager::createMenus()
 {
     _menu_bar = new QMenuBar(nullptr);
 
@@ -276,50 +276,50 @@ void NSXMenu::createMenus()
     _help_menu->addAction(_about_action);
 }
 
-void NSXMenu::onAboutApplication()
+void ActionManager::onAboutApplication()
 {
     DialogAbout dlg;
 
     dlg.exec();
 }
-void NSXMenu::onDisplayIsotopesDatabase()
+void ActionManager::onDisplayIsotopesDatabase()
 {
     DialogIsotopesDatabase dlg;
 
     dlg.exec();
 }
 
-void NSXMenu::onChangeColorMap(QAction *color_map_action)
+void ActionManager::onChangeColorMap(QAction *color_map_action)
 {
     _main_window->detectorSceneModel()->changeColorMap(color_map_action->text().toStdString());
 }
 
-void NSXMenu::onChangeCursorMode(QAction *cursor_mode_action)
+void ActionManager::onChangeCursorMode(QAction *cursor_mode_action)
 {
     auto it = std::find(_cursor_mode_actions.begin(),_cursor_mode_actions.end(),cursor_mode_action);
     if (it == _cursor_mode_actions.end()) {
         return;
     }
 
-    auto cursor_mode_index = static_cast<DetectorScene::CURSOR_MODE>(std::distance(_cursor_mode_actions.begin(),it));
+    auto cursor_mode_index = static_cast<DetectorSceneModel::CURSOR_MODE>(std::distance(_cursor_mode_actions.begin(),it));
 
     _main_window->detectorSceneModel()->changeCursorMode(cursor_mode_index);
 
 }
 
-void NSXMenu::onChangeInteractionMode(QAction *interaction_mode_action)
+void ActionManager::onChangeInteractionMode(QAction *interaction_mode_action)
 {
     auto it = std::find(_interaction_mode_actions.begin(),_interaction_mode_actions.end(),interaction_mode_action);
     if (it == _interaction_mode_actions.end()) {
         return;
     }
 
-    auto interaction_mode_index = static_cast<DetectorScene::INTERACTION_MODE>(std::distance(_interaction_mode_actions.begin(),it));
+    auto interaction_mode_index = static_cast<DetectorSceneModel::INTERACTION_MODE>(std::distance(_interaction_mode_actions.begin(),it));
 
     _main_window->detectorSceneModel()->changeInteractionMode(interaction_mode_index);
 }
 
-void NSXMenu::onToggleDockableWidgetState(QAction *dockable_widget_action)
+void ActionManager::onToggleDockableWidgetState(QAction *dockable_widget_action)
 {
     auto it = std::find(_dockable_widget_state_actions.begin(),_dockable_widget_state_actions.end(),dockable_widget_action);
     if (it == _dockable_widget_state_actions.end()) {

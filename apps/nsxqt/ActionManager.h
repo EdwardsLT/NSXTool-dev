@@ -9,12 +9,12 @@ class QMenu;
 class QMenuBar;
 class MainWindow;
 
-class NSXMenu : public QObject
+class ActionManager : public QObject
 {
 
 public:
 
-    NSXMenu(MainWindow *main_window);
+    ActionManager(MainWindow *main_window);
 
 private slots:
 
