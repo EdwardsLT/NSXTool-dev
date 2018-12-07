@@ -67,10 +67,6 @@ public slots:
 
     void onPlotDetectorItem(PlottableGraphicsItem *cutter);
 
-    void onViewDetectorFromBehind();
-
-    void onViewDetectorFromSample();
-
 private:
 
     void createActions();

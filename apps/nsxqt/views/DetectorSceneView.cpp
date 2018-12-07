@@ -11,6 +11,7 @@
 #include "DetectorSceneModel.h"
 #include "DetectorSceneView.h"
 #include "MainWindow.h"
+#include "SessionModel.h"
 
 DetectorSceneView::DetectorSceneView(MainWindow *main_window) : QGraphicsView(main_window), _detector_scene_model(main_window->detectorSceneModel())
 {
@@ -25,11 +26,11 @@ DetectorSceneView::DetectorSceneView(MainWindow *main_window) : QGraphicsView(ma
 
     setInteractive(true);
 
-    // Invert the y-axis so that (0,0) coordinate is at bottom left (and not top left)
-    // This match detector coordinates in NSXTool
-    scale(1,-1);
+    setTransform(main_window->sessionModel()->detectorViewTranformation());
 
     setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(main_window->sessionModel(),&SessionModel::signalChangeDetectorViewTransformation,this,&DetectorSceneView::onChangeDetectorViewTransformation);
 }
 
 void DetectorSceneView::resizeEvent(QResizeEvent *event)
@@ -67,4 +68,10 @@ void DetectorSceneView::keyPressEvent(QKeyEvent* event)
 void DetectorSceneView::fitScene()
 {
     fitInView(_detector_scene_model->sceneRect());
+}
+
+void DetectorSceneView::onChangeDetectorViewTransformation(const QTransform& transformation)
+{
+    setTransform(transformation);
+    fitScene();
 }

@@ -3,6 +3,7 @@
 #include <string>
 
 #include <QStandardItemModel>
+#include <QTransform>
 
 #include <nsxlib/DataSet.h>
 #include <nsxlib/Experiment.h>
@@ -21,6 +22,8 @@ class SessionModel: public QStandardItemModel {
 
 public:
 
+    enum class DETECTOR_VIEW {FROM_SAMPLE=0, FROM_BEHIND=1};
+
     SessionModel();
 
     nsx::PeakList peaks(nsx::sptrDataSet data) const;
@@ -35,6 +38,10 @@ public:
 
     void setColorMap(const ColorMap &color_map);
     const ColorMap& colorMap() const;
+
+    void setDetectorViewTransformation(DETECTOR_VIEW detector_view);
+
+    const QTransform& detectorViewTranformation() const;
 
 signals:
 
@@ -58,6 +65,8 @@ signals:
 
     void signalChangeColorMap(const ColorMap &color_map);
 
+    void signalChangeDetectorViewTransformation(const QTransform &transformation);
+
 public slots:
 
     void onItemChanged(QStandardItem* item);
@@ -65,4 +74,6 @@ public slots:
 private:
 
     ColorMap _color_map;
+
+    QTransform _detector_view_transformation;
 };

@@ -99,7 +99,10 @@
 #include "UnitCellItem.h"
 
 SessionModel::SessionModel()
+: _color_map(),
+  _detector_view_transformation()
 {
+    setDetectorViewTransformation(DETECTOR_VIEW::FROM_SAMPLE);
     connect(this,SIGNAL(itemChanged(QStandardItem*)),this,SLOT(onItemChanged(QStandardItem*)));
 }
 
@@ -183,4 +186,29 @@ void SessionModel::setColorMap(const ColorMap &color_map)
 const ColorMap& SessionModel::colorMap() const
 {
     return _color_map;
+}
+
+void SessionModel::setDetectorViewTransformation(DETECTOR_VIEW detector_view)
+{
+    QTransform detector_view_transformation;
+
+    switch (detector_view) {
+    case (DETECTOR_VIEW::FROM_SAMPLE):
+        detector_view_transformation.scale(1,-1);
+        break;
+    case (DETECTOR_VIEW::FROM_BEHIND):
+        detector_view_transformation.scale(-1,-1);
+        break;
+    default:
+        break;
+    }
+
+    _detector_view_transformation = detector_view_transformation;
+
+    emit signalChangeDetectorViewTransformation(_detector_view_transformation);
+}
+
+const QTransform& SessionModel::detectorViewTranformation() const
+{
+    return _detector_view_transformation;
 }

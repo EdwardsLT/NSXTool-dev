@@ -431,22 +431,6 @@ void MainWindow::onPlotDetectorItem(PlottableGraphicsItem* item)
 //    update();
 }
 
-void MainWindow::onViewDetectorFromSample()
-{
-//    QTransform trans;
-//    trans.scale(1,-1);
-//    _ui->dview->setTransform(trans);
-//    _ui->dview->fitScene();
-}
-
-void MainWindow::onViewDetectorFromBehind()
-{
-//    QTransform trans;
-//    trans.scale(-1,-1);
-//    _ui->dview->setTransform(trans);
-//    _ui->dview->fitScene();
-}
-
 void MainWindow::onDisplaySessionItemPropertyWidget(QWidget* w)
 {
 //    // Ensure that previous Property Widget is deleted.

@@ -40,14 +40,14 @@ void ActionManager::createActions()
     _view_detector_from_sample_action->setCheckable(true);
     _view_detector_from_sample_action->setChecked(true);
     _view_detector_from_sample_action->setActionGroup(_view_action_group);
-    connect(_view_detector_from_sample_action,&QAction::triggered,_main_window,&MainWindow::onViewDetectorFromSample);
+    connect(_view_detector_from_sample_action,&QAction::triggered,[=](){_main_window->sessionModel()->setDetectorViewTransformation(SessionModel::DETECTOR_VIEW::FROM_SAMPLE);});
 
     _view_detector_from_behind_action = new QAction("behind", _main_window);
     _view_detector_from_behind_action->setStatusTip("View the detector looking to the sample");
     _view_detector_from_behind_action->setCheckable(true);
     _view_detector_from_behind_action->setChecked(false);
     _view_detector_from_behind_action->setActionGroup(_view_action_group);
-    connect(_view_detector_from_behind_action,&QAction::triggered,_main_window,&MainWindow::onViewDetectorFromBehind);
+    connect(_view_detector_from_behind_action,&QAction::triggered,[=](){_main_window->sessionModel()->setDetectorViewTransformation(SessionModel::DETECTOR_VIEW::FROM_BEHIND);});
 
     // Cursor mode settings
 

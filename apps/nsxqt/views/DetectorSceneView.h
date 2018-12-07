@@ -3,6 +3,7 @@
 #include <QGraphicsView>
 #include <QKeyEvent>
 #include <QResizeEvent>
+#include <QTransform>
 
 class DetectorSceneModel;
 class MainWindow;
@@ -21,6 +22,10 @@ public:
     void keyPressEvent(QKeyEvent* event);
 
     void fitScene();
+
+public slots:
+
+    void onChangeDetectorViewTransformation(const QTransform &transformation);
 
 private:
 
