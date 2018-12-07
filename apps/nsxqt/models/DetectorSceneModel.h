@@ -49,8 +49,6 @@ public:
 
     const rowMatrix& getCurrentFrame() const;
 
-    void changeColorMap(const std::string& name);
-
     void loadCurrentImage();
 
     void clearPeakGraphicsItems();
@@ -103,6 +101,8 @@ public slots:
 
     void onSetLogarithmicScale(bool flag);
 
+    void onChangeColorMap(const ColorMap& color_map);
+
 signals:
      //! Signal emitted for all changes of the image
     void dataChanged();
@@ -135,6 +135,8 @@ private:
 
     rowMatrix _currentFrame;
 
+    ColorMap _color_map;
+
     CURSOR_MODE _cursor_mode;
 
     //! Current interaction mode
@@ -163,8 +165,6 @@ private:
     bool _logarithmic_scale;
 
     bool _drawIntegrationRegion;
-
-    std::unique_ptr<ColorMap> _colormap;
 
     QGraphicsPixmapItem* _integrationRegion;
 

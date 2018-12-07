@@ -13,6 +13,7 @@
 #include "DialogIsotopesDatabase.h"
 #include "GlobalInfo.h"
 #include "MainWindow.h"
+#include "SessionModel.h"
 
 ActionManager::ActionManager(MainWindow *main_window) : _main_window(main_window)
 {
@@ -305,7 +306,7 @@ void ActionManager::onDisplayIsotopesDatabase()
 
 void ActionManager::onChangeColorMap(QAction *color_map_action)
 {
-    _main_window->detectorSceneModel()->changeColorMap(color_map_action->text().toStdString());
+    _main_window->sessionModel()->setColorMap(ColorMap(color_map_action->text().toStdString()));
 }
 
 void ActionManager::onChangeCursorMode(QAction *cursor_mode_action)

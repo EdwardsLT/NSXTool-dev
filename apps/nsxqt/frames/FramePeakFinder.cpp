@@ -64,7 +64,7 @@ FramePeakFinder::FramePeakFinder(MainWindow *main_window, ExperimentItem *experi
   _main_window(main_window),
   _experiment_item(experiment_item),
   _pixmap(nullptr),
-  _colormap(new ColorMap),
+  _color_map(main_window->sessionModel()->colorMap()),
   _peak_finders()
 {
     _ui->setupUi(this);
@@ -122,6 +122,8 @@ FramePeakFinder::FramePeakFinder(MainWindow *main_window, ExperimentItem *experi
     connect(_ui->actions,SIGNAL(clicked(QAbstractButton*)),this,SLOT(doActions(QAbstractButton*)));
 
     connect(_main_window->taskManagerModel(),SIGNAL(sendCompletedTask(std::shared_ptr<nsx::ITask>)),this,SLOT(onShowFoundPeaks(std::shared_ptr<nsx::ITask>)));
+
+    connect(_main_window->sessionModel(),&SessionModel::signalChangeColorMap,this,&FramePeakFinder::onChangeColorMap);
 
     emit _ui->selected_data->currentIndexChanged(_ui->selected_data->currentIndex());
 }
@@ -223,9 +225,10 @@ void FramePeakFinder::accept()
     close();
 }
 
-void FramePeakFinder::setColorMap(const std::string &name)
+void FramePeakFinder::onChangeColorMap(const ColorMap &color_map)
 {
-    _colormap = std::unique_ptr<ColorMap>(new ColorMap(name));
+    _color_map = color_map;
+    preview();
 }
 
 void FramePeakFinder::run()
@@ -420,7 +423,7 @@ void FramePeakFinder::preview()
     convolved_frame.array() /= maxVal-minVal;
 
     QRect rect(0, 0, ncols, nrows);
-    QImage image = _colormap->matToImage(convolved_frame.cast<double>(), rect, convolved_frame.maxCoeff());
+    QImage image = _color_map.matToImage(convolved_frame.cast<double>(), rect, convolved_frame.maxCoeff());
 
     if (!_pixmap) {
         _pixmap = _ui->preview->scene()->addPixmap(QPixmap::fromImage(image));

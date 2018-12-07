@@ -172,3 +172,15 @@ void SessionModel::addExperiment(nsx::sptrExperiment experiment)
     ExperimentItem* expt = new ExperimentItem(experiment);
     appendRow(expt);
 }
+
+void SessionModel::setColorMap(const ColorMap &color_map)
+{
+    _color_map = color_map;
+
+    emit signalChangeColorMap(_color_map);
+}
+
+const ColorMap& SessionModel::colorMap() const
+{
+    return _color_map;
+}

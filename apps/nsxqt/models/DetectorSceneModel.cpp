@@ -47,6 +47,7 @@ DetectorSceneModel::DetectorSceneModel(SessionModel *session_model)
   _currentFrameIndex(0),
   _max_intensity(10),
   _currentFrame(),
+  _color_map(session_model->colorMap()),
   _cursor_mode(CURSOR_MODE::PIXEL),
   _interaction_mode(INTERACTION_MODE::SELECT),
   _zoomstart(0,0),
@@ -59,7 +60,6 @@ DetectorSceneModel::DetectorSceneModel(SessionModel *session_model)
   _lastClickedGI(nullptr),
   _logarithmic_scale(false),
   _drawIntegrationRegion(false),
-  _colormap(new ColorMap()),
   _integrationRegion(nullptr),
   _selected_peak_gi(nullptr),
   _peak_graphics_items(),
@@ -70,6 +70,7 @@ DetectorSceneModel::DetectorSceneModel(SessionModel *session_model)
     connect(_session_model,&SessionModel::signalSelectedDataChanged,this,&DetectorSceneModel::changeSelectedData);
     connect(_session_model,&SessionModel::signalSelectedPeakChanged,this,&DetectorSceneModel::changeSelectedPeak);
     connect(_session_model,&SessionModel::updatePeaks,this,&DetectorSceneModel::resetPeakGraphicsItems);
+    connect(_session_model,&SessionModel::signalChangeColorMap,this,&DetectorSceneModel::onChangeColorMap);
 }
 
 void DetectorSceneModel::clearPeakGraphicsItems()
@@ -714,10 +715,10 @@ void DetectorSceneModel::loadCurrentImage()
     _currentFrame =_currentData->frame(_currentFrameIndex);
 
     if (_image == nullptr) {
-        _image = addPixmap(QPixmap::fromImage(_colormap->matToImage(_currentFrame.cast<double>(), full, _max_intensity, _logarithmic_scale)));
+        _image = addPixmap(QPixmap::fromImage(_color_map.matToImage(_currentFrame.cast<double>(), full, _max_intensity, _logarithmic_scale)));
         _image->setZValue(-2);
     } else {
-        _image->setPixmap(QPixmap::fromImage(_colormap->matToImage(_currentFrame.cast<double>(), full, _max_intensity, _logarithmic_scale)));
+        _image->setPixmap(QPixmap::fromImage(_color_map.matToImage(_currentFrame.cast<double>(), full, _max_intensity, _logarithmic_scale)));
     }
 
     // update the integration region pixmap
@@ -843,9 +844,9 @@ void DetectorSceneModel::onSetLogarithmicScale(bool flag)
     loadCurrentImage();
 }
 
-void DetectorSceneModel::changeColorMap(const std::string &name)
+void DetectorSceneModel::onChangeColorMap(const ColorMap &color_map)
 {
-    _colormap = std::unique_ptr<ColorMap>(new ColorMap(name));
+    _color_map = color_map;
     loadCurrentImage();
 }
 

@@ -1,12 +1,14 @@
 #pragma once
 
-#include <memory>
+#include <string>
 
 #include <QStandardItemModel>
 
 #include <nsxlib/DataSet.h>
 #include <nsxlib/Experiment.h>
 #include <nsxlib/Peak3D.h>
+
+#include "ColorMap.h"
 
 class DataSet;
 class Experiment;
@@ -31,6 +33,9 @@ public:
 
     bool removeRows(int row, int count, const QModelIndex& parent) override;
 
+    void setColorMap(const ColorMap &color_map);
+    const ColorMap& colorMap() const;
+
 signals:
 
     void plotData(nsx::sptrDataSet);
@@ -51,8 +56,13 @@ signals:
 
     void signalUnitCellRemoved(nsx::sptrUnitCell unit_cell);
 
+    void signalChangeColorMap(const ColorMap &color_map);
+
 public slots:
 
     void onItemChanged(QStandardItem* item);
 
+private:
+
+    ColorMap _color_map;
 };
