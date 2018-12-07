@@ -46,34 +46,20 @@ static PeakFactors peakFactors(nsx::sptrPeak3D peak)
     return peak_factors;
 }
 
-CollectedPeaksModel::CollectedPeaksModel(SessionModel* session, nsx::sptrExperiment experiment, QObject *parent)
-: QAbstractTableModel(parent),
-  _experiment(std::move(experiment)),
-  _peaks()
-{
-    setSession(session);
-}
-
 CollectedPeaksModel::CollectedPeaksModel(SessionModel* session, nsx::sptrExperiment experiment, const nsx::PeakList &peaks, QObject *parent)
 : QAbstractTableModel(parent),
-  _experiment(std::move(experiment)),
+  _session(session),
+  _experiment(experiment),
   _peaks(peaks)
 {
-    setSession(session);
-}
-
-SessionModel* CollectedPeaksModel::session()
-{
-    return _session;
-}
-
-void CollectedPeaksModel::setSession(SessionModel* session)
-{
-    _session = session;
-    connect(this, &CollectedPeaksModel::signalSelectedPeakChanged,[this](nsx::sptrPeak3D peak){emit _session->signalSelectedPeakChanged(peak);});
     connect(_session,SIGNAL(signalEnabledPeakChanged(nsx::sptrPeak3D)),this,SLOT(slotChangeEnabledPeak(nsx::sptrPeak3D)));
     connect(_session,SIGNAL(signalMaskedPeaksChanged(const nsx::PeakList&)),this,SLOT(slotChangeMaskedPeaks(const nsx::PeakList&)));
     connect(_session,SIGNAL(signalUnitCellRemoved(nsx::sptrUnitCell)),this,SLOT(slotRemoveUnitCell(nsx::sptrUnitCell)));
+}
+
+CollectedPeaksModel::CollectedPeaksModel(SessionModel* session, nsx::sptrExperiment experiment, QObject *parent)
+: CollectedPeaksModel(session,experiment,{},parent)
+{
 }
 
 void CollectedPeaksModel::slotRemoveUnitCell(const nsx::sptrUnitCell unit_cell)
@@ -436,7 +422,7 @@ void CollectedPeaksModel::selectPeak(const QModelIndex& index)
 {
     auto selected_peak = _peaks[index.row()];
 
-    emit signalSelectedPeakChanged(selected_peak);
+    _session->selectPeak(selected_peak);
 }
 
 bool CollectedPeaksModel::indexIsValid(const QModelIndex& index) const

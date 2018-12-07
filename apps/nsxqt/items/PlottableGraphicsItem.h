@@ -20,7 +20,7 @@ public:
 
     PlottableGraphicsItem(QGraphicsItem *parent=0, bool deletable=true, bool movable=false);
 
-    virtual void plot(SXPlot* plot)=0;
+    virtual SXPlot* plot() const=0;
 
     //! Returns the type of plot related to the item
     virtual std::string getPlotType() const=0;

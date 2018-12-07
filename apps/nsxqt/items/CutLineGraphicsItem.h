@@ -18,9 +18,7 @@ public:
 
     explicit CutLineGraphicsItem(nsx::sptrDataSet data);
 
-    ~CutLineGraphicsItem();
-
-    void plot(SXPlot* plot);
+    SXPlot* plot() const override;
 
     void wheelEvent(QGraphicsSceneWheelEvent* event);
 

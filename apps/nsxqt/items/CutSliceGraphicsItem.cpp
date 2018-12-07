@@ -25,30 +25,17 @@ CutSliceGraphicsItem::CutSliceGraphicsItem(nsx::sptrDataSet data, bool horizonta
 {
 }
 
-CutSliceGraphicsItem::~CutSliceGraphicsItem()
+SXPlot* CutSliceGraphicsItem::plot() const
 {
-}
+    auto *plot = new SimplePlot();
 
-void CutSliceGraphicsItem::plot(SXPlot* plot)
-{
-    auto p=dynamic_cast<SimplePlot*>(plot);
-    if (!p) {
-        return;
-    }
-    p->xAxis->setLabel("Frame (a.u.)");
-    p->yAxis->setLabel("Intensity (counts)");
+    plot->xAxis->setLabel("Frame (a.u.)");
+    plot->yAxis->setLabel("Intensity (counts)");
 
-    // Set the pointer to the detector scene to the scene that holds the cutter
-    auto detPtr=dynamic_cast<DetectorSceneModel*>(scene());
-    if (!detPtr) {
-        return;
-    }
-
-    auto data = detPtr->getData();
-    auto det = data->reader()->diffractometer()->detector();
+    auto detector = _data->reader()->diffractometer()->detector();
     
-    int nrows=det->nRows();
-    int ncols=det->nCols();
+    int nrows = detector->nRows();
+    int ncols = detector->nCols();
 
     // Define the position on the scene of the cutter
     int xmin = sceneBoundingRect().left();
@@ -64,39 +51,44 @@ void CutSliceGraphicsItem::plot(SXPlot* plot)
     int length;
     int start;
 
-    bool horizontal=isHorizontal();
+    bool horizontal = isHorizontal();
 
-    int dx=xmax-xmin;
-    int dy=ymax-ymin;
+    int dx = xmax-xmin;
+    int dy = ymax-ymin;
 
     if (horizontal) {
-        length=dx;
-        start=xmin;
+        length = dx;
+        start = xmin;
     } else {
-        length=dy;
-        start=ymin;
+        length = dy;
+        start = ymin;
     }
+
     QVector<double> x(length);
     QVector<double> y(length);
     QVector<double> e(length);
     std::iota(x.begin(),x.end(),start);
-    const rowMatrix& currentFrame=detPtr->getCurrentFrame();
+
+    auto *detector_scene_model = dynamic_cast<DetectorSceneModel*>(scene());
+    const rowMatrix& current_frame = detector_scene_model->currentFrame();
 
     if (horizontal) {
         int comp=0;
         for (int i=xmin;i<xmax;++i) {
-            y[comp++] = currentFrame.col(i).segment(ymin,dy).sum();
+            y[comp++] = current_frame.col(i).segment(ymin,dy).sum();
         }
     } else {
         int comp=0;
         for (int i=ymin;i<ymax;++i) {
-            y[comp++] = currentFrame.row(i).segment(xmin,dx).sum();
+            y[comp++] = current_frame.row(i).segment(xmin,dx).sum();
         }
     }
     std::transform(y.begin(),y.end(),e.begin(),[](double p){ return sqrt(p);});
-    p->graph(0)->setDataValueError(x,y,e);
-    p->rescaleAxes();
-    p->replot(QCustomPlot::rpHint);
+    plot->graph(0)->setDataValueError(x,y,e);
+    plot->rescaleAxes();
+    plot->replot(QCustomPlot::rpHint);
+
+    return plot;
 }
 
 bool CutSliceGraphicsItem::isHorizontal() const

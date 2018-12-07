@@ -7,20 +7,16 @@
 #include <nsxlib/CrystalTypes.h>
 #include <nsxlib/GeometryTypes.h>
 
-#include "PlottableGraphicsItem.h"
+#include "SXGraphicsItem.h"
 
 class QWidget;
 class SXPlot;
 
-class PeakGraphicsItem : public PlottableGraphicsItem
+class PeakGraphicsItem : public SXGraphicsItem
 {
 public:
 
     PeakGraphicsItem(nsx::sptrPeak3D peak, int frame);
-
-    ~PeakGraphicsItem() = default;
-
-    void plot(SXPlot* plot);
 
     QRectF boundingRect() const;
 

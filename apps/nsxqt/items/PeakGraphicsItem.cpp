@@ -21,14 +21,14 @@
 #include <nsxlib/Units.h>
 
 #include "PeakGraphicsItem.h"
-#include "PeakPlot.h"
+#include "SimplePlot.h"
 #include "SXPlot.h"
 
 bool PeakGraphicsItem::_show_label = false;
 bool PeakGraphicsItem::_show_center = false;
 
 PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int frame)
-: PlottableGraphicsItem(nullptr,true,false),
+: SXGraphicsItem(nullptr,true,false),
   _peak(peak),
   _area(nullptr)
 {
@@ -132,51 +132,4 @@ void PeakGraphicsItem::showLabel(bool flag)
 void PeakGraphicsItem::showCenter(bool flag)
 {
     _show_center = flag;
-}
-
-void PeakGraphicsItem::plot(SXPlot* plot)
-{
-    auto p = dynamic_cast<PeakPlot*>(plot);
-    if (!p) {
-        return;
-    }
-
-    auto ellipsoid = _peak->shape();
-    ellipsoid.scale(_peak->bkgEnd());
-    const auto& aabb = ellipsoid.aabb();
-    Eigen::Vector3i lower = aabb.lower().cast<int>();
-
-    lower[0] = (lower[0] < 0) ? 0 : lower[0];
-    lower[1] = (lower[1] < 0) ? 0 : lower[1];
-    lower[2] = (lower[2] < 0) ? 0 : lower[2];
-
-    auto data = _peak->data();
-    const int n_rows = data->nRows();
-    const int n_cols = data->nCols();
-    const int n_frames = data->nFrames();
-
-    Eigen::Vector3i upper = aabb.upper().cast<int>();
-    upper[0] = (upper[0] >= n_cols) ? n_cols - 1 : upper[0];
-    upper[1] = (upper[1] >= n_rows) ? n_rows - 1 : upper[1];
-    upper[2] = (upper[2] >= n_frames) ? n_frames - 1 : upper[2];
-
-    QVector<double> x_values;
-    QVector<double> y_values;
-    QVector<double> err_y_values;
-
-    for (int z = lower[2]; z <= upper[2]; ++z) {
-        const auto& frame = data->frame(z);
-        double counts = static_cast<double>(frame.block(lower[1],lower[0],upper[1]-lower[1],upper[0]-lower[0]).sum());
-        x_values.append(static_cast<double>(z));
-        y_values.append(counts);
-        err_y_values.append(counts > 0 ? std::sqrt(counts) : 0.0);
-    }
-
-    p->graph(0)->setDataValueError(x_values, y_values, err_y_values);
-
-    p->xAxis->setAutoTicks(false);
-    p->xAxis->setTickVector(x_values);
-
-    p->rescaleAxes();
-    p->replot();
 }

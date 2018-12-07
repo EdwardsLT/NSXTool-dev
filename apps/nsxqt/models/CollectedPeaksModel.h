@@ -22,9 +22,9 @@ public:
 
     enum Column {h,k,l,px,py,frame,intensity,sigmaIntensity,numor,unitCell,count};
 
-    explicit CollectedPeaksModel(SessionModel* session, nsx::sptrExperiment experiment,QObject* parent = 0);
+    CollectedPeaksModel(SessionModel* session, nsx::sptrExperiment experiment, const nsx::PeakList& peaks, QObject *parent=nullptr);
 
-    CollectedPeaksModel(SessionModel* session, nsx::sptrExperiment experiment, const nsx::PeakList& peaks, QObject *parent = 0);
+    CollectedPeaksModel(SessionModel* session, nsx::sptrExperiment experiment,QObject* parent=nullptr);
 
     virtual int rowCount(const QModelIndex& parent) const override;
 
@@ -56,8 +56,6 @@ public:
 
     void selectPeak(const QModelIndex& index);
 
-    SessionModel* session();
-
     void togglePeakSelection(QModelIndex peak_index);
 
 public slots:
@@ -74,13 +72,7 @@ public slots:
 
 signals:
 
-    void signalSelectedPeakChanged(nsx::sptrPeak3D peak);
-
     void unitCellUpdated();
-
-private:
-
-    void setSession(SessionModel* session);
 
 private:
 

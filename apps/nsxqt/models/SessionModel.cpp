@@ -176,6 +176,11 @@ void SessionModel::addExperiment(nsx::sptrExperiment experiment)
     appendRow(expt);
 }
 
+void SessionModel::selectPeak(nsx::sptrPeak3D selected_peak)
+{
+    emit signalChangeSelectedPeak(selected_peak);
+}
+
 void SessionModel::setColorMap(const ColorMap &color_map)
 {
     _color_map = color_map;

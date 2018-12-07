@@ -343,5 +343,5 @@ void ActionManager::onToggleDockableWidgetState(QAction *dockable_widget_action)
 
     auto dockable_widget_index = static_cast<MainWindow::DOCKABLE_WIDGETS>(std::distance(_dockable_widget_state_actions.begin(),it));
 
-    _main_window->toggleDockableWidgetState(dockable_widget_index,dockable_widget_action->isChecked());
+    _main_window->toggleDockableWidgetState(dockable_widget_index);
 }

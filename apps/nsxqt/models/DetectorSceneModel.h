@@ -47,7 +47,7 @@ public:
 
     nsx::sptrDataSet getData();
 
-    const rowMatrix& getCurrentFrame() const;
+    const rowMatrix& currentFrame() const;
 
     void loadCurrentImage();
 
@@ -59,9 +59,9 @@ public:
 
     void changeSelectedFrame(int frame);
 
-    void changeSelectedPeak(nsx::sptrPeak3D peak);
+    void onChangeEnabledPeak(nsx::sptrPeak3D peak);
 
-    void changeEnabledPeak(nsx::sptrPeak3D peak);
+    void onChangeSelectedPeak(nsx::sptrPeak3D peak);
 
     void changeMaskedPeaks(const nsx::PeakList& peaks);
 
@@ -73,7 +73,7 @@ public:
 
     int maxIntensity() const;
 
-    int currentFrame() const;
+    int currentFrameIndex() const;
 
 protected:
 
@@ -104,7 +104,7 @@ public slots:
     void onChangeColorMap(const ColorMap& color_map);
 
 signals:
-     //! Signal emitted for all changes of the image
+
     void dataChanged();
 
     void signalHoverPlottableGraphicsItem(PlottableGraphicsItem* cutter);
@@ -129,7 +129,7 @@ private:
 
     nsx::sptrDataSet _currentData;
 
-    unsigned long _currentFrameIndex;
+    unsigned long _current_frame_index;
 
     int _max_intensity;
 

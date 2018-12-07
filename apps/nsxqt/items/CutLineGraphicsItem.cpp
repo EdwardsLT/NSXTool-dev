@@ -26,24 +26,13 @@ CutLineGraphicsItem::CutLineGraphicsItem(nsx::sptrDataSet data)
 {
 }
 
-CutLineGraphicsItem::~CutLineGraphicsItem()
+SXPlot* CutLineGraphicsItem::plot() const
 {
-}
+    SXPlot *plot = new SimplePlot();
 
-void CutLineGraphicsItem::plot(SXPlot* plot)
-{
-    auto p=dynamic_cast<SimplePlot*>(plot);
-    if (!p) {
-        return;
-    }
-    p->xAxis->setLabel("Interpolation point");
-    p->yAxis->setLabel("Intensity (counts)");
+    plot->xAxis->setLabel("Interpolation point");
+    plot->yAxis->setLabel("Intensity (counts)");
 
-    // Set the pointer to the detector scene to the scene that holds the cutter
-    auto detPtr = dynamic_cast<DetectorSceneModel*>(scene());
-    if (!detPtr) {
-        return;
-    }
     QVector<double> x(_nPoints);
     QVector<double> y(_nPoints);
     QVector<double> e(_nPoints);
@@ -51,7 +40,10 @@ void CutLineGraphicsItem::plot(SXPlot* plot)
     QLineF line;
     line.setP1(sceneBoundingRect().bottomLeft());
     line.setP2(sceneBoundingRect().topRight());
-    const Eigen::MatrixXi& currentFrame = detPtr->getCurrentFrame();
+
+    auto *detector_scene_model = dynamic_cast<DetectorSceneModel*>(scene());
+    const rowMatrix& current_frame = detector_scene_model->currentFrame();
+
     std::iota(x.begin(),x.end(),0);
 
     for (int i=0; i<_nPoints; ++i) {
@@ -59,7 +51,7 @@ void CutLineGraphicsItem::plot(SXPlot* plot)
         QPointF point=line.pointAt(i/static_cast<double>(_nPoints));
         int ipx=static_cast<int>(point.x());
         int ipy=static_cast<int>(point.y());
-        QPoint lowestCorner=QPoint(ipx,ipy);
+        QPoint lowestCorner = QPoint(ipx,ipy);
         double sdist2 = 0.0;
 
         for (int pi=0;pi<2;++pi) {
@@ -67,19 +59,19 @@ void CutLineGraphicsItem::plot(SXPlot* plot)
                 QPoint currentCorner = lowestCorner + QPoint(pi,pj);
                 QPointF dp = point - currentCorner;
                 double dist2 = dp.x()*dp.x() + dp.y()*dp.y();
-                // bugfix? x and y should be swapped here
-                //int count=currentFrame(currentCorner.x(),currentCorner.y());
-                int count=currentFrame(currentCorner.y(),currentCorner.x());
+                int count = current_frame(currentCorner.y(),currentCorner.x());
                 y[i] += dist2*count;
                 sdist2 += dist2;
             }
         }
         y[i] /= sdist2;
     }
-    std::transform(y.begin(),y.end(),e.begin(),[](double p){ return sqrt(p);});
-    p->graph(0)->setDataValueError(x, y, e);
-    p->rescaleAxes();
-    p->replot();
+    std::transform(y.begin(),y.end(),e.begin(),[](double y_val){ return sqrt(y_val);});
+    plot->graph(0)->setDataValueError(x, y, e);
+    plot->rescaleAxes();
+    plot->replot();
+
+    return plot;
 }
 
 void CutLineGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)

@@ -1,7 +1,7 @@
 #include <stdexcept>
 
 #include "PeakPlot.h"
-#include "PlotFactory.h"
+#include "PlotterFactory.h"
 #include "SimplePlot.h"
 #include "SXPlot.h"
 

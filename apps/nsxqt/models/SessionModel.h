@@ -15,6 +15,7 @@ class DataSet;
 class Experiment;
 class ExperimentItem;
 class Peak3D;
+class SXPlot;
 
 class SessionModel: public QStandardItemModel {
 
@@ -40,12 +41,11 @@ public:
     const ColorMap& colorMap() const;
 
     void setDetectorViewTransformation(DETECTOR_VIEW detector_view);
-
     const QTransform& detectorViewTranformation() const;
 
-signals:
+    void selectPeak(nsx::sptrPeak3D selected_peak);
 
-    void plotData(nsx::sptrDataSet);
+signals:
 
     void inspectWidget(QWidget*);
 
@@ -55,7 +55,7 @@ signals:
 
     void signalSelectedDataChanged(nsx::sptrDataSet, int frame);
 
-    void signalSelectedPeakChanged(nsx::sptrPeak3D peak);
+    void signalChangeSelectedPeak(nsx::sptrPeak3D peak);
 
     void signalEnabledPeakChanged(nsx::sptrPeak3D peak);
 
@@ -66,6 +66,8 @@ signals:
     void signalChangeColorMap(const ColorMap &color_map);
 
     void signalChangeDetectorViewTransformation(const QTransform &transformation);
+
+    void signalChangePlot(SXPlot* plot);
 
 public slots:
 

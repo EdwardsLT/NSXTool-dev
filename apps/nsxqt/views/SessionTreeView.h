@@ -29,12 +29,9 @@ signals:
 
     void signalSelectSessionTreeItem(QWidget*);
 
-    void plotData(nsx::sptrDataSet);
-
 public slots:
 
     void keyPressEvent(QKeyEvent* event);
-
 
     void onCustomMenuRequested(const QPoint& point);
 

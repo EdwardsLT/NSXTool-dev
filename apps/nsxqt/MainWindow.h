@@ -14,7 +14,6 @@ class ActionManager;
 class DetectorSceneModel;
 class DetectorSceneView;
 class NoteBook;
-class PlottableGraphicsItem;
 class QCloseEvent;
 class QDockWidget;
 class QSlider;
@@ -47,11 +46,9 @@ public:
 
     TaskManagerModel* taskManagerModel();
 
-    void toggleDockableWidgetState(DOCKABLE_WIDGETS dockable_widget_index, bool flag);
+    void toggleDockableWidgetState(DOCKABLE_WIDGETS dockable_widget_index);
 
 public slots:
-
-    void plotData(const QVector<double>&,const QVector<double>&,const QVector<double>&);
 
     void onChangeMaxIntensity(int max_intensity);
 
@@ -59,13 +56,13 @@ public slots:
 
     void onChangeSelectedFrame(int selected_frame);
 
-    void onChangeSelectedPeak(nsx::sptrPeak3D peak);
-
     void onDisplaySessionItemPropertyWidget(QWidget*);
 
     void onNewExperiment();
 
-    void onPlotDetectorItem(PlottableGraphicsItem *plottable_graphics_item);
+    void onChangePlot(SXPlot *plot);
+
+    void onChangeSelectedPeak(nsx::sptrPeak3D selected_peak);
 
 private:
 

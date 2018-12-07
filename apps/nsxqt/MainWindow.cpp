@@ -41,10 +41,11 @@
 #include "PeakGraphicsItem.h"
 #include "PlottableGraphicsItem.h"
 #include "PeakTableView.h"
-#include "PlotFactory.h"
+#include "PlotterFactory.h"
 #include "QtStreamWrapper.h"
 #include "SessionModel.h"
 #include "SessionTreeView.h"
+#include "SimplePlot.h"
 #include "SXPlot.h"
 #include "TaskManagerModel.h"
 #include "TaskManagerView.h"
@@ -75,7 +76,7 @@ void MainWindow::createActions()
 void MainWindow::createConnections()
 {
     connect(_session_model,&SessionModel::signalSelectedDataChanged, this,&MainWindow::onChangeSelectedData);
-    connect(_session_model,&SessionModel::signalSelectedPeakChanged, this,&MainWindow::onChangeSelectedPeak);
+    connect(_session_model,&SessionModel::signalChangeSelectedPeak, this,&MainWindow::onChangeSelectedPeak);
 
     connect(_frame_slider,&QSlider::valueChanged,this,&MainWindow::onChangeSelectedFrame);
     connect(_frame_value,static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),this,&MainWindow::onChangeSelectedFrame);
@@ -83,7 +84,7 @@ void MainWindow::createConnections()
     connect(_intensity_slider,&QSlider::valueChanged,this,&MainWindow::onChangeMaxIntensity);
     connect(_intensity_value,static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),this,&MainWindow::onChangeMaxIntensity);
 
-    connect(_detector_scene_model,&DetectorSceneModel::signalHoverPlottableGraphicsItem,this,&MainWindow::onPlotDetectorItem);
+    connect(_session_model,&SessionModel::signalChangePlot,this,&MainWindow::onChangePlot);
 
     connect(_session_tree_view,&SessionTreeView::signalSelectSessionTreeItem,this,&MainWindow::onDisplaySessionItemPropertyWidget);
 }
@@ -330,12 +331,57 @@ void MainWindow::onChangeSelectedData(nsx::sptrDataSet data, int frame)
     _frame_value->setValue(frame);
 }
 
-void MainWindow::onChangeSelectedPeak(nsx::sptrPeak3D peak)
+void MainWindow::onChangeSelectedPeak(nsx::sptrPeak3D selected_peak)
 {
-    // Get frame number to adjust the data
-    int frame = static_cast<int>(std::lround(peak->shape().aabb().center()[2]));
+    auto ellipsoid = selected_peak->shape();
+    ellipsoid.scale(selected_peak->bkgEnd());
+    const auto& aabb = ellipsoid.aabb();
 
-    onChangeSelectedData(peak->data(),frame);
+    auto data = selected_peak->data();
+
+    // Get frame number to adjust the data
+    int frame = static_cast<int>(std::lround(aabb.center()[2]));
+
+    onChangeSelectedData(data,frame);
+
+    auto *plot = new SimplePlot();
+
+    Eigen::Vector3i lower = aabb.lower().cast<int>();
+
+    lower[0] = (lower[0] < 0) ? 0 : lower[0];
+    lower[1] = (lower[1] < 0) ? 0 : lower[1];
+    lower[2] = (lower[2] < 0) ? 0 : lower[2];
+
+    const int n_rows = data->nRows();
+    const int n_cols = data->nCols();
+    const int n_frames = data->nFrames();
+
+    Eigen::Vector3i upper = aabb.upper().cast<int>();
+    upper[0] = (upper[0] >= n_cols) ? n_cols - 1 : upper[0];
+    upper[1] = (upper[1] >= n_rows) ? n_rows - 1 : upper[1];
+    upper[2] = (upper[2] >= n_frames) ? n_frames - 1 : upper[2];
+
+    QVector<double> x_values;
+    QVector<double> y_values;
+    QVector<double> err_y_values;
+
+    for (int z = lower[2]; z <= upper[2]; ++z) {
+        const auto& frame = data->frame(z);
+        double counts = static_cast<double>(frame.block(lower[1],lower[0],upper[1]-lower[1],upper[0]-lower[0]).sum());
+        x_values.append(static_cast<double>(z));
+        y_values.append(counts);
+        err_y_values.append(counts > 0 ? std::sqrt(counts) : 0.0);
+    }
+
+    plot->graph(0)->setDataValueError(x_values, y_values, err_y_values);
+
+    plot->xAxis->setAutoTicks(false);
+    plot->xAxis->setTickVector(x_values);
+
+    plot->rescaleAxes();
+    plot->replot();
+
+    onChangePlot(plot);
 }
 
 void MainWindow::onChangeSelectedFrame(int selected_frame)
@@ -352,7 +398,7 @@ void MainWindow::onChangeMaxIntensity(int max_intensity)
     _detector_scene_model->changeMaxIntensity(max_intensity);
 }
 
-void MainWindow::toggleDockableWidgetState(DOCKABLE_WIDGETS dockable_widget_index, bool flag)
+void MainWindow::toggleDockableWidgetState(DOCKABLE_WIDGETS dockable_widget_index)
 {
     auto index = static_cast<int>(dockable_widget_index);
 
@@ -365,40 +411,9 @@ void MainWindow::toggleDockableWidgetState(DOCKABLE_WIDGETS dockable_widget_inde
     }
 }
 
-void MainWindow::plotData(const QVector<double>& x,const QVector<double>& y,const QVector<double>& e)
+void MainWindow::onChangePlot(SXPlot* plot)
 {
-//    if (_ui->plot1D->getType().compare("simple") != 0) {
-//        // Store the old size policy
-//        QSizePolicy oldSizePolicy = _ui->plot1D->sizePolicy();
-//        // Remove the current plotter from the ui
-//        _ui->horizontalLayout_4->removeWidget(_ui->plot1D);
-//        // Delete the plotter instance
-//        delete _ui->plot1D;
-
-//        PlotFactory* pFactory=PlotFactory::Instance();
-
-//        _ui->plot1D = pFactory->create("simple",_ui->dockWidgetContents_4);
-
-//        // Restore the size policy
-//        _ui->plot1D->setSizePolicy(oldSizePolicy);
-
-//        // Sets some properties of the plotter
-//        _ui->plot1D->setObjectName(QStringLiteral("1D plotter"));
-//        _ui->plot1D->setFocusPolicy(Qt::StrongFocus);
-//        _ui->plot1D->setStyleSheet(QStringLiteral(""));
-
-//        // Add the plot to the ui
-//        _ui->horizontalLayout_4->addWidget(_ui->plot1D);
-//    }
-
-//    _ui->plot1D->graph(0)->setDataValueError(x,y,e);
-//    _ui->plot1D->rescaleAxes();
-//    _ui->plot1D->replot();
-}
-
-void MainWindow::onPlotDetectorItem(PlottableGraphicsItem* plottable_graphics_item)
-{
-    if (!plottable_graphics_item) {
+    if (!plot) {
         return;
     }
 
@@ -417,9 +432,7 @@ void MainWindow::onPlotDetectorItem(PlottableGraphicsItem* plottable_graphics_it
         delete _plotter;
     }
 
-    PlotterFactory plotter_factory;
-
-    _plotter = plotter_factory.create(plottable_graphics_item->getPlotType(),plotter_dock_widget);
+    _plotter = plot;
 
     // Restore the size policy
     _plotter->setSizePolicy(old_size_policy);
@@ -431,9 +444,6 @@ void MainWindow::onPlotDetectorItem(PlottableGraphicsItem* plottable_graphics_it
 
     // Add the plot to the ui
     plotter_dock_widget->setWidget(_plotter);
-
-    // Plot the data
-    plottable_graphics_item->plot(_plotter);
 
     update();
 }
