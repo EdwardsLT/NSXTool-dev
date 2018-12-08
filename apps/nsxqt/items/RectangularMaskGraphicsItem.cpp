@@ -12,11 +12,12 @@
 #include <nsxlib/AABB.h>
 #include <nsxlib/DataSet.h>
 
-#include "MaskGraphicsItem.h"
+#include "RectangularMaskGraphicsItem.h"
 
-MaskGraphicsItem::MaskGraphicsItem(nsx::sptrDataSet data, const nsx::AABB& aabb)
+RectangularMaskGraphicsItem::RectangularMaskGraphicsItem(nsx::sptrDataSet data, const nsx::AABB& aabb)
 : SXGraphicsItem(nullptr,true,true),
-  _data(data)
+  _data(data),
+  _mask(new nsx::RectangularMask(aabb))
 {
     _pen.setWidth(1);
     _pen.setCosmetic(true);
@@ -25,15 +26,16 @@ MaskGraphicsItem::MaskGraphicsItem(nsx::sptrDataSet data, const nsx::AABB& aabb)
     _text->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     _text->setParentItem(this);
 
-    _mask.reset(new nsx::BoxMask(aabb));
-
+    _data->addMask(_mask);
 }
 
-MaskGraphicsItem::~MaskGraphicsItem()
+RectangularMaskGraphicsItem::~RectangularMaskGraphicsItem()
 {
+    _data->removeMask(_mask);
+    delete _mask;
 }
 
-void MaskGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void RectangularMaskGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(widget);
 
@@ -55,7 +57,7 @@ void MaskGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
 
 }
 
-QRectF MaskGraphicsItem::boundingRect() const
+QRectF RectangularMaskGraphicsItem::boundingRect() const
 {
     const auto& aabb = _mask->aabb();
 

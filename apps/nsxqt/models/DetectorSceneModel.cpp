@@ -8,7 +8,6 @@
 #include <QToolTip>
 
 #include <nsxlib/AABB.h>
-#include <nsxlib/BoxMask.h>
 #include <nsxlib/DataSet.h>
 #include <nsxlib/Detector.h>
 #include <nsxlib/Diffractometer.h>
@@ -31,9 +30,9 @@
 #include "CutSliceGraphicsItem.h"
 #include "DetectorSceneModel.h"
 #include "ExperimentItem.h"
-#include "MaskGraphicsItem.h"
 #include "MetaTypes.h"
 #include "PeakGraphicsItem.h"
+#include "RectangularMaskGraphicsItem.h"
 #include "SessionModel.h"
 #include "UnitCellItem.h"
 #include "UnitCellsItem.h"
@@ -48,10 +47,8 @@ DetectorSceneModel::DetectorSceneModel(SessionModel *session_model)
   _color_map(session_model->colorMap()),
   _cursor_mode(CURSOR_MODE::PIXEL),
   _interaction_mode(INTERACTION_MODE::SELECT),
-  _zoomstart(0,0),
-  _zoomend(0,0),
-  _zoomrect(nullptr),
-  _zoomStack(),
+  _zoom_window(nullptr),
+  _zoom_stack(),
   _itemSelected(false),
   _image(nullptr),
   _masks(),
@@ -193,8 +190,8 @@ void DetectorSceneModel::changeSelectedData(nsx::sptrDataSet data, int frame)
 
     _current_frame_index = -1;
 
-    _zoomStack.clear();
-    _zoomStack.push_back(QRect(0,0,int(det->nCols()),int(det->nRows())));
+    _zoom_stack.clear();
+    _zoom_stack.push_back(QRect(0,0,int(det->nCols()),int(det->nRows())));
 
     if (_current_graphics_item != nullptr) {
         removeItem(_current_graphics_item);
@@ -283,10 +280,10 @@ void DetectorSceneModel::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         }
 
         // Case of the Zoom mode, update the scene
-        if (_interaction_mode == INTERACTION_MODE::ZOOM) {
-            QRectF zoom=_zoomrect->rect();
+        if (_interaction_mode == INTERACTION_MODE::ZOOMIN) {
+            QRectF zoom = _zoom_window->rect();
             zoom.setBottomRight(event->lastScenePos());
-            _zoomrect->setRect(zoom);
+            _zoom_window->setRect(zoom);
             return;
         }
 
@@ -299,16 +296,6 @@ void DetectorSceneModel::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         auto plottable_graphics_item = dynamic_cast<PlottableGraphicsItem*>(_current_graphics_item);
         if (plottable_graphics_item) {
             emit _session_model->signalChangePlot(plottable_graphics_item->plot());
-        }
-    }
-    // No button was pressed, just a mouse move
-    else if (event->button() == Qt::NoButton) {
-        auto lastPos = event->lastScenePos();
-        auto point = lastPos.toPoint();
-        QTransform trans;
-        QGraphicsItem* gItem = itemAt(point, trans);
-        if (!gItem) {
-            return;
         }
     }
 }
@@ -348,17 +335,16 @@ void DetectorSceneModel::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
         case INTERACTION_MODE::SELECT:
             break;
-        case INTERACTION_MODE::ZOOM:
-            _zoomstart = event->lastScenePos().toPoint();
-            _zoomend = _zoomstart;
-            _zoomrect = addRect(QRect(_zoomstart,_zoomend));
+        case INTERACTION_MODE::ZOOMIN:
+            _zoom_window = addRect(QRect(_graphic_item_initial_pos,_graphic_item_initial_pos));
 
             pen1 = QPen(QBrush(QColor("gray")),1.0);
             pen1.setWidth(1);
             pen1.setCosmetic(true);
-            _zoomrect->setPen(pen1);
-            _zoomrect->setBrush(QBrush(QColor(255,0,0,30)));
+            _zoom_window->setPen(pen1);
+            _zoom_window->setBrush(QBrush(QColor(255,0,0,30)));
             break;
+
         case INTERACTION_MODE::HORIZONTAL_SLICE:
             cutter = new CutSliceGraphicsItem(_currentData,true);
             break;
@@ -369,27 +355,12 @@ void DetectorSceneModel::mousePressEvent(QGraphicsSceneMouseEvent *event)
             cutter = new CutLineGraphicsItem(_currentData);
             break;
         case INTERACTION_MODE::RECTANGULAR_MASK:
-            addItem(mask);
-            _current_graphics_item = mask;
-            _masks.emplace_back(mask, nullptr);
             break;
         }
         if (cutter != nullptr) {
             cutter->setFrom(event->lastScenePos());
             addItem(cutter);
             _current_graphics_item = cutter;
-        }
-    }
-    // The right button was pressed
-    else if (event->buttons() & Qt::RightButton) {
-        if (_zoomStack.size()>1) {
-            // Remove the last zoom area stored in the stack
-            _zoomStack.pop();
-            // If not root, then update the scene
-            if (!_zoomStack.isEmpty()) {
-                setSceneRect(_zoomStack.top());
-                emit dataChanged();
-            }
         }
     }
 }
@@ -410,60 +381,15 @@ void DetectorSceneModel::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
         _graphic_item_final_pos = event->lastScenePos().toPoint();
 
-        if (_interaction_mode == INTERACTION_MODE::ZOOM) {
-
-            qreal top = _zoomrect->rect().top();
-            qreal bot = _zoomrect->rect().bottom();
-            qreal left = _zoomrect->rect().left();
-            qreal right = _zoomrect->rect().right();
-
-            // If the user just clicked on the left mouse button with holding it, skip the event
-            if (qAbs(top-bot)<=1 || qAbs(left-right)<=1) {
-                removeItem(_zoomrect);
-                delete _zoomrect;
-                return;
-            }
-
-            if (top > bot) {
-                std::swap(top,bot);
-            }
-
-            if (right < left) {
-                std::swap(left,right);
-            }
-
-            QRect max = _zoomStack.front();
-
-            if (top < max.top()) {
-                top = max.top();
-            }
-
-            if (bot > max.bottom()) {
-                bot = max.bottom()+1;
-            }
-
-            if (left < max.left()) {
-                left = max.left();
-            }
-
-            if (right > max.right()) {
-                right = max.right()+1;
-            }
-
-            _zoomrect->setRect(left,top,right-left,bot-top);
-            _zoomStack.push_back(_zoomrect->rect().toRect());
-            setSceneRect(_zoomrect->rect());
-            removeItem(_zoomrect);
-            delete _zoomrect;
-            emit dataChanged();
-
+        if (_interaction_mode == INTERACTION_MODE::ZOOMIN) {
+            zoomIn();
         } else if (_interaction_mode == INTERACTION_MODE::RECTANGULAR_MASK) {
 
             nsx::AABB aabb;
             aabb.setLower({_graphic_item_initial_pos.x(),_graphic_item_initial_pos.y(),0});
             aabb.setUpper({_graphic_item_final_pos.x(),_graphic_item_final_pos.y(),static_cast<double>(_currentData->nFrames())});
 
-            MaskGraphicsItem *mask_graphics_item = new MaskGraphicsItem(_currentData,aabb);
+            RectangularMaskGraphicsItem *mask_graphics_item = new RectangularMaskGraphicsItem(_currentData,aabb);
             addItem(mask_graphics_item);
 
         } else {
@@ -523,7 +449,7 @@ void DetectorSceneModel::keyPressEvent(QKeyEvent* event)
             }
             // If the item is a mask graphics item, remove its corresponding mask from the data,
             // update the QList of mask graphics items and update the scene
-            else if (auto p = dynamic_cast<MaskGraphicsItem*>(item)) {
+            else if (auto p = dynamic_cast<RectangularMaskGraphicsItem*>(item)) {
                 auto it = findMask(p);
                 if (it != _masks.end()) {
                     _currentData->removeMask(it->second);
@@ -546,6 +472,8 @@ void DetectorSceneModel::keyPressEvent(QKeyEvent* event)
         if (nPeaksUnselected > 0) {
             nsx::info() << "Unselected "<< nPeaksUnselected << " peaks";
         }
+    } else if (event->key() == Qt::Key_U) {
+        zoomOut();
     }
 }
 
@@ -640,7 +568,7 @@ void DetectorSceneModel::loadCurrentImage()
     using EventType = nsx::IntegrationRegion::EventType;
 
     // Full image size, front of the stack
-    QRect& full = _zoomStack.front();
+    QRect& full = _zoom_stack.front();
 
     if (_current_frame_index >= _currentData->nFrames()) {
         _current_frame_index = _currentData->nFrames()-1;
@@ -708,7 +636,7 @@ void DetectorSceneModel::loadCurrentImage()
         }
     }
 
-    setSceneRect(_zoomStack.back());
+    setSceneRect(_zoom_stack.back());
     emit dataChanged();
 }
 
@@ -786,8 +714,8 @@ void DetectorSceneModel::onResetScene()
     clear();
     _currentData = nullptr;
     _current_frame_index = 0;
-    _zoomrect = nullptr;
-    _zoomStack.clear();
+    _zoom_window = nullptr;
+    _zoom_stack.clear();
     _image = nullptr;
     _integrationRegion = nullptr;
     _masks.clear();
@@ -797,4 +725,72 @@ void DetectorSceneModel::onResetScene()
 std::vector<std::pair<QGraphicsItem*, nsx::IMask*>>::iterator DetectorSceneModel::findMask(QGraphicsItem* item)
 {
     return std::find_if(_masks.begin(), _masks.end(), [item](const std::pair<QGraphicsItem*, nsx::IMask*>& x) {return x.first == item;});
+}
+
+void DetectorSceneModel::zoomIn()
+{
+    qreal top = _zoom_window->rect().top();
+
+    qreal bot = _zoom_window->rect().bottom();
+
+    qreal left = _zoom_window->rect().left();
+
+    qreal right = _zoom_window->rect().right();
+
+    // If the user just clicked on the left mouse button with holding it, skip the event
+    if (qAbs(top-bot)<=1 || qAbs(left-right)<=1) {
+        removeItem(_zoom_window);
+        delete _zoom_window;
+        return;
+    }
+
+    if (top > bot) {
+        std::swap(top,bot);
+    }
+
+    if (right < left) {
+        std::swap(left,right);
+    }
+
+    QRect max = _zoom_stack.front();
+
+    if (top < max.top()) {
+        top = max.top();
+    }
+
+    if (bot > max.bottom()) {
+        bot = max.bottom()+1;
+    }
+
+    if (left < max.left()) {
+        left = max.left();
+    }
+
+    if (right > max.right()) {
+        right = max.right()+1;
+    }
+
+    _zoom_window->setRect(left,top,right-left,bot-top);
+
+    _zoom_stack.push_back(_zoom_window->rect().toRect());
+
+    setSceneRect(_zoom_window->rect());
+
+    removeItem(_zoom_window);
+    delete _zoom_window;
+
+    emit dataChanged();
+}
+
+void DetectorSceneModel::zoomOut()
+{
+    if (_zoom_stack.size()>1) {
+        // Remove the last zoom area stored in the stack
+        _zoom_stack.pop();
+        // If not root, then update the scene
+        if (!_zoom_stack.isEmpty()) {
+            setSceneRect(_zoom_stack.top());
+            emit dataChanged();
+        }
+    }
 }

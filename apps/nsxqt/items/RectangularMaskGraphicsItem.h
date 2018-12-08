@@ -3,11 +3,11 @@
 #include <memory>
 #include <string>
 
-#include <nsxlib/BoxMask.h>
+#include <nsxlib/RectangularMask.h>
 #include <nsxlib/DataTypes.h>
 #include <nsxlib/GeometryTypes.h>
 
-#include "CutterGraphicsItem.h"
+#include "SXGraphicsItem.h"
 
 class QGraphicsSceneMouseEvent;
 class QGraphicsSceneWheelEvent;
@@ -18,12 +18,12 @@ class QWidget;
 /*! Creates a mask that will be used to unselect/select peaks whether their intercept or
  * not the mask
  */
-class MaskGraphicsItem : public SXGraphicsItem {
+class RectangularMaskGraphicsItem : public SXGraphicsItem {
 public:
     // Constructs a mask
-    MaskGraphicsItem(nsx::sptrDataSet data, const nsx::AABB& aabb);
+    RectangularMaskGraphicsItem(nsx::sptrDataSet data, const nsx::AABB& aabb);
 
-    ~MaskGraphicsItem();
+    ~RectangularMaskGraphicsItem();
 
     // Getters and setters
 
@@ -39,7 +39,7 @@ private:
     //! The data on which the cutter will act upon
     nsx::sptrDataSet _data;
 
-    std::unique_ptr<nsx::BoxMask> _mask;
+    nsx::RectangularMask *_mask;
 
     QPointF _from;
     QPointF _to;

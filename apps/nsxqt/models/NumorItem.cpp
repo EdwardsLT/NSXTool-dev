@@ -3,7 +3,6 @@
 #include <QJsonArray>
 
 #include <nsxlib/AABB.h>
-#include <nsxlib/BoxMask.h>
 #include <nsxlib/DataSet.h>
 #include <nsxlib/Experiment.h>
 #include <nsxlib/Logger.h>

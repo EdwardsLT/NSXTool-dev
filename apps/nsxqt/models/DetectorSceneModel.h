@@ -38,10 +38,10 @@ class DetectorSceneModel: public QGraphicsScene
     Q_OBJECT
 
 public:
-    enum class INTERACTION_MODE {SELECT=0, ZOOM=1, CUTLINE=2, HORIZONTAL_SLICE=3, VERTICAL_SLICE=4, RECTANGULAR_MASK=5};
+    enum class INTERACTION_MODE {SELECT=0, ZOOMIN=1, CUTLINE=2, HORIZONTAL_SLICE=3, VERTICAL_SLICE=4, RECTANGULAR_MASK=5, COUNT=6};
 
     //! Which mode is the cursor diplaying
-    enum class CURSOR_MODE {PIXEL=0, GAMMA_NU=1, THETA=2, D_SPACING=3, MILLER_INDICES=4};
+    enum class CURSOR_MODE {PIXEL=0, GAMMA_NU=1, THETA=2, D_SPACING=3, MILLER_INDICES=4, COUNT=5};
 
     explicit DetectorSceneModel(SessionModel *session_model);
 
@@ -115,6 +115,10 @@ signals:
 
 private:
 
+    void zoomIn();
+
+    void zoomOut();
+
     //! Create the text of the tooltip depending on Scene Mode.
     void createToolTipText(QGraphicsSceneMouseEvent*);
 
@@ -140,17 +144,11 @@ private:
     //! Current interaction mode
     INTERACTION_MODE _interaction_mode;
 
-    //! Point coordinates of the start of zoom region
-    QPoint _zoomstart;
-
-    //! Point coordinates of the end of zoom regiom
-    QPoint _zoomend;
-
     //! Graphics Window representing the zoomed area
-    QGraphicsRectItem* _zoomrect;
+    QGraphicsRectItem* _zoom_window;
 
     //! Stack of zoom
-    QStack<QRect> _zoomStack;
+    QStack<QRect> _zoom_stack;
 
     bool _itemSelected;
 
