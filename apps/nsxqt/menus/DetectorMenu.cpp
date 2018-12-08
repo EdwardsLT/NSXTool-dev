@@ -90,13 +90,13 @@ void DetectorMenu::createActions()
     select_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
     _interaction_mode_actions.append(select_interaction_mode_action);
 
-    auto *zoomin_interaction_mode_action(new QAction(QIcon(":/resources/zoomInIcon.png"),"zoom",_main_window));
-    zoomin_interaction_mode_action->setStatusTip(QString("Switch mouse interaction mode to zoom"));
-    zoomin_interaction_mode_action->setShortcut(QKeySequence("z"));
-    zoomin_interaction_mode_action->setCheckable(true);
-    zoomin_interaction_mode_action->setChecked(false);
-    zoomin_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
-    _interaction_mode_actions.append(zoomin_interaction_mode_action);
+    auto *zoom_interaction_mode_action(new QAction(QIcon(":/resources/zoomIcon.png"),"zoom",_main_window));
+    zoom_interaction_mode_action->setStatusTip(QString("Switch mouse interaction mode to zoom"));
+    zoom_interaction_mode_action->setShortcut(QKeySequence("z"));
+    zoom_interaction_mode_action->setCheckable(true);
+    zoom_interaction_mode_action->setChecked(false);
+    zoom_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
+    _interaction_mode_actions.append(zoom_interaction_mode_action);
 
     auto *cutline_interaction_mode_action(new QAction(QIcon(":/resources/cutlineIcon.png"),"cutline",_main_window));
     cutline_interaction_mode_action->setStatusTip(QString("Switch mouse interaction mode to cutline"));
@@ -201,6 +201,8 @@ void DetectorMenu::createMenus()
     for (auto color_map_action : _color_map_actions) {
         _color_map_menu->addAction(color_map_action);
     }
+
+    addSeparator();
 
     addAction(_logarithmic_scale_action);
 }

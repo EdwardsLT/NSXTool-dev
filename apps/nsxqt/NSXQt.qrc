@@ -52,7 +52,5 @@
         <file>resources/ill_logo.png</file>
         <file>resources/jcns_logo.png</file>
         <file>resources/ellipsoidalMaskIcon.png</file>
-        <file>resources/zoomInIcon.png</file>
-        <file>resources/zoomOutIcon.png</file>
     </qresource>
 </RCC>
