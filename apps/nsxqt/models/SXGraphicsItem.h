@@ -56,8 +56,6 @@ public:
 
     virtual SXPlot* plot() const;
 
-protected:
-
     void updatePlot();
 
 protected:

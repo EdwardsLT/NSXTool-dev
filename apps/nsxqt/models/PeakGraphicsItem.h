@@ -36,6 +36,8 @@ public:
 
     void showBox(bool flag);
 
+    SXPlot* plot() const override;
+
 private:
 
     //! Pointer to the Peak3D object

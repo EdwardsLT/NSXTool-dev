@@ -340,45 +340,6 @@ void MainWindow::onChangeSelectedPeak(nsx::sptrPeak3D selected_peak)
     int frame = static_cast<int>(std::lround(aabb.center()[2]));
 
     onChangeSelectedData(data,frame);
-
-    auto *plot = new SimplePlot();
-
-    Eigen::Vector3i lower = aabb.lower().cast<int>();
-
-    lower[0] = (lower[0] < 0) ? 0 : lower[0];
-    lower[1] = (lower[1] < 0) ? 0 : lower[1];
-    lower[2] = (lower[2] < 0) ? 0 : lower[2];
-
-    const int n_rows = data->nRows();
-    const int n_cols = data->nCols();
-    const int n_frames = data->nFrames();
-
-    Eigen::Vector3i upper = aabb.upper().cast<int>();
-    upper[0] = (upper[0] >= n_cols) ? n_cols - 1 : upper[0];
-    upper[1] = (upper[1] >= n_rows) ? n_rows - 1 : upper[1];
-    upper[2] = (upper[2] >= n_frames) ? n_frames - 1 : upper[2];
-
-    QVector<double> x_values;
-    QVector<double> y_values;
-    QVector<double> err_y_values;
-
-    for (int z = lower[2]; z <= upper[2]; ++z) {
-        const auto& frame = data->frame(z);
-        double counts = static_cast<double>(frame.block(lower[1],lower[0],upper[1]-lower[1],upper[0]-lower[0]).sum());
-        x_values.append(static_cast<double>(z));
-        y_values.append(counts);
-        err_y_values.append(counts > 0 ? std::sqrt(counts) : 0.0);
-    }
-
-    plot->graph(0)->setDataValueError(x_values, y_values, err_y_values);
-
-    plot->xAxis->setAutoTicks(false);
-    plot->xAxis->setTickVector(x_values);
-
-    plot->rescaleAxes();
-    plot->replot();
-
-    onChangePlot(plot);
 }
 
 void MainWindow::onChangeSelectedFrame(int selected_frame)

@@ -192,7 +192,7 @@ void DetectorSceneModel::changeSelectedPeak(nsx::sptrPeak3D peak)
 
     changeSelectedData(_selected_peak->data(),frame);
 
-    showPeakBox(peak);
+    showPeakBox(_selected_peak);
 }
 
 
@@ -202,6 +202,7 @@ void DetectorSceneModel::showPeakBox(nsx::sptrPeak3D peak)
     for (auto item : peak_graphics_item) {
         if (_selected_peak == item->peak()) {
             item->showBox(true);
+            item->updatePlot();
             break;
         }
     }
