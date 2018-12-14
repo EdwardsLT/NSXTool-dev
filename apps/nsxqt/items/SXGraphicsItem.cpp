@@ -2,17 +2,16 @@
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
 
+#include "DetectorSceneModel.h"
+#include "SessionModel.h"
 #include "SXGraphicsItem.h"
 #include "SXPlot.h"
 
-SXGraphicsItem::SXGraphicsItem(QGraphicsItem *parent, bool deletable, bool movable)
+SXGraphicsItem::SXGraphicsItem(nsx::sptrDataSet data, QGraphicsItem *parent, bool deletable, bool movable)
 : QGraphicsItem(parent),
+  _data(data),
   _deletable(deletable),
-  _hovered(false),
-  _movable(movable),
-  _firstMove(true),
-  _lastPos(),
-  _label_gi(nullptr)
+  _movable(movable)
 {
     _pen.setWidth(1);
     _pen.setCosmetic(true);
@@ -24,14 +23,28 @@ SXGraphicsItem::SXGraphicsItem(QGraphicsItem *parent, bool deletable, bool movab
     setAcceptHoverEvents(true);
 }
 
-SXGraphicsItem::~SXGraphicsItem()
+void SXGraphicsItem::keyPressEvent(QKeyEvent* event)
 {
+    QGraphicsItem::keyPressEvent(event);
+}
+
+void SXGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
+{
+    Q_UNUSED(event)
+    auto *detector_scene_model = dynamic_cast<DetectorSceneModel*>(scene());
+    if (detector_scene_model) {
+        emit detector_scene_model->sessionModel()->signalChangePlot(plot());
+    }
+}
+
+void SXGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsItem::mouseReleaseEvent(event);
 }
 
 void SXGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    _hovered = true;
     setCursor(QCursor(Qt::PointingHandCursor));
     update();
 }
@@ -39,14 +52,13 @@ void SXGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 void SXGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    _hovered = false;
     setCursor(QCursor(Qt::CrossCursor));
     update();
 }
 
 bool SXGraphicsItem::isInScene(const QPointF& pos) const
 {
-    QRectF rect=scene()->sceneRect();
+    QRectF rect = scene()->sceneRect();
     return (pos.x()>rect.left() && pos.x()<rect.right() && pos.y() > rect.top() && pos.y() <rect.bottom());
 }
 
@@ -71,40 +83,8 @@ bool SXGraphicsItem::isMovable() const
     return _movable;
 }
 
-void SXGraphicsItem::showLabel(bool show)
+SXPlot* SXGraphicsItem::plot() const
 {
-    _label_gi->setVisible(show);
+    return nullptr;
 }
 
-void SXGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
-{
-    Q_UNUSED(event)
-}
-
-void SXGraphicsItem::wheelEvent(QGraphicsSceneWheelEvent *event)
-{
-    Q_UNUSED(event)
-}
-
-void SXGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
-{
-
-    if (!_movable || !isVisible() || !isSelected()) {
-        return;
-    }
-
-    if (_firstMove) {
-        _firstMove=false;
-    } else {
-        // The translation vector
-        QPointF dr = event->lastScenePos() - _lastPos;
-        QRectF itemRect=sceneBoundingRect();
-        itemRect.translate(dr);
-
-        // At target position the item must be fully inside the scene
-        if (scene()->sceneRect().contains(itemRect.topLeft()) && scene()->sceneRect().contains(itemRect.bottomRight())) {
-            moveBy(dr.x(),dr.y());
-        }
-    }
-    _lastPos=event->lastScenePos();
-}

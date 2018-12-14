@@ -23,7 +23,6 @@ class QImage;
 class QGraphicsSceneWheelEvent;
 class MaskGraphicsItem;
 class PeakGraphicsItem;
-class PlottableGraphicsItem;
 class SessionModel;
 class SXGraphicsItem;
 
@@ -38,32 +37,54 @@ class DetectorSceneModel: public QGraphicsScene
     Q_OBJECT
 
 public:
-    enum class INTERACTION_MODE {SELECT=0, ZOOMIN=1, CUTLINE=2, HORIZONTAL_SLICE=3, VERTICAL_SLICE=4, RECTANGULAR_MASK=5, COUNT=6};
+    enum class INTERACTION_MODE {SELECT=0, ZOOM=1, CUTLINE=2, HORIZONTAL_SLICE=3, VERTICAL_SLICE=4, MASK=5, COUNT=6};
 
     //! Which mode is the cursor diplaying
     enum class CURSOR_MODE {PIXEL=0, GAMMA_NU=1, THETA=2, D_SPACING=3, MILLER_INDICES=4, COUNT=5};
 
     explicit DetectorSceneModel(SessionModel *session_model);
 
-    nsx::sptrDataSet getData();
-
     const rowMatrix& currentFrame() const;
 
     void loadCurrentImage();
 
-    void clearPeakGraphicsItems();
+    void changeColorMap(const ColorMap& color_map);
 
-    void changeMaxIntensity(int max_intensity);
+    void changeContrastLevel(int contrast);
+
+    void changeCursorMode(CURSOR_MODE cursor_mode);
+
+    void changeEnabledPeak(nsx::sptrPeak3D peak);
+
+    void changeInteractionMode(INTERACTION_MODE interaction_mode);
+
+    void changeMaskedPeaks(const nsx::PeakList& peaks);
 
     void changeSelectedData(nsx::sptrDataSet peak, int frame);
 
     void changeSelectedFrame(int frame);
 
-    void onChangeEnabledPeak(nsx::sptrPeak3D peak);
+    void changeSelectedPeak(nsx::sptrPeak3D peak);
 
-    void onChangeSelectedPeak(nsx::sptrPeak3D peak);
+    template <typename T>
+    void clearGraphicsItems();
 
-    void changeMaskedPeaks(const nsx::PeakList& peaks);
+    int contrastLevel() const;
+
+    int currentFrameIndex() const;
+
+    void resetScene();
+
+    void restoreMasks();
+
+    void restorePeaks();
+
+    template <typename T>
+    std::set<T*> selectGraphicsItems();
+
+    SessionModel* sessionModel();
+
+    void setLogarithmicScale(bool flag);
 
     void showPeakLabels(bool flag);
 
@@ -71,11 +92,13 @@ public:
 
     void showPeakIntegrationAreas(bool);
 
-    int maxIntensity() const;
+    void setInitialMousePosition(const QPointF& position);
 
-    int currentFrameIndex() const;
+    void setFinalMousePosition(const QPointF& position);
 
 protected:
+
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
@@ -85,27 +108,9 @@ protected:
 
     void keyPressEvent(QKeyEvent *event);
 
-public slots:
-
-    void onResetScene();
-
-    void resetPeakGraphicsItems();
-
-    void changeInteractionMode(INTERACTION_MODE interaction_mode);
-
-    void changeCursorMode(CURSOR_MODE cursor_mode);
-
-    void updateMasks();
-
-    void onSetLogarithmicScale(bool flag);
-
-    void onChangeColorMap(const ColorMap& color_map);
-
 signals:
 
-    void dataChanged();
-
-    void signalHoverPlottableGraphicsItem(PlottableGraphicsItem* cutter);
+    void signalDetectorSceneChanged();
 
     void signalChangeSelectedData(nsx::sptrDataSet data);
 
@@ -115,6 +120,8 @@ signals:
 
 private:
 
+    void drawIntegrationRegion();
+
     void zoomIn();
 
     void zoomOut();
@@ -122,20 +129,17 @@ private:
     //! Create the text of the tooltip depending on Scene Mode.
     void createToolTipText(QGraphicsSceneMouseEvent*);
 
-    // find the iterator corresponding to given graphics item
-    std::vector<std::pair<QGraphicsItem*, nsx::IMask*>>::iterator findMask(QGraphicsItem* item);
-
 private:
 
     SessionModel* _session_model;
 
-    nsx::sptrDataSet _currentData;
+    nsx::sptrDataSet _data;
 
     unsigned long _current_frame_index;
 
-    int _max_intensity;
+    int _contrast_level;
 
-    rowMatrix _currentFrame;
+    rowMatrix _current_frame;
 
     ColorMap _color_map;
 
@@ -148,31 +152,53 @@ private:
     QGraphicsRectItem* _zoom_window;
 
     //! Stack of zoom
-    QStack<QRect> _zoom_stack;
-
-    bool _itemSelected;
+    QStack<QRectF> _zoom_stack;
 
     QGraphicsPixmapItem* _image;
-
-    std::vector<std::pair<QGraphicsItem*, nsx::IMask*>> _masks;
     
     SXGraphicsItem* _current_graphics_item;
 
     bool _logarithmic_scale;
 
-    bool _drawIntegrationRegion;
+    bool _draw_integration_region;
 
-    QGraphicsPixmapItem* _integrationRegion;
+    QGraphicsPixmapItem* _integration_region;
 
-    QGraphicsRectItem* _selected_peak_gi;
+    QPointF _top_left_position;
 
-    std::map<nsx::sptrPeak3D,PeakGraphicsItem*> _peak_graphics_items;
+    QPointF _bottom_right_position;
+
+    bool _show_peak_labels;
+
+    bool _show_peak_centers;
+
+    bool _show_peak_boxes;
 
     nsx::sptrPeak3D _selected_peak;
-
-    std::set<PlottableGraphicsItem*> _plottable_graphics_item;
-
-    QPoint _graphic_item_initial_pos;
-
-    QPoint _graphic_item_final_pos;
 };
+
+template <typename T>
+void DetectorSceneModel::clearGraphicsItems()
+{
+    for (auto item : items()) {
+        auto *graphics_item = dynamic_cast<T*>(item);
+        if (graphics_item) {
+            removeItem(graphics_item);
+            delete graphics_item;
+        }
+    }
+}
+
+template <typename T>
+std::set<T*> DetectorSceneModel::selectGraphicsItems()
+{
+    std::set<T*> graphics_items;
+    for (auto item : items()) {
+        auto *graphics_item = dynamic_cast<T*>(item);
+        if (graphics_item) {
+            graphics_items.insert(graphics_item);
+        }
+    }
+    return graphics_items;
+}
+

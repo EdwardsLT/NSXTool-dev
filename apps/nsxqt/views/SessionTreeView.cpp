@@ -77,13 +77,14 @@ SessionTreeView::SessionTreeView(MainWindow *main_window) : QTreeView(main_windo
     connect(this,SIGNAL(doubleClicked(const QModelIndex&)),this,SLOT(onDoubleClick(const QModelIndex&)));
     connect(this,SIGNAL(clicked(QModelIndex)),this,SLOT(onSingleClick(QModelIndex)));
 
-    connect(_session_model,&SessionModel::signalResetScene,_main_window->detectorSceneModel(),&DetectorSceneModel::onResetScene);
+    connect(_session_model,&SessionModel::signalResetScene,_main_window->detectorSceneModel(),&DetectorSceneModel::resetScene);
 }
 
 void SessionTreeView::onCustomMenuRequested(const QPoint& point)
 {
     QModelIndex index = indexAt(point);
     QMenu* menu = new QMenu(this);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
     auto triggered = &QAction::triggered;
 
     if (index == rootIndex()) {

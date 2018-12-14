@@ -75,7 +75,7 @@ void DetectorMenu::createActions()
     miller_indices_cursor_mode_action->setChecked(false);
     miller_indices_cursor_mode_action->setActionGroup(_cursor_mode_action_group);
     _cursor_mode_actions.append(miller_indices_cursor_mode_action);
-    connect(_cursor_mode_action_group,&QActionGroup::triggered,this,&DetectorMenu::onChangeCursorMode);
+    connect(_cursor_mode_action_group,&QActionGroup::triggered,this,&DetectorMenu::changeCursorMode);
 
     // Interaction modes settings
 
@@ -122,15 +122,15 @@ void DetectorMenu::createActions()
     vertical_slice_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
     _interaction_mode_actions.append(vertical_slice_interaction_mode_action);
 
-    auto *rectangular_mask_interaction_mode_action(new QAction(QIcon(":/resources/rectangularMaskIcon.png"),"rectangular mask",_main_window));
-    rectangular_mask_interaction_mode_action->setStatusTip("Switch mouse interaction mode to rectangular mask");
-    rectangular_mask_interaction_mode_action->setShortcut(QKeySequence("r"));
+    auto *rectangular_mask_interaction_mode_action(new QAction(QIcon(":/resources/rectangularMaskIcon.png"),"mask",_main_window));
+    rectangular_mask_interaction_mode_action->setStatusTip("Switch mouse interaction mode to mask");
+    rectangular_mask_interaction_mode_action->setShortcut(QKeySequence("m"));
     rectangular_mask_interaction_mode_action->setCheckable(true);
     rectangular_mask_interaction_mode_action->setChecked(false);
     rectangular_mask_interaction_mode_action->setActionGroup(_interaction_mode_action_group);
     _interaction_mode_actions.append(rectangular_mask_interaction_mode_action);
 
-    connect(_interaction_mode_action_group,&QActionGroup::triggered,this,&DetectorMenu::onChangeInteractionMode);
+    connect(_interaction_mode_action_group,&QActionGroup::triggered,this,&DetectorMenu::changeInteractionMode);
 
     _display_peak_labels_action = new QAction("Display peak labels",_main_window);
     _display_peak_labels_action->setCheckable(true);
@@ -164,7 +164,7 @@ void DetectorMenu::createActions()
                                                                      [](QAction* action){return action->text().toStdString().compare("blue white") == 0;}));
     _color_map_actions[idx]->setChecked(true);
 
-    connect(_color_map_action_group,&QActionGroup::triggered,this,&DetectorMenu::onChangeColorMap);
+    connect(_color_map_action_group,&QActionGroup::triggered,this,&DetectorMenu::changeColorMap);
 
     // Logarithmic scale action
 
@@ -172,8 +172,7 @@ void DetectorMenu::createActions()
     _logarithmic_scale_action->setStatusTip("Toggle detector view between normal/logarithmic scale");
     _logarithmic_scale_action->setCheckable(true);
     _logarithmic_scale_action->setChecked(false);
-    connect(_logarithmic_scale_action,&QAction::triggered,_main_window->detectorSceneModel(),&DetectorSceneModel::onSetLogarithmicScale);
-
+    connect(_logarithmic_scale_action,&QAction::triggered,[=](bool flag){_main_window->detectorSceneModel()->setLogarithmicScale(flag);});
 }
 
 void DetectorMenu::createMenus()
@@ -207,12 +206,12 @@ void DetectorMenu::createMenus()
     addAction(_logarithmic_scale_action);
 }
 
-void DetectorMenu::onChangeColorMap(QAction *color_map_action)
+void DetectorMenu::changeColorMap(QAction *color_map_action)
 {
     _main_window->sessionModel()->setColorMap(ColorMap(color_map_action->text().toStdString()));
 }
 
-void DetectorMenu::onChangeCursorMode(QAction *cursor_mode_action)
+void DetectorMenu::changeCursorMode(QAction *cursor_mode_action)
 {
     auto it = std::find(_cursor_mode_actions.begin(),_cursor_mode_actions.end(),cursor_mode_action);
     if (it == _cursor_mode_actions.end()) {
@@ -225,7 +224,7 @@ void DetectorMenu::onChangeCursorMode(QAction *cursor_mode_action)
 
 }
 
-void DetectorMenu::onChangeInteractionMode(QAction *interaction_mode_action)
+void DetectorMenu::changeInteractionMode(QAction *interaction_mode_action)
 {
     auto it = std::find(_interaction_mode_actions.begin(),_interaction_mode_actions.end(),interaction_mode_action);
     if (it == _interaction_mode_actions.end()) {

@@ -62,7 +62,7 @@ public slots:
 
     void slotChangeEnabledPeak(nsx::sptrPeak3D peak);
 
-    void slotChangeMaskedPeaks(const nsx::PeakList& peaks);
+    void slotChangeMaskedPeaks(nsx::sptrDataSet data);
 
     void slotRemoveUnitCell(const nsx::sptrUnitCell unit_cell);
 

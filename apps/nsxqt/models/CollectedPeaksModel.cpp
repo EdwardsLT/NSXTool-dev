@@ -53,7 +53,7 @@ CollectedPeaksModel::CollectedPeaksModel(SessionModel* session, nsx::sptrExperim
   _peaks(peaks)
 {
     connect(_session,SIGNAL(signalEnabledPeakChanged(nsx::sptrPeak3D)),this,SLOT(slotChangeEnabledPeak(nsx::sptrPeak3D)));
-    connect(_session,SIGNAL(signalMaskedPeaksChanged(const nsx::PeakList&)),this,SLOT(slotChangeMaskedPeaks(const nsx::PeakList&)));
+    connect(_session,SIGNAL(signalMaskedPeaksChanged(nsx::sptrDataSet)),this,SLOT(slotChangeMaskedPeaks(nsx::sptrDataSet)));
     connect(_session,SIGNAL(signalUnitCellRemoved(nsx::sptrUnitCell)),this,SLOT(slotRemoveUnitCell(nsx::sptrUnitCell)));
 }
 
@@ -72,21 +72,13 @@ void CollectedPeaksModel::slotRemoveUnitCell(const nsx::sptrUnitCell unit_cell)
     emit dataChanged(topleft_index,bottomright_index);
 }
 
-void CollectedPeaksModel::slotChangeMaskedPeaks(const nsx::PeakList& peaks)
+void CollectedPeaksModel::slotChangeMaskedPeaks(nsx::sptrDataSet data)
 {
-    for (auto peak : peaks) {
-
-        auto it = std::find(_peaks.begin(),_peaks.end(),peak);
-        if (it == _peaks.end()) {
-            continue;
+    for (auto peak : _peaks) {
+        if (peak->data() == data) {
+            emit layoutChanged();
+            return;
         }
-
-        int row = std::distance(_peaks.begin(),it);
-
-        QModelIndex topleft_index = index(row,0);
-        QModelIndex bottomright_index = index(row,columnCount(QModelIndex())-1);
-
-        emit dataChanged(topleft_index,bottomright_index);
     }
 }
 

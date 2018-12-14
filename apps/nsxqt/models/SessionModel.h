@@ -49,7 +49,7 @@ signals:
 
     void inspectWidget(QWidget*);
 
-    void updatePeaks();
+    void signalUpdatePeaks();
 
     void signalResetScene();
 
@@ -59,7 +59,7 @@ signals:
 
     void signalEnabledPeakChanged(nsx::sptrPeak3D peak);
 
-    void signalMaskedPeaksChanged(const nsx::PeakList& peaks);
+    void signalMaskedPeaksChanged(nsx::sptrDataSet data);
 
     void signalUnitCellRemoved(nsx::sptrUnitCell unit_cell);
 

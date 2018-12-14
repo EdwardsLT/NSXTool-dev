@@ -31,30 +31,24 @@
 
 #pragma once
 
+#include "AABB.h"
+
 namespace nsx {
 
-class Ellipsoid;
-
-//! Abstract class for detector mask
-class IMask {
+//! Construct a detector mask from an axis-aligned bounding box.
+class Mask {
 
 public:
 
-    virtual ~IMask()=0;
+    Mask(const AABB& aabb);
 
-    virtual bool collide(const Ellipsoid& e) const=0;
+    bool collide(const Ellipsoid& ellipsoid) const;
 
-    virtual IMask* clone() const=0;
+    AABB& aabb();
 
-protected:
+private:
 
-    IMask()=default;
-
-    IMask(const IMask &other)=default;
-
-    IMask& operator=(const IMask &other)=default;
-
-
+    AABB _aabb;
 };
 
 } // end namespace nsx

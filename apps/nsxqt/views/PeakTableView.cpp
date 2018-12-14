@@ -106,6 +106,8 @@ void PeakTableView::contextMenuEvent(QContextMenuEvent* event)
     }
     // Show all peaks as selected when context menu is requested
     auto menu = new QMenu(this);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+
     //
     QAction* sortbyEquivalence=new QAction("Sort by equivalences",menu);
     menu->addAction(sortbyEquivalence);

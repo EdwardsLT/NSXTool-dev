@@ -20,8 +20,8 @@
 #include "SimplePlot.h"
 #include "SXPlot.h"
 
-CutLineGraphicsItem::CutLineGraphicsItem(nsx::sptrDataSet data)
-: CutterGraphicsItem(data),
+CutLineGraphicsItem::CutLineGraphicsItem(nsx::sptrDataSet data, const QPointF& from, QGraphicsItem *parent)
+: CutterGraphicsItem(data,from,parent),
   _nPoints(10)
 {
 }
@@ -91,21 +91,12 @@ void CutLineGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     painter->drawLine(-w/2,-h/2,w/2,h/2);
 }
 
-int CutLineGraphicsItem::getNPoints() const
-{
-    return _nPoints;
-}
-
-void CutLineGraphicsItem::setNPoints(int nPoints)
-{
-    _nPoints = nPoints;
-}
-
 void CutLineGraphicsItem::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
     if (!isVisible()) {
         return;
     }
+
     if (!isSelected()) {
         return;
     }
@@ -113,10 +104,7 @@ void CutLineGraphicsItem::wheelEvent(QGraphicsSceneWheelEvent *event)
     if (_nPoints <= 0) {
         _nPoints = 1;
     }
-}
 
-std::string CutLineGraphicsItem::getPlotType() const
-{
-    return "simple";
+    CutterGraphicsItem::wheelEvent(event);
 }
 

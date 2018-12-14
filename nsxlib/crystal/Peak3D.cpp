@@ -160,14 +160,18 @@ bool Peak3D::selected() const
     return _selected;
 }
 
-void Peak3D::setMasked(bool masked)
-{
-    _masked = masked;
-}
-
 bool Peak3D::masked() const
 {
-    return _masked;
+    bool masked(false);
+    for (auto&& m : _data->masks()) {
+        // If the background of the peak intercept the mask, unselected the peak
+        if (m->collide(shape())) {
+            masked = true;
+            break;
+        }
+    }
+
+    return masked;
 }
 
 void Peak3D::setPredicted(bool predicted)

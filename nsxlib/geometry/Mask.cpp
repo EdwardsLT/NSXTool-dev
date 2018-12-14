@@ -30,26 +30,21 @@
  */
 
 
-#include "RectangularMask.h"
 #include "Ellipsoid.h"
+#include "Mask.h"
 
 namespace nsx {
 
-RectangularMask::RectangularMask(const AABB& aabb) : IMask(), _aabb(aabb)
+Mask::Mask(const AABB& aabb) : _aabb(aabb)
 {
 }
 
-bool RectangularMask::collide(const Ellipsoid& ellipsoid) const
+bool Mask::collide(const Ellipsoid& ellipsoid) const
 {
     return _aabb.collide(ellipsoid);
 }
 
-IMask* RectangularMask::clone() const
-{
-    return new RectangularMask(*this);
-}
-
-const AABB& RectangularMask::aabb() const
+AABB& Mask::aabb()
 {
     return _aabb;
 }

@@ -1,31 +1,30 @@
 #include <algorithm>
 #include <numeric>
 
+#include <Eigen/Dense>
+
 #include <QPainter>
 #include <QGraphicsSceneWheelEvent>
 #include <QPen>
 #include <QStyleOptionGraphicsItem>
 #include <QWidget>
 
-#include <Eigen/Dense>
-
 #include <nsxlib/DataSet.h>
 #include <nsxlib/Detector.h>
 #include <nsxlib/Diffractometer.h>
 #include <nsxlib/IDataReader.h>
 
-#include "CutSliceGraphicsItem.h"
 #include "DetectorSceneModel.h"
+#include "HorizontalSliceGraphicsItem.h"
 #include "SimplePlot.h"
 #include "SXPlot.h"
 
-CutSliceGraphicsItem::CutSliceGraphicsItem(nsx::sptrDataSet data, bool horizontal)
-: CutterGraphicsItem(data),
-  _horizontal(horizontal)
+HorizontalSliceGraphicsItem::HorizontalSliceGraphicsItem(nsx::sptrDataSet data, const QPointF& from, QGraphicsItem *parent)
+: CutterGraphicsItem(data,from,parent)
 {
 }
 
-SXPlot* CutSliceGraphicsItem::plot() const
+SXPlot* HorizontalSliceGraphicsItem::plot() const
 {
     auto *plot = new SimplePlot();
 
@@ -51,18 +50,11 @@ SXPlot* CutSliceGraphicsItem::plot() const
     int length;
     int start;
 
-    bool horizontal = isHorizontal();
-
     int dx = xmax-xmin;
     int dy = ymax-ymin;
 
-    if (horizontal) {
-        length = dx;
-        start = xmin;
-    } else {
-        length = dy;
-        start = ymin;
-    }
+    length = dx;
+    start = xmin;
 
     QVector<double> x(length);
     QVector<double> y(length);
@@ -72,17 +64,11 @@ SXPlot* CutSliceGraphicsItem::plot() const
     auto *detector_scene_model = dynamic_cast<DetectorSceneModel*>(scene());
     const rowMatrix& current_frame = detector_scene_model->currentFrame();
 
-    if (horizontal) {
-        int comp=0;
-        for (int i=xmin;i<xmax;++i) {
-            y[comp++] = current_frame.col(i).segment(ymin,dy).sum();
-        }
-    } else {
-        int comp=0;
-        for (int i=ymin;i<ymax;++i) {
-            y[comp++] = current_frame.row(i).segment(xmin,dx).sum();
-        }
+    int comp=0;
+    for (int i=xmin;i<xmax;++i) {
+        y[comp++] = current_frame.col(i).segment(ymin,dy).sum();
     }
+
     std::transform(y.begin(),y.end(),e.begin(),[](double p){ return sqrt(p);});
     plot->graph(0)->setDataValueError(x,y,e);
     plot->rescaleAxes();
@@ -91,20 +77,12 @@ SXPlot* CutSliceGraphicsItem::plot() const
     return plot;
 }
 
-bool CutSliceGraphicsItem::isHorizontal() const
-{
-    return _horizontal;
-}
-
-void CutSliceGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)
+void HorizontalSliceGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)
 {
     Q_UNUSED(widget);
 
-    if (_horizontal) {
-        painter->setBrush(QBrush(QColor(0,255,0,50)));
-    } else {
-        painter->setBrush(QBrush(QColor(0,0,255,50)));
-    }
+    painter->setBrush(QBrush(QColor(0,255,0,50)));
+
     // Color depending on selection
     if (option->state & QStyle::State_Selected) {
         _pen.setStyle(Qt::DashLine);
@@ -118,27 +96,20 @@ void CutSliceGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsIt
     painter->drawRect(-w/2.0,-h/2.0,w,h);
 }
 
-std::string CutSliceGraphicsItem::getPlotType() const
-{
-    return "simple";
-}
-
-void CutSliceGraphicsItem::wheelEvent(QGraphicsSceneWheelEvent *event)
+void HorizontalSliceGraphicsItem::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
     if (!isVisible()) {
         return;
     }
+
     if (!isSelected()) {
         return;
     }
-    int step=event->delta()/120;
 
-    if (_horizontal) {
-        _from += QPointF(0,-step);
-        _to += QPointF(0,step);
-    } else {
-        _from += QPointF(-step,0);
-        _to += QPointF(step,0);
-    }
-    update();
+    int step = event->delta()/120;
+
+    _from += QPointF(0,-step);
+    _to += QPointF(0,step);
+
+    CutterGraphicsItem::wheelEvent(event);
 }

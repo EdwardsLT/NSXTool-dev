@@ -12,26 +12,26 @@
 #include <nsxlib/Ellipsoid.h>
 #include <nsxlib/IDataReader.h>
 #include <nsxlib/InstrumentState.h>
-#include <nsxlib/IntegrationRegion.h>
 #include <nsxlib/MetaData.h>
 #include <nsxlib/MillerIndex.h>
 #include <nsxlib/Peak3D.h>
-#include <nsxlib/ReciprocalVector.h>
 #include <nsxlib/UnitCell.h>
-#include <nsxlib/Units.h>
 
 #include "PeakGraphicsItem.h"
 #include "SimplePlot.h"
 #include "SXPlot.h"
 
-bool PeakGraphicsItem::_show_label = false;
-bool PeakGraphicsItem::_show_center = false;
-
-PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int frame)
-: SXGraphicsItem(nullptr,true,false),
+PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int current_frame, QGraphicsItem *parent)
+: SXGraphicsItem(peak->data(),parent),
   _peak(peak),
-  _area(nullptr)
+  _show_label(false),
+  _show_center(false),
+  _show_box(false)
 {
+    setDeletable(false);
+
+    setMovable(false);
+
     setVisible(true);
 
     QString peak_label;
@@ -78,10 +78,20 @@ PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int frame)
     auto& aabb = peak_ellipsoid.aabb();
 
     _lower = aabb.lower();
-
     _upper = aabb.upper();
 
-    auto center = peak_ellipsoid.intersectionCenter({0.0,0.0,1.0},{0.0,0.0,static_cast<double>(frame)});
+    auto center = peak_ellipsoid.intersectionCenter({0.0,0.0,1.0},{0.0,0.0,static_cast<double>(current_frame)});
+
+    QPen info_box_pen;
+    info_box_pen.setColor(Qt::darkCyan);
+    info_box_pen.setStyle(Qt::DotLine);
+
+    _box_gi = new QGraphicsRectItem(this);
+    _box_gi->setRect(-10,-10,20,20);
+    _box_gi->setPen(info_box_pen);
+    _box_gi->setZValue(-1);
+    _box_gi->setAcceptHoverEvents(false);
+    _box_gi->setVisible(_show_box);
 
     setPos(center[0],center[1]);
 
@@ -91,6 +101,27 @@ PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int frame)
     setZValue(2);
 }
 
+void PeakGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    Q_UNUSED(painter)
+    Q_UNUSED(option)
+    Q_UNUSED(widget)
+}
+
+void PeakGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+    _info_box_gi->setVisible(true);
+
+    SXGraphicsItem::hoverEnterEvent(event);
+}
+
+void PeakGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    _info_box_gi->setVisible(false);
+
+    SXGraphicsItem::hoverLeaveEvent(event);
+}
+
 nsx::sptrPeak3D PeakGraphicsItem::peak() const
 {
     return _peak;
@@ -98,7 +129,6 @@ nsx::sptrPeak3D PeakGraphicsItem::peak() const
 
 QRectF PeakGraphicsItem::boundingRect() const
 {
-
     double width = _upper[0] - _lower[0];
 
     double height = _upper[1] - _lower[1];
@@ -106,30 +136,23 @@ QRectF PeakGraphicsItem::boundingRect() const
     return QRectF(-width/2.0,-height/2.0,width,height);
 }
 
-void PeakGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
-    Q_UNUSED(widget)
-
-    Q_UNUSED(option)
-
-    Q_UNUSED(painter)
-
-    _label_gi->setVisible(_hovered || _show_label);
-
-    _center_gi->setVisible(_hovered || _show_center);
-}
-
-std::string PeakGraphicsItem::getPlotType() const
-{
-    return "peak";
-}
-
 void PeakGraphicsItem::showLabel(bool flag)
 {
     _show_label = flag;
+    _label_gi->setVisible(_show_label);
+    update();
 }
 
 void PeakGraphicsItem::showCenter(bool flag)
 {
     _show_center = flag;
+    _center_gi->setVisible(_show_center);
+    update();
+}
+
+void PeakGraphicsItem::showBox(bool flag)
+{
+    _show_box = flag;
+    _box_gi->setVisible(_show_box);
+    update();
 }

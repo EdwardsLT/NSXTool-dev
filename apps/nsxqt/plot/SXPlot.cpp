@@ -22,11 +22,6 @@ SXPlot::SXPlot(QWidget *parent) : QCustomPlot(parent)
    connect(this,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(setmenuRequested(QPoint)));
 }
 
-void SXPlot::update(PlottableGraphicsItem *item)
-{
-    Q_UNUSED(item)
-}
-
 std::string SXPlot::getType() const
 {
     return "";

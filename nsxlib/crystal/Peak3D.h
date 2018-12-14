@@ -100,9 +100,7 @@ public:
     //! Return the peak selection state
     bool selected() const;
 
-    //! Set the peak masking state
-    void setMasked(bool masked);
-    //! eturn the peak masking state
+    //! Return the peak masking state
     bool masked() const;
 
     //! Return true if peak is enable (selected and not masked)

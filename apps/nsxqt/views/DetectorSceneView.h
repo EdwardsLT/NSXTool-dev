@@ -17,9 +17,7 @@ public:
 
     void resizeEvent(QResizeEvent *event);
 
-    DetectorSceneModel* getScene();
-
-    void keyPressEvent(QKeyEvent* event);
+    virtual void keyPressEvent(QKeyEvent* event) override;
 
     void fitScene();
 
@@ -29,9 +27,13 @@ public slots:
 
 private:
 
+    void displayContextualMenu(const QPoint& point);
+
     void copyViewToClipboard();
 
 private:
+
+    MainWindow *_main_window;
 
     DetectorSceneModel* _detector_scene_model;
 };

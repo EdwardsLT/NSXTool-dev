@@ -9,6 +9,8 @@
 
 #include "SXGraphicsItem.h"
 
+class QGraphicsSceneHoverEvent;
+class QGraphicsTextItem;
 class QWidget;
 class SXPlot;
 
@@ -16,35 +18,42 @@ class PeakGraphicsItem : public SXGraphicsItem
 {
 public:
 
-    PeakGraphicsItem(nsx::sptrPeak3D peak, int frame);
+    PeakGraphicsItem(nsx::sptrPeak3D peak, int current_frame, QGraphicsItem *parent=nullptr);
+
+    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+
+    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
     QRectF boundingRect() const;
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-
-    //! Returns the type of plot related to the item
-    std::string getPlotType() const;
-
     nsx::sptrPeak3D peak() const;
 
-    static void showLabel(bool flag);
+    void showLabel(bool flag);
 
-    static void showCenter(bool flag);
+    void showCenter(bool flag);
+
+    void showBox(bool flag);
 
 private:
 
     //! Pointer to the Peak3D object
     nsx::sptrPeak3D _peak;
 
-    static bool _show_label;
+    bool _show_label;
 
-    static bool _show_center;
+    bool _show_center;
+
+    bool _show_box;
+
+    QGraphicsTextItem* _label_gi;
 
     QGraphicsEllipseItem* _center_gi;
+
+    QGraphicsRectItem* _box_gi;
 
     Eigen::Vector3d _lower;
 
     Eigen::Vector3d _upper;
-
-    QGraphicsRectItem* _area;
 };

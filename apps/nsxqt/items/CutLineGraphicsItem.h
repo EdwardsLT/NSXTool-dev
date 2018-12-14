@@ -16,21 +16,13 @@ class CutLineGraphicsItem : public CutterGraphicsItem
 {
 public:
 
-    explicit CutLineGraphicsItem(nsx::sptrDataSet data);
+    CutLineGraphicsItem(nsx::sptrDataSet data, const QPointF& from, QGraphicsItem *parent=nullptr);
 
-    SXPlot* plot() const override;
+    virtual SXPlot* plot() const override;
 
     void wheelEvent(QGraphicsSceneWheelEvent* event);
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-
-    int getNPoints() const;
-
-    void setNPoints(int nPoints);
-
-    // Getters and setters
-    std::string getPlotType() const;
-
 
 private:
     int _nPoints;

@@ -36,10 +36,8 @@
 #include "DialogIntegrate.h"
 #include "DialogPeakFilter.h"
 #include "MainWindow.h"
-#include "MouseInteractionModeModel.h"
 #include "NoteBook.h"
 #include "PeakGraphicsItem.h"
-#include "PlottableGraphicsItem.h"
 #include "PeakTableView.h"
 #include "PlotterFactory.h"
 #include "QtStreamWrapper.h"
@@ -81,8 +79,8 @@ void MainWindow::createConnections()
     connect(_frame_slider,&QSlider::valueChanged,this,&MainWindow::onChangeSelectedFrame);
     connect(_frame_value,static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),this,&MainWindow::onChangeSelectedFrame);
 
-    connect(_intensity_slider,&QSlider::valueChanged,this,&MainWindow::onChangeMaxIntensity);
-    connect(_intensity_value,static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),this,&MainWindow::onChangeMaxIntensity);
+    connect(_contrast_level_slider,&QSlider::valueChanged,this,&MainWindow::onChangeContrastLevel);
+    connect(_contrast_level_value,static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),this,&MainWindow::onChangeContrastLevel);
 
     connect(_session_model,&SessionModel::signalChangePlot,this,&MainWindow::onChangePlot);
 
@@ -205,25 +203,24 @@ void MainWindow::createMainWindow()
     control_layout->addWidget(_frame_slider,0,1);
     control_layout->addWidget(_frame_value,0,2);
 
-    // The intensity control settings
+    // The contrast level control settings
 
-    QLabel *intensity_label(new QLabel("intensity"));
+    QLabel *contrast_level_label(new QLabel("contrast level"));
 
-    _intensity_slider = new QSlider(Qt::Horizontal);
-    _intensity_slider->setSingleStep(1);
-    _intensity_slider->setRange(0,1000);
+    _contrast_level_slider = new QSlider(Qt::Horizontal);
+    _contrast_level_slider->setSingleStep(1);
+    _contrast_level_slider->setRange(0,1000);
+    _contrast_level_slider->setValue(_detector_scene_model->contrastLevel());
 
-    _intensity_slider->setValue(_detector_scene_model->maxIntensity());
-    _intensity_value = new QSpinBox();
-    _intensity_value->setRange(0,1000);
+    _contrast_level_value = new QSpinBox();
+    _contrast_level_value->setRange(0,1000);
+    _contrast_level_value->setSingleStep(1);
+    _contrast_level_value->setValue(_detector_scene_model->contrastLevel());
+    _contrast_level_value->setWrapping(true);
 
-    _intensity_value->setSingleStep(1);
-    _intensity_value->setValue(_detector_scene_model->maxIntensity());
-    _intensity_value->setWrapping(true);
-
-    control_layout->addWidget(intensity_label,1,0);
-    control_layout->addWidget(_intensity_slider,1,1);
-    control_layout->addWidget(_intensity_value,1,2);
+    control_layout->addWidget(contrast_level_label,1,0);
+    control_layout->addWidget(_contrast_level_slider,1,1);
+    control_layout->addWidget(_contrast_level_value,1,2);
 
     control_layout->setColumnStretch(0,0);
     control_layout->setColumnStretch(1,1);
@@ -391,11 +388,11 @@ void MainWindow::onChangeSelectedFrame(int selected_frame)
     _detector_scene_model->changeSelectedFrame(selected_frame);
 }
 
-void MainWindow::onChangeMaxIntensity(int max_intensity)
+void MainWindow::onChangeContrastLevel(int contrast_level)
 {
-    _intensity_slider->setValue(max_intensity);
-    _intensity_value->setValue(max_intensity);
-    _detector_scene_model->changeMaxIntensity(max_intensity);
+    _contrast_level_slider->setValue(contrast_level);
+    _contrast_level_value->setValue(contrast_level);
+    _detector_scene_model->changeContrastLevel(contrast_level);
 }
 
 void MainWindow::toggleDockableWidgetState(DOCKABLE_WIDGETS dockable_widget_index)
@@ -413,34 +410,14 @@ void MainWindow::toggleDockableWidgetState(DOCKABLE_WIDGETS dockable_widget_inde
 
 void MainWindow::onChangePlot(SXPlot* plot)
 {
-    if (!plot) {
-        return;
-    }
-
     QDockWidget *plotter_dock_widget = _dockable_widgets[static_cast<int>(DOCKABLE_WIDGETS::PLOTTER)];
 
-    QSizePolicy old_size_policy;
-
+    // Delete the previous plotter instance
     if (_plotter) {
-        // Store the old size policy
-        old_size_policy = _plotter->sizePolicy();
-
-        // Remove the current plotter from the ui
-        plotter_dock_widget->setWidget(nullptr);
-
-        // Delete the plotter instance
         delete _plotter;
     }
 
     _plotter = plot;
-
-    // Restore the size policy
-    _plotter->setSizePolicy(old_size_policy);
-
-    // Sets some properties of the plotter
-    _plotter->setObjectName(QStringLiteral("1D plotter"));
-    _plotter->setFocusPolicy(Qt::StrongFocus);
-    _plotter->setStyleSheet(QStringLiteral(""));
 
     // Add the plot to the ui
     plotter_dock_widget->setWidget(_plotter);

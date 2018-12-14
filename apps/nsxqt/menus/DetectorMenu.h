@@ -3,6 +3,8 @@
 #include <QList>
 #include <QMenu>
 
+#include <QDebug>
+
 class MainWindow;
 class QAction;
 class QActionGroup;
@@ -15,13 +17,13 @@ public:
 
     explicit DetectorMenu(MainWindow *main_window);
 
-private slots:
+private:
 
-    void onChangeColorMap(QAction *color_map_action);
+    void changeColorMap(QAction *color_map_action);
 
-    void onChangeCursorMode(QAction *cursor_mode_action);
+    void changeCursorMode(QAction *cursor_mode_action);
 
-    void onChangeInteractionMode(QAction *interaction_mode_action);
+    void changeInteractionMode(QAction *interaction_mode_action);
 
 private:
 

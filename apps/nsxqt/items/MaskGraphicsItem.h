@@ -7,10 +7,16 @@
 #include <nsxlib/DataTypes.h>
 #include <nsxlib/GeometryTypes.h>
 
+#include "DrawableGraphicsItem.h"
 #include "SXGraphicsItem.h"
+
+namespace nsx {
+class Mask;
+}
 
 class QGraphicsSceneMouseEvent;
 class QGraphicsSceneWheelEvent;
+class QKeyEvent;
 class QPainter;
 class QStyleOptionGraphicsItem;
 class QWidget;
@@ -18,33 +24,21 @@ class QWidget;
 /*! Creates a mask that will be used to unselect/select peaks whether their intercept or
  * not the mask
  */
-class RectangularMaskGraphicsItem : public SXGraphicsItem {
+class MaskGraphicsItem : public DrawableGraphicsItem {
 public:
     // Constructs a mask
-    RectangularMaskGraphicsItem(nsx::sptrDataSet data, const nsx::AABB& aabb);
+    MaskGraphicsItem(nsx::sptrDataSet data, const QPointF& from, QGraphicsItem *parent=nullptr);
 
-    ~RectangularMaskGraphicsItem();
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
-    // Getters and setters
-
-    //! Returns the bounding rectangle of the mask
-    QRectF boundingRect() const;
-
-    // Other methods
+    virtual void keyPressEvent(QKeyEvent* event) override;
 
     //! Paint the slice
     void paint(QPainter *painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
 
 private:
-    //! The data on which the cutter will act upon
-    nsx::sptrDataSet _data;
 
-    nsx::RectangularMask *_mask;
+    std::shared_ptr<nsx::Mask> _mask;
 
-    QPointF _from;
-    QPointF _to;
     QGraphicsTextItem* _text;
-
-    void updateAABB();
-
 };

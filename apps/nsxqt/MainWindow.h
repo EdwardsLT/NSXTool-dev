@@ -50,7 +50,7 @@ public:
 
 public slots:
 
-    void onChangeMaxIntensity(int max_intensity);
+    void onChangeContrastLevel(int contrast_level);
 
     void onChangeSelectedData(nsx::sptrDataSet, int frame);
 
@@ -98,9 +98,9 @@ private:
 
     QSpinBox *_frame_value;
 
-    QSlider *_intensity_slider;
+    QSlider *_contrast_level_slider;
 
-    QSpinBox *_intensity_value;
+    QSpinBox *_contrast_level_value;
 
     SessionTreeView *_session_tree_view;
 

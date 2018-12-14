@@ -148,7 +148,7 @@ void SessionModel::onItemChanged(QStandardItem *item)
 {
     Q_UNUSED(item)
 
-    emit updatePeaks();
+    emit signalUpdatePeaks();
 }
 
 nsx::PeakList SessionModel::peaks(nsx::sptrDataSet data) const

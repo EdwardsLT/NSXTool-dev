@@ -8,17 +8,18 @@
 #include <nsxlib/Diffractometer.h>
 #include <nsxlib/IDataReader.h>
 
+#include "DetectorMenu.h"
 #include "DetectorSceneModel.h"
 #include "DetectorSceneView.h"
 #include "MainWindow.h"
 #include "SessionModel.h"
 
-DetectorSceneView::DetectorSceneView(MainWindow *main_window) : QGraphicsView(main_window), _detector_scene_model(main_window->detectorSceneModel())
+DetectorSceneView::DetectorSceneView(MainWindow *main_window) : QGraphicsView(main_window), _main_window(main_window),_detector_scene_model(main_window->detectorSceneModel())
 {
     setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing);
 
     // Make sure that first views are rescaled, especially first created one
-    connect(_detector_scene_model,&DetectorSceneModel::dataChanged,this,[&](){fitInView(_detector_scene_model->sceneRect());});
+    connect(_detector_scene_model,&DetectorSceneModel::signalDetectorSceneChanged,this,[&](){fitInView(_detector_scene_model->sceneRect());});
 
     setMouseTracking(true);
 
@@ -26,22 +27,19 @@ DetectorSceneView::DetectorSceneView(MainWindow *main_window) : QGraphicsView(ma
 
     setInteractive(true);
 
-    setTransform(main_window->sessionModel()->detectorViewTranformation());
+    setTransform(_main_window->sessionModel()->detectorViewTranformation());
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(main_window->sessionModel(),&SessionModel::signalChangeDetectorViewTransformation,this,&DetectorSceneView::onChangeDetectorViewTransformation);
+    connect(_main_window->sessionModel(),&SessionModel::signalChangeDetectorViewTransformation,this,&DetectorSceneView::onChangeDetectorViewTransformation);
+
+    connect(this,&DetectorSceneView::customContextMenuRequested,[=](const QPoint& point){displayContextualMenu(point);});
 }
 
 void DetectorSceneView::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
     fitInView(_detector_scene_model->sceneRect());
-}
-
-DetectorSceneModel* DetectorSceneView::getScene()
-{
-    return _detector_scene_model;
 }
 
 void DetectorSceneView::copyViewToClipboard()
@@ -74,4 +72,11 @@ void DetectorSceneView::onChangeDetectorViewTransformation(const QTransform& tra
 {
     setTransform(transformation);
     fitScene();
+}
+
+void DetectorSceneView::displayContextualMenu(const QPoint& point)
+{
+    auto *detector_menu = new DetectorMenu(_main_window);
+    detector_menu->setAttribute(Qt::WA_DeleteOnClose);
+    detector_menu->popup(viewport()->mapToGlobal(point));
 }
