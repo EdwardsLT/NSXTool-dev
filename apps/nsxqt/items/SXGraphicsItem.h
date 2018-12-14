@@ -58,6 +58,10 @@ public:
 
 protected:
 
+    void updatePlot();
+
+protected:
+
     nsx::sptrDataSet _data;
 
     bool _deletable;

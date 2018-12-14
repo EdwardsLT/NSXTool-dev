@@ -47,11 +47,11 @@ private:
 
     bool _show_box;
 
-    QGraphicsTextItem* _label_gi;
+    QGraphicsTextItem* _label_graphics_item;
 
-    QGraphicsEllipseItem* _center_gi;
+    QGraphicsEllipseItem* _center_graphics_item;
 
-    QGraphicsRectItem* _box_gi;
+    QGraphicsRectItem* _box_graphics_item;
 
     Eigen::Vector3d _lower;
 

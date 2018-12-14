@@ -38,6 +38,10 @@ public:
 
 private:
 
+    void updateMask();
+
+private:
+
     std::shared_ptr<nsx::Mask> _mask;
 
     QGraphicsTextItem* _text;

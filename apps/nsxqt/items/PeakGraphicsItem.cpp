@@ -48,28 +48,28 @@ PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int current_frame, QGra
         peak_label = "no unit cell";
     }
 
-    _label_gi = new QGraphicsTextItem(this);
-    _label_gi->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    _label_gi->setParentItem(this);
-    _label_gi->setPlainText(peak_label);
-    _label_gi->setAcceptHoverEvents(false);
-    _label_gi->setZValue(-1);
-    _label_gi->setPos(3,3);
-    _label_gi->setVisible(_show_label);
+    _label_graphics_item = new QGraphicsTextItem(this);
+    _label_graphics_item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    _label_graphics_item->setParentItem(this);
+    _label_graphics_item->setPlainText(peak_label);
+    _label_graphics_item->setAcceptHoverEvents(false);
+    _label_graphics_item->setZValue(-1);
+    _label_graphics_item->setPos(3,3);
+    _label_graphics_item->setVisible(_show_label);
 
     QPen center_pen;
     center_pen.setCosmetic(true);
     center_pen.setColor(Qt::red);
     center_pen.setStyle(Qt::SolidLine);
 
-    _center_gi = new QGraphicsEllipseItem(this);
-    _center_gi->setPen(center_pen);
-    _center_gi->setRect(-1,-1,2,2);
-    _center_gi->setParentItem(this);
-    _center_gi->setBrush(QBrush(Qt::red));
-    _center_gi->setAcceptHoverEvents(false);
-    _center_gi->setZValue(-1);
-    _center_gi->setVisible(_show_center);
+    _center_graphics_item = new QGraphicsEllipseItem(this);
+    _center_graphics_item->setPen(center_pen);
+    _center_graphics_item->setRect(-1,-1,2,2);
+    _center_graphics_item->setParentItem(this);
+    _center_graphics_item->setBrush(QBrush(Qt::red));
+    _center_graphics_item->setAcceptHoverEvents(false);
+    _center_graphics_item->setZValue(-1);
+    _center_graphics_item->setVisible(_show_center);
 
     auto peak_ellipsoid = _peak->shape();
 
@@ -86,12 +86,12 @@ PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int current_frame, QGra
     info_box_pen.setColor(Qt::darkCyan);
     info_box_pen.setStyle(Qt::DotLine);
 
-    _box_gi = new QGraphicsRectItem(this);
-    _box_gi->setRect(-10,-10,20,20);
-    _box_gi->setPen(info_box_pen);
-    _box_gi->setZValue(-1);
-    _box_gi->setAcceptHoverEvents(false);
-    _box_gi->setVisible(_show_box);
+    _box_graphics_item = new QGraphicsRectItem(this);
+    _box_graphics_item->setRect(-10,-10,20,20);
+    _box_graphics_item->setPen(info_box_pen);
+    _box_graphics_item->setZValue(-1);
+    _box_graphics_item->setAcceptHoverEvents(false);
+    _box_graphics_item->setVisible(_show_box);
 
     setPos(center[0],center[1]);
 
@@ -110,14 +110,14 @@ void PeakGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
 
 void PeakGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    _info_box_gi->setVisible(true);
+    _box_graphics_item->setVisible(true);
 
     SXGraphicsItem::hoverEnterEvent(event);
 }
 
 void PeakGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
-    _info_box_gi->setVisible(false);
+    _box_graphics_item->setVisible(false);
 
     SXGraphicsItem::hoverLeaveEvent(event);
 }
@@ -139,20 +139,20 @@ QRectF PeakGraphicsItem::boundingRect() const
 void PeakGraphicsItem::showLabel(bool flag)
 {
     _show_label = flag;
-    _label_gi->setVisible(_show_label);
+    _label_graphics_item->setVisible(_show_label);
     update();
 }
 
 void PeakGraphicsItem::showCenter(bool flag)
 {
     _show_center = flag;
-    _center_gi->setVisible(_show_center);
+    _center_graphics_item->setVisible(_show_center);
     update();
 }
 
 void PeakGraphicsItem::showBox(bool flag)
-{
+{   qDebug()<<"dshdsjkfhshf"<<flag<<" "<<pos();
     _show_box = flag;
-    _box_gi->setVisible(_show_box);
+    _box_graphics_item->setVisible(_show_box);
     update();
 }

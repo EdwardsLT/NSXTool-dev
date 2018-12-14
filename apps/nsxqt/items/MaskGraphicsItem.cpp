@@ -33,10 +33,8 @@ MaskGraphicsItem::MaskGraphicsItem(nsx::sptrDataSet data, const QPointF& from, Q
     _data->addMask(_mask);
 }
 
-void MaskGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void MaskGraphicsItem::updateMask()
 {
-    Q_UNUSED(event)
-
     QPointF tl = sceneBoundingRect().topLeft();
     QPointF br = sceneBoundingRect().bottomRight();
 
@@ -50,6 +48,13 @@ void MaskGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (detector_scene_model) {
         emit detector_scene_model->sessionModel()->signalMaskedPeaksChanged(_data);
     }
+}
+
+void MaskGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_UNUSED(event)
+
+    updateMask();
 }
 
 void MaskGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -67,20 +72,23 @@ void MaskGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
     painter->setRenderHint(QPainter::HighQualityAntialiasing);
     painter->setPen(_pen);
     painter->drawRect(boundingRect());
-
-    QPointF tl = sceneBoundingRect().topLeft();
-    QPointF br = sceneBoundingRect().bottomRight();
-    QString text2 = QString::number(tl.x())+"\n"+QString::number(tl.y())+"\n"+QString::number(br.x())+"\n"+QString::number(br.y());
 }
 
-void MaskGraphicsItem::keyPressEvent(QKeyEvent* event)
+void MaskGraphicsItem::keyPressEvent(QKeyEvent *event)
 {
     if (!isSelected()) {
         return;
     }
 
-    // The user pressed on Delete key
+        // The user pressed on Delete key
     if (event->key() == Qt::Key_Delete) {
         _data->removeMask(_mask);
+    } else if (event->key() == Qt::Key_Up   ||
+               event->key() == Qt::Key_Down ||
+               event->key() == Qt::Key_Left ||
+               event->key() == Qt::Key_Right) {
+
+        DrawableGraphicsItem::keyPressEvent(event);
+        updateMask();
     }
 }

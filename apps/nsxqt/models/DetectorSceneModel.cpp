@@ -144,10 +144,6 @@ void DetectorSceneModel::changeMaskedPeaks(const nsx::PeakList& peaks)
 
 void DetectorSceneModel::changeSelectedData(nsx::sptrDataSet data, int frame)
 {
-    if (data == _data) {
-        return;
-    }
-
     resetScene();
 
     _data = data;
@@ -177,9 +173,9 @@ void DetectorSceneModel::changeSelectedFrame(int frame)
     // Restore the peaks for this frame
     restorePeaks();
 
-    changeSelectedPeak(_selected_peak);
-
     loadCurrentImage();
+
+    showPeakBox(_selected_peak);
 }
 
 void DetectorSceneModel::changeSelectedPeak(nsx::sptrPeak3D peak)
@@ -191,10 +187,17 @@ void DetectorSceneModel::changeSelectedPeak(nsx::sptrPeak3D peak)
     _selected_peak = peak;
 
     auto peak_ellipsoid = _selected_peak->shape();
-    // Get frame number to adjust the data
+
     size_t frame = size_t(std::lround(peak_ellipsoid.aabb().center()[2]));
+
     changeSelectedData(_selected_peak->data(),frame);
 
+    showPeakBox(peak);
+}
+
+
+void DetectorSceneModel::showPeakBox(nsx::sptrPeak3D peak)
+{
     auto peak_graphics_item = selectGraphicsItems<PeakGraphicsItem>();
     for (auto item : peak_graphics_item) {
         if (_selected_peak == item->peak()) {
@@ -661,7 +664,6 @@ void DetectorSceneModel::resetScene()
     _image = nullptr;
     _integration_region = nullptr;
     _current_graphics_item = nullptr;
-    _selected_peak = nullptr;
 }
 
 void DetectorSceneModel::zoomIn()

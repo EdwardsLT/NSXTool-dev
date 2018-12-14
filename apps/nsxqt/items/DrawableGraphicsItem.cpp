@@ -55,10 +55,6 @@ void DrawableGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 void DrawableGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (!_movable || !isVisible()) {
-        return;
-    }
-
     if (isSelected()) {
         auto last_scene_pos = event->lastScenePos();
         if (!_first_move_event) {
@@ -81,18 +77,15 @@ void DrawableGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             setTo(last_scene_pos);
         }
     }
+
+    SXGraphicsItem::mouseMoveEvent(event);
 }
 
 void DrawableGraphicsItem::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
     Q_UNUSED(event)
 
-    auto *detector_scene_model = dynamic_cast<DetectorSceneModel*>(scene());
-
-    if (detector_scene_model) {
-        emit detector_scene_model->sessionModel()->signalChangePlot(plot());
-        detector_scene_model->update();
-    }
+    updatePlot();
 }
 
 QRectF DrawableGraphicsItem::boundingRect() const
@@ -115,4 +108,42 @@ void DrawableGraphicsItem::setTo(const QPointF& pos)
     _to = pos;
     setPos(0.5*(_from+_to));
     update();
+}
+
+void DrawableGraphicsItem::keyPressEvent(QKeyEvent* event)
+{
+    if (!isSelected()) {
+        return;
+    }
+
+    QPointF translation(0.0,0.0);
+    switch (event->key()) {
+    case (Qt::Key_Up):
+        translation.setY(1.0);
+        break;
+    case (Qt::Key_Down):
+        translation.setY(-1.0);
+        break;
+    case (Qt::Key_Left):
+        translation.setX(-1.0);
+        break;
+    case (Qt::Key_Right):
+        translation.setX(1.0);
+        break;
+    }
+
+    if (event->modifiers() == Qt::ControlModifier) {
+        translation *= 10.0;
+    }
+
+    QRectF itemRect = sceneBoundingRect();
+    itemRect.translate(translation);
+
+    // At target position the item must be fully inside the scene
+    auto scene_rect = scene()->sceneRect();
+    if (scene_rect.contains(itemRect.topLeft()) && scene_rect.contains(itemRect.bottomRight())) {
+        moveBy(translation.x(),translation.y());
+    }
+
+    updatePlot();
 }

@@ -28,13 +28,18 @@ void SXGraphicsItem::keyPressEvent(QKeyEvent* event)
     QGraphicsItem::keyPressEvent(event);
 }
 
-void SXGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
+void SXGraphicsItem::updatePlot()
 {
-    Q_UNUSED(event)
     auto *detector_scene_model = dynamic_cast<DetectorSceneModel*>(scene());
     if (detector_scene_model) {
         emit detector_scene_model->sessionModel()->signalChangePlot(plot());
     }
+}
+
+void SXGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
+{
+    Q_UNUSED(event)
+    updatePlot();
 }
 
 void SXGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)

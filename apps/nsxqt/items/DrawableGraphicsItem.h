@@ -26,6 +26,8 @@ public:
 
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
+    virtual void keyPressEvent(QKeyEvent* event) override;
+
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;

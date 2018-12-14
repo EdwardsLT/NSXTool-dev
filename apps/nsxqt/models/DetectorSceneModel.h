@@ -90,6 +90,8 @@ public:
 
     void showPeakCenters(bool flag);
 
+    void showPeakBox(nsx::sptrPeak3D peak);
+
     void showPeakIntegrationAreas(bool);
 
     void setInitialMousePosition(const QPointF& position);
