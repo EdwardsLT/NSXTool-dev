@@ -3,7 +3,6 @@
 #include <memory>
 #include <string>
 
-#include <nsxlib/RectangularMask.h>
 #include <nsxlib/DataTypes.h>
 #include <nsxlib/GeometryTypes.h>
 

@@ -38,8 +38,6 @@
 #include "UnitCellsItem.h"
 #include "VerticalSliceGraphicsItem.h"
 
-#include <QDebug>
-
 DetectorSceneModel::DetectorSceneModel(SessionModel *session_model)
 : QGraphicsScene(nullptr),
   _session_model(session_model),
