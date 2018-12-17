@@ -7,11 +7,9 @@
 #include <QPixmap>
 #include <QToolTip>
 
-#include <nsxlib/AABB.h>
 #include <nsxlib/DataSet.h>
 #include <nsxlib/Detector.h>
 #include <nsxlib/Diffractometer.h>
-#include <nsxlib/Gonio.h>
 #include <nsxlib/IDataReader.h>
 #include <nsxlib/InstrumentState.h>
 #include <nsxlib/IntegrationRegion.h>
@@ -20,7 +18,6 @@
 #include <nsxlib/Peak3D.h>
 #include <nsxlib/ReciprocalVector.h>
 #include <nsxlib/Sample.h>
-#include <nsxlib/SpaceGroup.h>
 #include <nsxlib/Source.h>
 #include <nsxlib/UnitCell.h>
 #include <nsxlib/Units.h>
@@ -84,7 +81,7 @@ void DetectorSceneModel::restoreMasks()
         QRectF rect;
         rect.setBottomLeft(QPointF(lower[0],lower[1]));
         rect.setTopRight(QPointF(upper[0],upper[1]));
-        auto *mask_graphics_item = new MaskGraphicsItem(_data,rect.topLeft());
+        auto *mask_graphics_item = new MaskGraphicsItem(_data,rect.topLeft(),false);
         mask_graphics_item->setTo(rect.bottomRight());
         addItem(mask_graphics_item);
     }
@@ -200,7 +197,7 @@ void DetectorSceneModel::showPeakBox(nsx::sptrPeak3D peak)
 {
     auto peak_graphics_item = selectGraphicsItems<PeakGraphicsItem>();
     for (auto item : peak_graphics_item) {
-        if (_selected_peak == item->peak()) {
+        if (peak == item->peak()) {
             item->showBox(true);
             item->updatePlot();
             break;
@@ -367,7 +364,7 @@ void DetectorSceneModel::mousePressEvent(QGraphicsSceneMouseEvent *event)
             break;
 
         case INTERACTION_MODE::MASK:
-            _current_graphics_item = new MaskGraphicsItem(_data,_top_left_position);
+            _current_graphics_item = new MaskGraphicsItem(_data,_top_left_position,true);
             addItem(_current_graphics_item);
             break;
 
@@ -531,6 +528,7 @@ void DetectorSceneModel::loadCurrentImage()
     drawIntegrationRegion();
 
     setSceneRect(_zoom_stack.back());
+
     emit signalDetectorSceneChanged();
 }
 
@@ -657,7 +655,9 @@ void DetectorSceneModel::changeColorMap(const ColorMap &color_map)
 
 void DetectorSceneModel::resetScene()
 {
+    // Remove all graphics items from the scene and delete them
     clear();
+
     _data = nullptr;
     _current_frame_index = -1;
     _zoom_window = nullptr;

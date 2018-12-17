@@ -254,18 +254,17 @@ QVariant CollectedPeaksModel::data(const QModelIndex &index, int role) const
             auto unit_cell = _peaks[row]->unitCell();
             if (unit_cell) {
                 return QString::fromStdString(unit_cell->name());
-            }
-            else {
+            } else {
                 return QString("not set");
             }
         }
         case Column::status: {
-            return PeakStatusToString(_peaks[row]);
+            return (_peaks[row]->masked() ? "masked" : PeakStatusToString(_peaks[row]));
         }
         }
         break;
-    case Qt::ForegroundRole: {
-        return PeakStatusToColor(_peaks[row]);
+    case Qt::BackgroundRole: {
+        return QBrush(_peaks[row]->masked() ? Qt::gray : Qt::white);
         break;
     }
     case Qt::ToolTipRole:

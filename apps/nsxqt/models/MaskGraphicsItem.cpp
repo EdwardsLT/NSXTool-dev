@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iostream>
 #include <numeric>
 
 #include <Eigen/Dense>
@@ -18,7 +19,7 @@
 #include "MaskGraphicsItem.h"
 #include "SessionModel.h"
 
-MaskGraphicsItem::MaskGraphicsItem(nsx::sptrDataSet data, const QPointF& from, QGraphicsItem *parent)
+MaskGraphicsItem::MaskGraphicsItem(nsx::sptrDataSet data, const QPointF& from, bool add, QGraphicsItem *parent)
 : DrawableGraphicsItem(data,from,parent),
   _mask(std::shared_ptr<nsx::Mask>(new nsx::Mask(nsx::AABB())))
 {
@@ -30,7 +31,9 @@ MaskGraphicsItem::MaskGraphicsItem(nsx::sptrDataSet data, const QPointF& from, Q
     _text->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     _text->setParentItem(this);
 
-    _data->addMask(_mask);
+    if (add) {
+        _data->addMask(_mask);
+    }
 }
 
 void MaskGraphicsItem::updateMask()
@@ -41,8 +44,6 @@ void MaskGraphicsItem::updateMask()
     _mask->aabb().setLower({tl.x(),tl.y(),0});
 
     _mask->aabb().setUpper({br.x(),br.y(),static_cast<double>(_data->nFrames())});
-
-    _data->addMask(_mask);
 
     auto *detector_scene_model = dynamic_cast<DetectorSceneModel*>(scene());
     if (detector_scene_model) {
@@ -63,11 +64,7 @@ void MaskGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
 
     painter->setBrush(QBrush(QColor(255,0,0,100)));
 
-    // Color depending on selection
-    if (option->state & QStyle::State_Selected)
-        _pen.setStyle(Qt::DashLine);
-    else
-        _pen.setStyle(Qt::SolidLine);
+    _pen.setStyle(option->state & QStyle::State_Selected ? Qt::DashLine : Qt::SolidLine);
 
     painter->setRenderHint(QPainter::HighQualityAntialiasing);
     painter->setPen(_pen);

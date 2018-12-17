@@ -59,8 +59,6 @@ Peak3D::Peak3D(sptrDataSet data):
     _unitCell(nullptr),
     _scale(1.0),
     _status(Status::Selected),
-    _selected(true),
-    _masked(false),
     _predicted(true),
     _transmission(1.0),
     _data(data),
@@ -148,7 +146,7 @@ void Peak3D::setTransmission(double transmission)
 
 bool Peak3D::enabled() const
 {
-    return (!_masked && _selected);
+    return (!masked() && _status == Status::Selected);
 }
 
 Peak3D::Status Peak3D::status() const

@@ -26,7 +26,7 @@ class QWidget;
 class MaskGraphicsItem : public DrawableGraphicsItem {
 public:
     // Constructs a mask
-    MaskGraphicsItem(nsx::sptrDataSet data, const QPointF& from, QGraphicsItem *parent=nullptr);
+    MaskGraphicsItem(nsx::sptrDataSet data, const QPointF& from, bool add=true, QGraphicsItem *parent=nullptr);
 
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 

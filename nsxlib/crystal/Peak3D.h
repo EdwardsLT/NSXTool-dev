@@ -169,10 +169,6 @@ private:
 
     Status _status;
 
-    bool _selected;
-
-    bool _masked;
-
     bool _predicted;
 
     double _transmission;
