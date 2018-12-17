@@ -47,7 +47,6 @@
 #include "NumorItem.h"
 #include "PeaksItem.h"
 #include "PeakListItem.h"
-#include "PeakTableView.h"
 #include "ProgressView.h"
 #include "QCustomPlot.h"
 #include "SampleItem.h"

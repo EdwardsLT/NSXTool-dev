@@ -3,16 +3,17 @@
 #include <nsxlib/ProgressHandler.h>
 #include <nsxlib/UnitCell.h>
 
-#include "ui_DialogPredictPeaks.h"
-#include "CollectedPeaksModel.h"
 #include "DataItem.h"
 #include "DialogPredictPeaks.h"
 #include "ExperimentItem.h"
 #include "LibraryItem.h"
 #include "MetaTypes.h"
 #include "PeakListItem.h"
+#include "PeakListModel.h"
 #include "PeaksItem.h"
 #include "ProgressView.h"
+
+#include "ui_DialogPredictPeaks.h"
 
 DialogPredictPeaks* DialogPredictPeaks::_instance = nullptr;
 
@@ -47,7 +48,7 @@ DialogPredictPeaks::DialogPredictPeaks(ExperimentItem* experiment_item, const ns
         _ui->unitCells->addItem(QString::fromStdString(unit_cell->name()),QVariant::fromValue(unit_cell));
     }
 
-    _peaks_model = new CollectedPeaksModel(_experiment_item->model(),_experiment_item->experiment(),{});
+    _peaks_model = new PeakListModel(_experiment_item->model(),_experiment_item->experiment(),{});
     _ui->predictedPeaks->setModel(_peaks_model);
 
     connect(_ui->actions,SIGNAL(clicked(QAbstractButton*)),this,SLOT(slotActionClicked(QAbstractButton*)));

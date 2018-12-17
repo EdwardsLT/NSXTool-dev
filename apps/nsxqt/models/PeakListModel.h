@@ -15,16 +15,16 @@ class QObject;
 
 class SessionModel;
 
-class CollectedPeaksModel : public QAbstractTableModel
+class PeakListModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
 
     enum Column {h,k,l,px,py,frame,intensity,sigmaIntensity,numor,unitCell,status,count};
 
-    CollectedPeaksModel(SessionModel* session, nsx::sptrExperiment experiment, const nsx::PeakList& peaks, QObject *parent=nullptr);
+    PeakListModel(SessionModel* session_model, nsx::sptrExperiment experiment, const nsx::PeakList& peaks, QObject *parent=nullptr);
 
-    CollectedPeaksModel(SessionModel* session, nsx::sptrExperiment experiment,QObject* parent=nullptr);
+    PeakListModel(SessionModel* session_model, nsx::sptrExperiment experiment,QObject* parent=nullptr);
 
     virtual int rowCount(const QModelIndex& parent) const override;
 
@@ -76,8 +76,9 @@ signals:
 
 private:
 
-    SessionModel* _session;
+    SessionModel* _session_model;
 
     nsx::sptrExperiment _experiment;
+
     nsx::PeakList _peaks;
 };

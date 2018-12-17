@@ -88,7 +88,6 @@
 #include "MetaTypes.h"
 #include "NumorItem.h"
 #include "PeakListItem.h"
-#include "PeakTableView.h"
 #include "ProgressView.h"
 #include "QCustomPlot.h"
 #include "PeaksItem.h"

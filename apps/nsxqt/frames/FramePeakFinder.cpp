@@ -28,7 +28,6 @@
 #include <nsxlib/PeakFinder.h>
 #include <nsxlib/PixelSumIntegrator.h>
 
-#include "CollectedPeaksModel.h"
 #include "DoubleItemDelegate.h"
 #include "ExperimentItem.h"
 #include "FramePeakFinder.h"
@@ -36,7 +35,7 @@
 #include "MetaTypes.h"
 #include "PeakListItem.h"
 #include "PeaksItem.h"
-#include "PeakTableView.h"
+#include "PeakListView.h"
 #include "TaskManagerModel.h"
 #include "WidgetFoundPeaks.h"
 

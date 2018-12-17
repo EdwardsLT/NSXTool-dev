@@ -1,8 +1,8 @@
 #include <nsxlib/Experiment.h>
 #include <nsxlib/Peak3D.h>
 
-#include "CollectedPeaksModel.h"
 #include "ExperimentItem.h"
+#include "PeakListModel.h"
 #include "SessionModel.h"
 #include "WidgetFoundPeaks.h"
 
@@ -12,7 +12,7 @@ WidgetFoundPeaks::WidgetFoundPeaks(ExperimentItem *experiment_item, const nsx::P
 {
     _ui->setupUi(this);
 
-    CollectedPeaksModel *peaks_model = new CollectedPeaksModel(experiment_item->model(),experiment_item->experiment(),peaks,this);
+    PeakListModel *peaks_model = new PeakListModel(experiment_item->model(),experiment_item->experiment(),peaks,this);
     _ui->peaks->setModel(peaks_model);
 }
 
@@ -23,7 +23,7 @@ WidgetFoundPeaks::~WidgetFoundPeaks()
 
 nsx::PeakList WidgetFoundPeaks::selectedPeaks() const
 {
-    auto peaks_model = dynamic_cast<CollectedPeaksModel*>(_ui->peaks->model());
+    auto peaks_model = dynamic_cast<PeakListModel*>(_ui->peaks->model());
 
     auto peaks = peaks_model->peaks();
 

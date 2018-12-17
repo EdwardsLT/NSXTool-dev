@@ -3,14 +3,11 @@
 #include <QStandardItem>
 #include <QWidget>
 
-#include "CollectedPeaksModel.h"
-
-#include "PeakTableView.h"
-
 namespace Ui {
 class PeaksPropertyWidget;
 }
 
+class PeakListModel;
 class PeaksItem;
 
 class PeaksPropertyWidget : public QWidget {
@@ -22,7 +19,7 @@ public:
 
     ~PeaksPropertyWidget();
 
-    CollectedPeaksModel* model();
+    PeakListModel* model();
 
 private:
 

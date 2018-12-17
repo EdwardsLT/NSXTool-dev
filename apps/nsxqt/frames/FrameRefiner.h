@@ -12,7 +12,6 @@ namespace Ui {
 class FrameRefiner;
 }
 
-class CollectedPeaksModel;
 class ExperimentItem;
 class QAbstractButton;
 class QWidget;

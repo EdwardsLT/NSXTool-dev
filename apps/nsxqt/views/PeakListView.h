@@ -48,12 +48,12 @@ class QWidget;
 
 class PeakCustomPlot;
 
-class PeakTableView : public QTableView
+class PeakListView : public QTableView
 {
     Q_OBJECT
 public:
 
-    explicit PeakTableView(QWidget* parent = 0);
+    explicit PeakListView(QWidget* parent = 0);
 
     void contextMenuEvent(QContextMenuEvent *);
 

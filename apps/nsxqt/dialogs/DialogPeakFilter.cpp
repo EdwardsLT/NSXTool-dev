@@ -13,10 +13,10 @@
 #include <nsxlib/UnitCell.h>
 
 #include "ui_DialogPeakFilter.h"
-#include "CollectedPeaksModel.h"
 #include "DialogPeakFilter.h"
 #include "ExperimentItem.h"
 #include "PeakListItem.h"
+#include "PeakListModel.h"
 #include "PeaksItem.h"
 #include "MetaTypes.h"
 
@@ -99,7 +99,7 @@ DialogPeakFilter::DialogPeakFilter(ExperimentItem* experiment_item, const nsx::P
         _ui->unitCells->addItem(QString::fromStdString(unit_cell->name()),QVariant::fromValue(unit_cell));
     }
 
-    _peaks_model = new CollectedPeaksModel(_experiment_item->model(),_experiment_item->experiment(),_peaks);
+    _peaks_model = new PeakListModel(_experiment_item->model(),_experiment_item->experiment(),_peaks);
     _ui->peaks->setModel(_peaks_model);
 
     connect(_ui->unitCells,SIGNAL(currentIndexChanged(int)),this,SLOT(slotUnitCellChanged(int)));

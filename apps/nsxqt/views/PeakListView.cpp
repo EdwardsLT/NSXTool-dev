@@ -18,11 +18,11 @@
 #include <nsxlib/ProgressHandler.h>
 #include <nsxlib/UnitCell.h>
 
-#include "CollectedPeaksModel.h"
-#include "PeakTableView.h"
+#include "PeakListModel.h"
+#include "PeakListView.h"
 #include "SessionModel.h"
 
-PeakTableView::PeakTableView(QWidget *parent)
+PeakListView::PeakListView(QWidget *parent)
 : QTableView(parent)
 {
     setEditTriggers(QAbstractItemView::SelectedClicked);
@@ -44,18 +44,18 @@ PeakTableView::PeakTableView(QWidget *parent)
     connect(this,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(togglePeakSelection(QModelIndex)));
 }
 
-void PeakTableView::selectPeak(QModelIndex index)
+void PeakListView::selectPeak(QModelIndex index)
 {
     if (!index.isValid()) {
         return;
     }
 
-    CollectedPeaksModel* peaks_model = dynamic_cast<CollectedPeaksModel*>(model());
+    PeakListModel* peaks_model = dynamic_cast<PeakListModel*>(model());
 
     peaks_model->selectPeak(index);
 }
 
-void PeakTableView::keyPressEvent(QKeyEvent *event)
+void PeakListView::keyPressEvent(QKeyEvent *event)
 {
     auto previous_index = currentIndex();
 
@@ -83,9 +83,9 @@ void PeakTableView::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void PeakTableView::togglePeakSelection(QModelIndex index)
+void PeakListView::togglePeakSelection(QModelIndex index)
 {
-    auto peaks_model = dynamic_cast<CollectedPeaksModel*>(model());
+    auto peaks_model = dynamic_cast<PeakListModel*>(model());
     if (peaks_model == nullptr) {
         return;
     }
@@ -93,9 +93,9 @@ void PeakTableView::togglePeakSelection(QModelIndex index)
     peaks_model->togglePeakSelection(index);
 }
 
-void PeakTableView::contextMenuEvent(QContextMenuEvent* event)
+void PeakListView::contextMenuEvent(QContextMenuEvent* event)
 {
-    auto peaksModel = dynamic_cast<CollectedPeaksModel*>(model());
+    auto peaksModel = dynamic_cast<PeakListModel*>(model());
     if (peaksModel == nullptr) {
         return;
     }
@@ -161,7 +161,7 @@ void PeakTableView::contextMenuEvent(QContextMenuEvent* event)
     connect(togglePeaksSelection,SIGNAL(triggered()),this,SLOT(togglePeaksSelection()));
 }
 
-void PeakTableView::normalizeToMonitor()
+void PeakListView::normalizeToMonitor()
 {
     bool ok;
     double factor = QInputDialog::getDouble(this,"Enter normalization factor","",1,1,100000000,1,&ok);
@@ -170,7 +170,7 @@ void PeakTableView::normalizeToMonitor()
         return;
     }
 
-    auto peaksModel = dynamic_cast<CollectedPeaksModel*>(model());
+    auto peaksModel = dynamic_cast<PeakListModel*>(model());
     if (peaksModel == nullptr) {
         return;
     }
@@ -195,14 +195,14 @@ void PeakTableView::normalizeToMonitor()
     emit plotPeak(peak);
 }
 
-void PeakTableView::plotAs(const std::string& key)
+void PeakListView::plotAs(const std::string& key)
 {
     QModelIndexList indexList = selectionModel()->selectedIndexes();
     if (!indexList.size()) {
         return;
     }
 
-    auto peaksModel = dynamic_cast<CollectedPeaksModel*>(model());
+    auto peaksModel = dynamic_cast<PeakListModel*>(model());
     if (peaksModel == nullptr) {
         return;
     }
@@ -227,9 +227,9 @@ void PeakTableView::plotAs(const std::string& key)
     emit plotData(x,y,e);
 }
 
-void PeakTableView::selectUnindexedPeaks()
+void PeakListView::selectUnindexedPeaks()
 {
-    auto peaksModel = dynamic_cast<CollectedPeaksModel*>(model());
+    auto peaksModel = dynamic_cast<PeakListModel*>(model());
     if (peaksModel == nullptr) {
         return;
     }
@@ -240,17 +240,17 @@ void PeakTableView::selectUnindexedPeaks()
     }
 }
 
-void PeakTableView::selectAllPeaks()
+void PeakListView::selectAllPeaks()
 {
     selectAll();
 }
 
-void PeakTableView::clearSelectedPeaks()
+void PeakListView::clearSelectedPeaks()
 {
     clearSelection();
 }
 
-void PeakTableView::togglePeaksSelection()
+void PeakListView::togglePeaksSelection()
 {
     QItemSelectionModel *selection = selectionModel();
 
@@ -259,9 +259,9 @@ void PeakTableView::togglePeaksSelection()
     }
 }
 
-void PeakTableView::selectValidPeaks()
+void PeakListView::selectValidPeaks()
 {
-    auto peaksModel = dynamic_cast<CollectedPeaksModel*>(model());
+    auto peaksModel = dynamic_cast<PeakListModel*>(model());
     if (peaksModel == nullptr) {
         return;
     }

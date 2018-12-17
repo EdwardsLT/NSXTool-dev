@@ -38,7 +38,6 @@
 #include "MainWindow.h"
 #include "NoteBook.h"
 #include "PeakGraphicsItem.h"
-#include "PeakTableView.h"
 #include "PlotterFactory.h"
 #include "QtStreamWrapper.h"
 #include "SessionModel.h"

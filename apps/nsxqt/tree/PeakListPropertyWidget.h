@@ -5,8 +5,7 @@
 #include <QStandardItem>
 #include <QWidget>
 
-#include "CollectedPeaksModel.h"
-#include "PeakTableView.h"
+#include "PeakListModel.h"
 
 namespace Ui {
 class PeakListPropertyWidget;
@@ -23,7 +22,7 @@ public:
 
     ~PeakListPropertyWidget();
 
-    CollectedPeaksModel* model();
+    PeakListModel* model();
 
 private:
     PeakListItem* _peak_list_item;

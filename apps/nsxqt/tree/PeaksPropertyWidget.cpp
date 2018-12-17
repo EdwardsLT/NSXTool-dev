@@ -11,7 +11,8 @@
 #include "InstrumentItem.h"
 #include "PeaksItem.h"
 #include "PeaksPropertyWidget.h"
-#include "PeakTableView.h"
+#include "PeakListModel.h"
+#include "PeakListView.h"
 #include "SampleItem.h"
 #include "UnitCellItem.h"
 
@@ -24,7 +25,7 @@ PeaksPropertyWidget::PeaksPropertyWidget(PeaksItem* peaks_item, QWidget *parent)
 {
     ui->setupUi(this);
 
-    auto* peaks_model = new CollectedPeaksModel(_peaks_item->model(),_peaks_item->experiment(), _peaks_item->selectedPeaks(), this);
+    auto* peaks_model = new PeakListModel(_peaks_item->model(),_peaks_item->experiment(), _peaks_item->selectedPeaks(), this);
 
     ui->tableView->setModel(peaks_model);
 }
@@ -34,7 +35,7 @@ PeaksPropertyWidget::~PeaksPropertyWidget()
     delete ui;
 }
 
-CollectedPeaksModel* PeaksPropertyWidget::model()
+PeakListModel* PeaksPropertyWidget::model()
 {
-    return dynamic_cast<CollectedPeaksModel*>(ui->tableView->model());
+    return dynamic_cast<PeakListModel*>(ui->tableView->model());
 }

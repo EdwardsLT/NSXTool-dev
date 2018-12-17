@@ -4,8 +4,8 @@
 
 #include <nsxlib/CrystalTypes.h>
 
-class CollectedPeaksModel;
 class ExperimentItem;
+class PeakListModel;
 class QAbstractButton;
 
 namespace Ui {
@@ -57,5 +57,5 @@ private:
 
     ExperimentItem *_experiment_item;
 
-    CollectedPeaksModel* _peaks_model;
+    PeakListModel  *_peaks_model;
 };

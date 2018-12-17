@@ -430,7 +430,7 @@
       </layout>
      </item>
      <item>
-      <widget class="PeakTableView" name="peaks"/>
+      <widget class="PeakListView" name="peaks"/>
      </item>
     </layout>
    </item>
@@ -448,9 +448,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PeakTableView</class>
+   <class>PeakListView</class>
    <extends>QTableView</extends>
-   <header>PeakTableView.h</header>
+   <header>PeakListView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

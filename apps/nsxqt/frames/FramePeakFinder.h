@@ -19,7 +19,6 @@ class ITask;
 }
 
 class ExperimentItem;
-class PeakTableView;
 class QAbstractButton;
 class QCheckBox;
 class QDialogButtonBox;
