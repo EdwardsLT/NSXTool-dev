@@ -25,19 +25,23 @@ QColor PeakStatusToColor(nsx::sptrPeak3D peak)
 
     switch (status) {
     case nsx::Peak3D::Status::Selected:
-        return Qt::black;
+        // black
+        return QColor(0,0,0);
     case nsx::Peak3D::Status::Unselected:
-        return Qt::red;
+        // red
+        return QColor(255,0,0);
     case nsx::Peak3D::Status::OutOfBounds:
-        return Qt::yellow;
+        // orange
+        return QColor(255,128,0);
     case nsx::Peak3D::Status::NotIndexed:
-        return Qt::green;
+        // green
+        return QColor(0,153,0);
     case nsx::Peak3D::Status::BadlyIntegrated:
-        return Qt::magenta;
+        return QColor(153,0,76);
     case nsx::Peak3D::Status::BadlyPredicted:
-        return Qt::darkRed;
+        return QColor(153,153,0);
     case nsx::Peak3D::Status::Unknown:
-        return Qt::cyan;
+        return QColor(0,51,102);
     }
 }
 

@@ -70,21 +70,26 @@ PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int current_frame, QGra
 
     auto peak_ellipsoid = _peak->shape();
 
-    peak_ellipsoid.scale(_peak->peakEnd());
+    peak_ellipsoid.scale(_peak->bkgEnd());
 
     auto& aabb = peak_ellipsoid.aabb();
 
     _lower = aabb.lower();
     _upper = aabb.upper();
 
-    auto center = peak_ellipsoid.intersectionCenter({0.0,0.0,1.0},{0.0,0.0,static_cast<double>(current_frame)});
-
     QPen info_box_pen;
     info_box_pen.setColor(PeakStatusToColor(_peak));
     info_box_pen.setStyle(Qt::DotLine);
 
+    auto aabb_center = aabb.center();
+    auto aabb_extents = aabb.extents();
+
+    // Compute the center of the ellipse resulting from the intersection between the peak ellipsoid and the plane (0,0,frame)
+    auto&& center = peak_ellipsoid.intersectionCenter({0.0,0.0,1.0},{0.0,0.0,static_cast<double>(current_frame)});
+
     _box_graphics_item = new QGraphicsRectItem(this);
-    _box_graphics_item->setRect(-10,-10,20,20);
+    _box_graphics_item->setPos(aabb_center[0] - center[0],aabb_center[1] - center[1]);
+    _box_graphics_item->setRect(-aabb_extents[0]/2,-aabb_extents[1]/2,aabb_extents[0],aabb_extents[1]);
     _box_graphics_item->setPen(info_box_pen);
     _box_graphics_item->setZValue(-1);
     _box_graphics_item->setAcceptHoverEvents(false);
