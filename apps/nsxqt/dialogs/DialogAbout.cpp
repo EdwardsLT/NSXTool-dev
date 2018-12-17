@@ -17,8 +17,6 @@
 #include "CustomEventFilters.h"
 #include "DialogAbout.h"
 
-#include <QDebug>
-
 namespace
 {
 

@@ -1,5 +1,4 @@
 #include <QApplication>
-#include <QDebug>
 #include <QColor>
 #include <QMouseEvent>
 #include <QPainter>

@@ -3,8 +3,6 @@
 #include <QList>
 #include <QMenu>
 
-#include <QDebug>
-
 class MainWindow;
 class QAction;
 class QActionGroup;
