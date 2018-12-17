@@ -51,6 +51,9 @@ namespace nsx {
 class Peak3D {
 
 public:
+
+    enum class Status {Selected,Unselected,OutOfBounds,NotIndexed,BadlyIntegrated,BadlyPredicted,Unknown};
+
     //! Create peak belonging to data without setting a position, shape, or intensity
     Peak3D(sptrDataSet data);
     //! Create peak belonging to data with given shape
@@ -94,10 +97,12 @@ public:
     //! Set the scaling factor.
     void setScale(double factor);
 
-    //! Set the peak selection state
-    void setSelected(bool);
+    //! Get the peak status
+    Status status() const;
+    //! Set the peak status
+    void setStatus(Status status);
 
-    //! Return the peak selection state
+    //! Return true if the peak has a Selected status
     bool selected() const;
 
     //! Return the peak masking state
@@ -139,25 +144,37 @@ public:
     #endif
 
 private:
+
     //! Shape describing the Peak zone
     Ellipsoid _shape;
+
     //! Raw intensity (count), background corrected
     Intensity _rawIntensity;
+
     //! Mean background estimate
     Intensity _meanBackground;
+
     //! Shape scale factor for peak
     double _peakEnd;
+
     //! Shape scale factor for start of background
     double _bkgBegin;
+
     //! Shape scale factor for end of background
     double _bkgEnd;
 
     sptrUnitCell _unitCell;
    
     double _scale;
+
+    Status _status;
+
     bool _selected;
+
     bool _masked;
+
     bool _predicted;
+
     double _transmission;
 
     sptrDataSet _data;

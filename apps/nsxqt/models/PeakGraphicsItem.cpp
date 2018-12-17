@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include <Eigen/Dense>
 
 #include <QPainter>
@@ -11,13 +9,12 @@
 #include <nsxlib/Diffractometer.h>
 #include <nsxlib/Ellipsoid.h>
 #include <nsxlib/IDataReader.h>
-#include <nsxlib/InstrumentState.h>
-#include <nsxlib/MetaData.h>
 #include <nsxlib/MillerIndex.h>
 #include <nsxlib/Peak3D.h>
 #include <nsxlib/UnitCell.h>
 
 #include "PeakGraphicsItem.h"
+#include "PeaksUtils.h"
 #include "SimplePlot.h"
 #include "SXPlot.h"
 
@@ -59,14 +56,14 @@ PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int current_frame, QGra
 
     QPen center_pen;
     center_pen.setCosmetic(true);
-    center_pen.setColor(Qt::red);
+    center_pen.setColor(PeakStatusToColor(_peak));
     center_pen.setStyle(Qt::SolidLine);
 
     _center_graphics_item = new QGraphicsEllipseItem(this);
     _center_graphics_item->setPen(center_pen);
     _center_graphics_item->setRect(-1,-1,2,2);
     _center_graphics_item->setParentItem(this);
-    _center_graphics_item->setBrush(QBrush(Qt::red));
+    _center_graphics_item->setBrush(QBrush(PeakStatusToColor(_peak)));
     _center_graphics_item->setAcceptHoverEvents(false);
     _center_graphics_item->setZValue(-1);
     _center_graphics_item->setVisible(_show_center);
@@ -83,7 +80,7 @@ PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int current_frame, QGra
     auto center = peak_ellipsoid.intersectionCenter({0.0,0.0,1.0},{0.0,0.0,static_cast<double>(current_frame)});
 
     QPen info_box_pen;
-    info_box_pen.setColor(Qt::darkCyan);
+    info_box_pen.setColor(PeakStatusToColor(_peak));
     info_box_pen.setStyle(Qt::DotLine);
 
     _box_graphics_item = new QGraphicsRectItem(this);

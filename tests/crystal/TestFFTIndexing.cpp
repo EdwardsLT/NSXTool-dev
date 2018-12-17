@@ -67,7 +67,7 @@ int main()
         // dummy shape
         try {
             peak->setShape(nsx::Ellipsoid(center, 1.0));
-            peak->setSelected(true);
+            peak->setStatus(nsx::Peak3D::Status::Selected);
             peaks.push_back(peak);
 
             nsx::MillerIndex hkl(peak->q(), uc);

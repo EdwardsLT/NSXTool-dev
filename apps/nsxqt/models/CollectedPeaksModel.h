@@ -20,7 +20,7 @@ class CollectedPeaksModel : public QAbstractTableModel
     Q_OBJECT
 public:
 
-    enum Column {h,k,l,px,py,frame,intensity,sigmaIntensity,numor,unitCell,count};
+    enum Column {h,k,l,px,py,frame,intensity,sigmaIntensity,numor,unitCell,status,count};
 
     CollectedPeaksModel(SessionModel* session, nsx::sptrExperiment experiment, const nsx::PeakList& peaks, QObject *parent=nullptr);
 

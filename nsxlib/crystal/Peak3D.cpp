@@ -58,6 +58,7 @@ Peak3D::Peak3D(sptrDataSet data):
     _shape(),
     _unitCell(nullptr),
     _scale(1.0),
+    _status(Status::Selected),
     _selected(true),
     _masked(false),
     _predicted(true),
@@ -150,14 +151,19 @@ bool Peak3D::enabled() const
     return (!_masked && _selected);
 }
 
-void Peak3D::setSelected(bool s)
+Peak3D::Status Peak3D::status() const
 {
-    _selected = s;
+    return _status;
+}
+
+void Peak3D::setStatus(Peak3D::Status status)
+{
+    _status = status;
 }
 
 bool Peak3D::selected() const
 {
-    return _selected;
+    return _status == Status::Selected;
 }
 
 bool Peak3D::masked() const

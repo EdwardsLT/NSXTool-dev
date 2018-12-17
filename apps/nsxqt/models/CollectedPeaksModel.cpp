@@ -22,6 +22,7 @@
 #include <nsxlib/UnitCell.h>
 
 #include "CollectedPeaksModel.h"
+#include "PeaksUtils.h"
 #include "ProgressView.h"
 #include "SessionModel.h"
 
@@ -181,6 +182,9 @@ QVariant CollectedPeaksModel::headerData(int section, Qt::Orientation orientatio
         case Column::unitCell: {
             return QString("unit cell");
         }
+        case Column::status: {
+            return QString("status");
+        }
         default:
             return QVariant();
         }
@@ -246,7 +250,7 @@ QVariant CollectedPeaksModel::data(const QModelIndex &index, int role) const
         case Column::numor: {
             return _peaks[row]->data()->reader()->metadata().key<int>("Numor");
         }
-        case Column::unitCell:
+        case Column::unitCell: {
             auto unit_cell = _peaks[row]->unitCell();
             if (unit_cell) {
                 return QString::fromStdString(unit_cell->name());
@@ -255,25 +259,23 @@ QVariant CollectedPeaksModel::data(const QModelIndex &index, int role) const
                 return QString("not set");
             }
         }
+        case Column::status: {
+            return PeakStatusToString(_peaks[row]);
+        }
+        }
         break;
     case Qt::ForegroundRole: {
-
-        if (_peaks[row]->enabled()) {
-            return QBrush(Qt::black);
-        } else {
-            return QBrush(Qt::red);
-        }
-
+        return PeakStatusToColor(_peaks[row]);
         break;
     }
     case Qt::ToolTipRole:
         switch (column) {
-            case Column::h:                
-                return hkl[0]+hkl_error[0];
-            case Column::k:                
-                return hkl[1]+hkl_error[1];
-            case Column::l:                
-                return hkl[2]+hkl_error[2];
+        case Column::h:
+            return hkl[0]+hkl_error[0];
+        case Column::k:
+            return hkl[1]+hkl_error[1];
+        case Column::l:
+            return hkl[2]+hkl_error[2];
         }
         break;
     }
@@ -385,6 +387,14 @@ void CollectedPeaksModel::sort(int column, Qt::SortOrder order)
         };
         break;
     }
+    case Column::status: {
+        compareFn = [&](nsx::sptrPeak3D p1, const nsx::sptrPeak3D p2) {
+            auto status1 = p1->status();
+            auto status2 = p2->status();
+            return (status1<status2);
+        };
+        break;
+    }
     }
     std::sort(_peaks.begin(), _peaks.end(), compareFn);
 
@@ -400,7 +410,9 @@ void CollectedPeaksModel::togglePeakSelection(QModelIndex peak_index)
 
     auto peak = _peaks[row];
 
-    peak->setSelected(!(peak->selected()));
+    using Status = nsx::Peak3D::Status;
+
+    peak->setStatus(peak->status() == Status::Selected ? Status::Unselected : Status::Selected);
 
     QModelIndex topleft_index = index(row,0);
     QModelIndex bottomright_index = index(row,columnCount(QModelIndex())-1);

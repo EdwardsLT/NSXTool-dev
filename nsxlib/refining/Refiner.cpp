@@ -177,7 +177,7 @@ int Refiner::updatePredictions(PeakList& peaks) const
 
         // something wrong with new prediction...
         if (events.size() != 1) {
-            peak->setSelected(false);
+            peak->setStatus(Peak3D::Status::BadlyPredicted);
             continue;
         }
         
@@ -185,7 +185,7 @@ int Refiner::updatePredictions(PeakList& peaks) const
             peak->setShape(Ellipsoid({events[0]._px, events[0]._py, events[0]._frame}, peak->shape().metric()));
             ++updated;
         } catch(...) {
-            peak->setSelected(false);
+            peak->setStatus(Peak3D::Status::BadlyPredicted);
         }
         
     }

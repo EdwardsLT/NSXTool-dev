@@ -133,6 +133,8 @@ void DetectorSceneModel::changeEnabledPeak(nsx::sptrPeak3D peak)
     Q_UNUSED(peak)
 
     loadCurrentImage();
+
+    update();
 }
 
 void DetectorSceneModel::changeMaskedPeaks(const nsx::PeakList& peaks)
@@ -555,7 +557,7 @@ void DetectorSceneModel::drawIntegrationRegion()
                 auto region = nsx::IntegrationRegion(peak, peak->peakEnd(), peak->bkgBegin(), peak->bkgEnd());
                 region.updateMask(mask, _current_frame_index);
             } catch (...) {
-                peak->setSelected(false);
+                peak->setStatus(nsx::Peak3D::Status::BadlyIntegrated);
             }
         }
     }

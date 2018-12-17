@@ -52,7 +52,7 @@ int main()
     const Eigen::Vector3d q0 = Eigen::RowVector3d(-6, 12, -38)*B;
     nsx::Ellipsoid shape(Eigen::Vector3d(434, 802, 10), 2);
     auto peak = std::make_shared<nsx::Peak3D>(dataset, shape);
-    peak->setSelected(true);
+    peak->setStatus(nsx::Peak3D::Status::Selected);
 
     Eigen::Vector3d q1 = peak->q().rowVector();
     NSX_CHECK_SMALL((q1-q0).norm() / q0.norm(), 1e-1);
