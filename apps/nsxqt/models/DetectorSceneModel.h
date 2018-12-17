@@ -13,7 +13,6 @@
 
 #include <nsxlib/CrystalTypes.h>
 #include <nsxlib/DataTypes.h>
-#include <nsxlib/IMask.h>
 
 #include "ColorMap.h"
 
