@@ -77,10 +77,6 @@ PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int current_frame, QGra
     _lower = aabb.lower();
     _upper = aabb.upper();
 
-    QPen info_box_pen;
-    info_box_pen.setColor(PeakStatusToColor(_peak));
-    info_box_pen.setStyle(Qt::DotLine);
-
     auto aabb_center = aabb.center();
     auto aabb_extents = aabb.extents();
 
@@ -90,7 +86,6 @@ PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int current_frame, QGra
     _box_graphics_item = new QGraphicsRectItem(this);
     _box_graphics_item->setPos(aabb_center[0] - center[0],aabb_center[1] - center[1]);
     _box_graphics_item->setRect(-aabb_extents[0]/2,-aabb_extents[1]/2,aabb_extents[0],aabb_extents[1]);
-    _box_graphics_item->setPen(info_box_pen);
     _box_graphics_item->setZValue(-1);
     _box_graphics_item->setAcceptHoverEvents(false);
     _box_graphics_item->setVisible(_show_box);
@@ -108,6 +103,12 @@ void PeakGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
     Q_UNUSED(painter)
     Q_UNUSED(option)
     Q_UNUSED(widget)
+
+    QPen info_box_pen;
+    info_box_pen.setColor(PeakStatusToColor(_peak));
+    info_box_pen.setStyle(Qt::DotLine);
+
+    _box_graphics_item->setPen(info_box_pen);
 }
 
 void PeakGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
