@@ -10,9 +10,10 @@
 #include <nsxlib/CrystalTypes.h>
 #include <nsxlib/DataSet.h>
 #include <nsxlib/Detector.h>
+#include <nsxlib/DirectVector.h>
 #include <nsxlib/Diffractometer.h>
 #include <nsxlib/IDataReader.h>
-#include <nsxlib/InstrumentState.h>
+#include <nsxlib/InterpolatedState.h>
 #include <nsxlib/Logger.h>
 #include <nsxlib/MetaData.h>
 #include <nsxlib/MillerIndex.h>
@@ -20,31 +21,53 @@
 #include <nsxlib/PeakFilter.h>
 #include <nsxlib/ReciprocalVector.h>
 #include <nsxlib/UnitCell.h>
+#include <nsxlib/Units.h>
 
 #include "PeakListModel.h"
 #include "PeaksUtils.h"
 #include "ProgressView.h"
 #include "SessionModel.h"
 
-struct PeakFactors {
-
-    double gamma;
-    double nu;
-    double lorentz;
-};
-
-static PeakFactors peakFactors(nsx::sptrPeak3D peak)
+QString PeakListModelColumnToString(int column)
 {
-    auto coord = peak->shape().center();
-    auto state = peak->data()->interpolatedState(coord[2]);
-    auto position = peak->data()->reader()->diffractometer()->detector()->pixelPosition(coord[0], coord[1]);
+    auto section = static_cast<PeakListModel::Column>(column);
 
-    PeakFactors peak_factors;
-    peak_factors.gamma = state.gamma(position);
-    peak_factors.nu = state.nu(position);
-    peak_factors.lorentz = state.lorentzFactor(coord[0], coord[1]);
-
-    return peak_factors;
+    switch(section) {
+    case PeakListModel::Column::H:
+        return QString("h");
+    case PeakListModel::Column::K:
+        return QString("k");
+    case PeakListModel::Column::L:
+        return QString("l");
+    case PeakListModel::Column::PixelX:
+        return QString("pixel x");
+    case PeakListModel::Column::PixelY:
+        return QString("pixel y");
+    case PeakListModel::Column::Frame:
+        return QString("frame");
+    case PeakListModel::Column::Gamma:
+        return QString("%1 (%2)").arg(QChar(0x03B3)).arg(QChar(0x00B0));
+    case PeakListModel::Column::Nu:
+        return QString("%1 (%2)").arg(QChar(0x03B7)).arg(QChar(0x00B0));
+    case PeakListModel::Column::TwoTheta:
+        return QString("%1 (%2)").arg(QChar(0x03B8)).arg(QChar(0x00B0));
+    case PeakListModel::Column::DSpacing:
+        return QString("d");
+    case PeakListModel::Column::LorentzFactor:
+        return QString("lorentz factor");
+    case PeakListModel::Column::Intensity:
+        return QString("intensity");
+    case PeakListModel::Column::SigmaIntensity:
+        return QString(QChar(0x03C3))+"(intensity)";
+    case PeakListModel::Column::DataSet:
+        return QString("dataset");
+    case PeakListModel::Column::UnitCell:
+        return QString("unit cell");
+    case PeakListModel::Column::Status:
+        return QString("status");
+    default:
+        return QString();
+    }
 }
 
 PeakListModel::PeakListModel(SessionModel* session_model, nsx::sptrExperiment experiment, const nsx::PeakList &peaks, QObject *parent)
@@ -125,7 +148,7 @@ int PeakListModel::columnCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
 
-    return Column::count;
+    return Column::Count;
 }
 
 void PeakListModel::reset()
@@ -150,47 +173,7 @@ QVariant PeakListModel::headerData(int section, Qt::Orientation orientation, int
         return QVariant();
     }
 
-    if (orientation == Qt::Horizontal) {
-        switch(section) {
-        case Column::h: {
-            return QString("h");
-        }
-        case Column::k: {
-            return QString("k");
-        }
-        case Column::l: {
-            return QString("l");
-        }
-        case Column::px: {
-            return QString("pixel x");
-        }
-        case Column::py: {
-            return QString("pixel y");
-        }
-        case Column::frame: {
-            return QString("frame");
-        }
-        case Column::intensity: {
-            return QString("intensity");
-        }
-        case Column::sigmaIntensity: {
-            return QString(QChar(0x03C3))+"(intensity)";
-        }
-        case Column::numor: {
-            return QString("numor");
-        }
-        case Column::unitCell: {
-            return QString("unit cell");
-        }
-        case Column::status: {
-            return QString("status");
-        }
-        default:
-            return QVariant();
-        }
-    } else {
-        return QVariant(section+1);
-    }
+    return (orientation == Qt::Horizontal ? PeakListModelColumnToString(section) : QVariant(section+1));
 }
 
 QVariant PeakListModel::data(const QModelIndex &index, int role) const
@@ -213,67 +196,86 @@ QVariant PeakListModel::data(const QModelIndex &index, int role) const
         }
     }
 
-    double intensity = _peaks[row]->correctedIntensity().value();
-    double sigma_intensity = _peaks[row]->correctedIntensity().sigma();
+    auto peak = _peaks[row];
 
-    auto peak_center = _peaks[row]->shape().center();
+    double intensity = peak->correctedIntensity().value();
+    double sigma_intensity = peak->correctedIntensity().sigma();
+
+    auto peak_center = nsx::DirectVector(peak->shape().center());
+
+    auto state = peak->data()->interpolatedState(peak_center(2));
 
     switch (role) {
 
     case Qt::DisplayRole:        
 
         switch (column) {
-        case Column::h: {
+        case Column::H: {
             return hkl(0);
         }
-        case Column::k: {
+        case Column::K: {
             return hkl(1);
         }
-        case Column::l: {
+        case Column::L: {
             return hkl(2);
         }
-        case Column::px: {
+        case Column::PixelX: {
             return peak_center(0);
         }
-        case Column::py: {
+        case Column::PixelY: {
             return peak_center(1);
         }
-        case Column::frame: {
+        case Column::Frame: {
             return peak_center(2);
         }
-        case Column::intensity: {
+        case Column::Gamma: {
+            return state.gamma(peak_center)/nsx::deg;
+        }
+        case Column::Nu: {
+            return state.nu(peak_center)/nsx::deg;
+        }
+        case Column::TwoTheta: {
+            return state.twoTheta(peak_center)/nsx::deg;
+        }
+        case Column::DSpacing: {
+            return peak->d();
+        }
+        case Column::LorentzFactor: {
+            return state.lorentzFactor(peak_center[0],peak_center[1]);
+        }
+        case Column::Intensity: {
             return intensity;
         }
-        case Column::sigmaIntensity: {
+        case Column::SigmaIntensity: {
             return sigma_intensity;
         }
-        case Column::numor: {
-            return _peaks[row]->data()->reader()->metadata().key<int>("Numor");
+        case Column::DataSet: {
+            return peak->data()->reader()->metadata().key<int>("Numor");
         }
-        case Column::unitCell: {
-            auto unit_cell = _peaks[row]->unitCell();
+        case Column::UnitCell: {
+            auto unit_cell = peak->unitCell();
             if (unit_cell) {
                 return QString::fromStdString(unit_cell->name());
             } else {
                 return QString("not set");
             }
         }
-        case Column::status: {
-            return (_peaks[row]->masked() ? "masked" : PeakStatusToString(_peaks[row]));
+        case Column::Status: {
+            return (peak->masked() ? "masked" : PeakStatusToString(_peaks[row]));
         }
         }
         break;
     case Qt::BackgroundRole: {
-        return QBrush(_peaks[row]->masked() ? Qt::gray : Qt::white);
+        return QBrush(peak->masked() ? Qt::gray : Qt::white);
         break;
     }
     case Qt::ToolTipRole:
         switch (column) {
-        case Column::h:
+        case Column::H:
             return hkl[0]+hkl_error[0];
-        case Column::k:
+        case Column::K:
             return hkl[1]+hkl_error[1];
-        case Column::l:
+        case Column::L:
             return hkl[2]+hkl_error[2];
         }
         break;
@@ -286,7 +288,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
     std::function<bool(nsx::sptrPeak3D, nsx::sptrPeak3D)> compareFn = [](nsx::sptrPeak3D, nsx::sptrPeak3D) { return false; };
 
     switch (column) {
-    case Column::h: {
+    case Column::H: {
         compareFn = [&](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
             auto cell1 = p1->unitCell();
             auto cell2 = p2->unitCell();
@@ -300,7 +302,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         };
         break;
     }
-    case Column::k: {
+    case Column::K: {
         compareFn = [&](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
             auto cell1 = p1->unitCell();
             auto cell2 = p2->unitCell();
@@ -314,7 +316,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         };
         break;
     }
-    case Column::l: {
+    case Column::L: {
         compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
             auto cell1 = p1->unitCell();
             auto cell2 = p2->unitCell();
@@ -328,7 +330,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         };
         break;
     }
-    case Column::px: {
+    case Column::PixelX: {
         compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
             auto center1 = p1->shape().center();
             auto center2 = p2->shape().center();
@@ -336,7 +338,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         };
         break;
     }
-    case Column::py: {
+    case Column::PixelY: {
         compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
             auto center1 = p1->shape().center();
             auto center2 = p2->shape().center();
@@ -344,7 +346,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         };
         break;
     }
-    case Column::frame: {
+    case Column::Frame: {
         compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
             auto center1 = p1->shape().center();
             auto center2 = p2->shape().center();
@@ -352,7 +354,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         };
         break;
     }
-    case  Column::intensity: {
+    case  Column::Intensity: {
         compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
             auto intensity1 = p1->correctedIntensity().value();
             auto intensity2 = p2->correctedIntensity().value();
@@ -360,7 +362,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         };
         break;
     }
-    case Column::sigmaIntensity: {
+    case Column::SigmaIntensity: {
         compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
             auto sigma_intensity1 = p1->correctedIntensity().sigma();
             auto sigma_intensity2 = p2->correctedIntensity().sigma();
@@ -368,7 +370,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         };
         break;
     }
-    case Column::numor: {
+    case Column::DataSet: {
         compareFn = [&](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
             int numor1=p1->data()->reader()->metadata().key<int>("Numor");
             int numor2=p2->data()->reader()->metadata().key<int>("Numor");
@@ -376,7 +378,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         };
         break;
     }
-    case Column::unitCell: {
+    case Column::UnitCell: {
         compareFn = [&](nsx::sptrPeak3D p1, const nsx::sptrPeak3D p2) {
             auto uc1 = p1->unitCell();
             auto uc2 = p2->unitCell();
@@ -386,7 +388,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         };
         break;
     }
-    case Column::status: {
+    case Column::Status: {
         compareFn = [&](nsx::sptrPeak3D p1, const nsx::sptrPeak3D p2) {
             auto status1 = p1->status();
             auto status2 = p2->status();

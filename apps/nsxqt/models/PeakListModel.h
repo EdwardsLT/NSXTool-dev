@@ -15,12 +15,14 @@ class QObject;
 
 class SessionModel;
 
+QString PeakListModelColumnToString(int column);
+
 class PeakListModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
 
-    enum Column {h,k,l,px,py,frame,intensity,sigmaIntensity,numor,unitCell,status,count};
+    enum Column {H,K,L,PixelX,PixelY,Frame,Gamma,Nu,TwoTheta,DSpacing,LorentzFactor,Intensity,SigmaIntensity,DataSet,UnitCell,Status,Count};
 
     PeakListModel(SessionModel* session_model, nsx::sptrExperiment experiment, const nsx::PeakList& peaks, QObject *parent=nullptr);
 

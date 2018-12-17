@@ -218,6 +218,11 @@ ReciprocalVector Peak3D::q() const
     return state.sampleQ(detector_position);
 }
 
+double Peak3D::d() const
+{
+    return 1.0/q().rowVector().norm();
+}
+
 //! This method computes an ellipsoid in q-space which is approximately the transformation from
 //! detector space to q-space of its shape ellipsoid (which is computed during blob search).
 //!

@@ -152,7 +152,7 @@ void DetectorMenu::createActions()
     auto color_maps = ColorMap::colorMaps();
     _color_map_action_group = new QActionGroup(_main_window);
     for (auto&& color_map : color_maps) {
-        QAction* color_map_action = new QAction(color_map.c_str(),_main_window);
+        QAction* color_map_action = _color_map_action_group->addAction(color_map.c_str());
         color_map_action->setCheckable(true);
         color_map_action->setChecked(false);
         color_map_action->setActionGroup(_color_map_action_group);

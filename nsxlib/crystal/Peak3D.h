@@ -139,6 +139,8 @@ public:
     //! Return peak center at the given frame
     DetectorEvent predictCenter(double frame) const;
 
+    double d() const;
+
     #ifndef SWIG
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     #endif

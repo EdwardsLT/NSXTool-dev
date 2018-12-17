@@ -2,11 +2,14 @@
 #include <memory>
 #include <set>
 
+#include <QAction>
+#include <QActionGroup>
 #include <QContextMenuEvent>
 #include <QHeaderView>
 #include <QInputDialog>
 #include <QItemSelectionModel>
 #include <QMessageBox>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QStandardItemModel>
 
@@ -38,6 +41,9 @@ PeakListView::PeakListView(QWidget *parent)
     verticalHeader()->show();
 
     setFocusPolicy(Qt::StrongFocus);
+
+    _display_column_states.resize(PeakListModel::Column::Count);
+    _display_column_states.fill(true);
 
     connect(this,SIGNAL(clicked(QModelIndex)),this,SLOT(selectPeak(QModelIndex)));
 
@@ -108,19 +114,33 @@ void PeakListView::contextMenuEvent(QContextMenuEvent* event)
     auto menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
-    //
-    QAction* sortbyEquivalence=new QAction("Sort by equivalences",menu);
-    menu->addAction(sortbyEquivalence);
+    QAction* sortbyEquivalence = menu->addAction("Sort by equivalences");
     connect(sortbyEquivalence,SIGNAL(triggered()),peaksModel,SLOT(sortEquivalents()));
 
-    auto normalize = new QAction("Normalize to monitor", menu);
     menu->addSeparator();
-    menu->addAction(normalize);
+
+    auto normalize = menu->addAction("Normalize to monitor");
+    connect(normalize,SIGNAL(triggered()),this,SLOT(normalizeToMonitor()));
+
+    menu->addSeparator();
+
+    auto *column_menu = menu->addMenu("Column");
+    _display_column_action_group = new QActionGroup(column_menu);
+    _display_column_action_group->setExclusive(false);
+    for (int i = 0; i < PeakListModel::Column::Count; ++i) {
+        auto * action = _display_column_action_group->addAction(PeakListModelColumnToString(i));
+        action->setCheckable(true);
+        action->setChecked(_display_column_states[i]);
+        column_menu->addAction(action);
+    }
+    connect(_display_column_action_group,&QActionGroup::triggered,this,&PeakListView::displayColumn);
+
+    menu->addSeparator();
 
     // Menu to plot against metadata
     QModelIndexList indexList = selectionModel()->selectedIndexes();
 
-    if (indexList.size()) {
+    if (!indexList.empty()) {
         QMenu* plotasmenu=menu->addMenu("Plot as");
         const auto& metadata = peaks[indexList[0].row()]->data()->reader()->metadata();
         const auto& keys = metadata.keys();
@@ -131,34 +151,46 @@ void PeakListView::contextMenuEvent(QContextMenuEvent* event)
             } catch(std::exception& e) {
                 continue;
             }
-            QAction* newparam=new QAction(QString::fromStdString(key),plotasmenu);
+            QAction* newparam = plotasmenu->addAction(QString::fromStdString(key));
             connect(newparam,&QAction::triggered,this,[&](){plotAs(key);});
-            plotasmenu->addAction(newparam);
         }
     }
+
     menu->addSeparator();
-    QMenu* selectionMenu=menu->addMenu("Selection");
-    auto selectAllPeaks=new QAction("all peaks",menu);
-    auto selectValidPeaks=new QAction("valid peaks",menu);
-    auto selectUnindexedPeaks=new QAction("unindexed peaks",menu);
-    auto clearSelectedPeaks=new QAction("clear selection",menu);
-    auto togglePeaksSelection=new QAction("toggle",menu);
-    selectionMenu->addAction(selectAllPeaks);
-    selectionMenu->addAction(selectValidPeaks);
-    selectionMenu->addAction(selectUnindexedPeaks);
-    selectionMenu->addSeparator();
-    selectionMenu->addAction(clearSelectedPeaks);
-    selectionMenu->addSeparator();
-    selectionMenu->addAction(togglePeaksSelection);
 
-    connect(normalize,SIGNAL(triggered()),this,SLOT(normalizeToMonitor()));
-    menu->popup(event->globalPos());
+    QMenu* selectionMenu = menu->addMenu("Selection");
 
-    connect(clearSelectedPeaks,SIGNAL(triggered()),this,SLOT(clearSelectedPeaks()));
+    auto *selectAllPeaks = selectionMenu->addAction("all peaks");
     connect(selectAllPeaks,SIGNAL(triggered()),this,SLOT(selectAllPeaks()));
+
+    auto *selectValidPeaks = selectionMenu->addAction("valid peaks");
     connect(selectValidPeaks,SIGNAL(triggered()),this,SLOT(selectValidPeaks()));
+
+    auto *selectUnindexedPeaks = selectionMenu->addAction("unindexed peaks");
     connect(selectUnindexedPeaks,SIGNAL(triggered()),this,SLOT(selectUnindexedPeaks()));
+
+    auto *clearSelectedPeaks = selectionMenu->addAction("clear selection");
+    connect(clearSelectedPeaks,SIGNAL(triggered()),this,SLOT(clearSelectedPeaks()));
+
+    auto *togglePeaksSelection = selectionMenu->addAction("toggle selection");
     connect(togglePeaksSelection,SIGNAL(triggered()),this,SLOT(togglePeaksSelection()));
+
+    menu->popup(event->globalPos());
+}
+
+void PeakListView::displayColumn(QAction *column_action)
+{
+    Q_UNUSED(column_action)
+
+    auto column_actions = _display_column_action_group->actions();
+    for (int i = 0; i < column_actions.size(); ++i) {
+        _display_column_states[i] = column_actions[i]->isChecked();
+        if (column_actions[i]->isChecked()) {
+            showColumn(i);
+        } else {
+            hideColumn(i);
+        }
+    }
 }
 
 void PeakListView::normalizeToMonitor()

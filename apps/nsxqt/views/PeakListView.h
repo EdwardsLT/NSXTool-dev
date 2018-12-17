@@ -30,17 +30,15 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 
 #include <QFileDialog>
-#include <QMenu>
 #include <QTableView>
 
 #include <nsxlib/CrystalTypes.h>
 
-#include <MainWindow.h>
-
+class QAction;
+class QActionGroup;
 class QContextMenuEvent;
 class QMouseEvent;
 class QString;
@@ -92,4 +90,11 @@ private:
     void sortBySelected(bool up);
     void sortByTransmission(bool up);
     void constructTable();
+    void displayColumn(QAction *column_action);
+
+private:
+
+    QActionGroup *_display_column_action_group;
+
+    QVector<bool> _display_column_states;
 };
