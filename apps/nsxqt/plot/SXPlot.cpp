@@ -11,6 +11,7 @@
 SXPlot::SXPlot(QWidget *parent) : QCustomPlot(parent)
 {
    legend->setSelectableParts(QCPLegend::spItems);
+
    connect(this, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
    connect(this, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
    connect(this, SIGNAL(titleDoubleClick(QMouseEvent*,QCPPlotTitle*)), this, SLOT(titleDoubleClick(QMouseEvent*,QCPPlotTitle*)));
@@ -19,11 +20,6 @@ SXPlot::SXPlot(QWidget *parent) : QCustomPlot(parent)
    // Enable right button click to export ASCII data
    setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(setmenuRequested(QPoint)));
-}
-
-void SXPlot::update(PlottableGraphicsItem *item)
-{
-    Q_UNUSED(item)
 }
 
 std::string SXPlot::getType() const

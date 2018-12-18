@@ -80,7 +80,6 @@
 
 #include "DataItem.h"
 #include "DetectorItem.h"
-#include "DetectorScene.h"
 #include "DialogExperiment.h"
 #include "ExperimentItem.h"
 #include "GLSphere.h"
@@ -89,7 +88,6 @@
 #include "MetaTypes.h"
 #include "NumorItem.h"
 #include "PeakListItem.h"
-#include "PeakTableView.h"
 #include "ProgressView.h"
 #include "QCustomPlot.h"
 #include "PeaksItem.h"
@@ -99,15 +97,19 @@
 #include "TreeItem.h"
 #include "UnitCellItem.h"
 
-#include "ui_MainWindow.h"
-
 SessionModel::SessionModel()
+: _color_map(),
+  _detector_view_transformation()
 {
+    setDetectorViewTransformation(DETECTOR_VIEW::FROM_SAMPLE);
     connect(this,SIGNAL(itemChanged(QStandardItem*)),this,SLOT(onItemChanged(QStandardItem*)));
 }
 
-SessionModel::~SessionModel()
+bool SessionModel::removeRows(int row, int count, const QModelIndex& parent)
 {
+    emit signalResetScene();
+
+    return QStandardItemModel::removeRows(row,count,parent);
 }
 
 ExperimentItem* SessionModel::selectExperiment(nsx::sptrDataSet data)
@@ -145,7 +147,7 @@ void SessionModel::onItemChanged(QStandardItem *item)
 {
     Q_UNUSED(item)
 
-    emit updatePeaks();
+    emit signalUpdatePeaks();
 }
 
 nsx::PeakList SessionModel::peaks(nsx::sptrDataSet data) const
@@ -171,4 +173,46 @@ void SessionModel::addExperiment(nsx::sptrExperiment experiment)
     // Create an experiment item out of the experiment
     ExperimentItem* expt = new ExperimentItem(experiment);
     appendRow(expt);
+}
+
+void SessionModel::selectPeak(nsx::sptrPeak3D selected_peak)
+{
+    emit signalChangeSelectedPeak(selected_peak);
+}
+
+void SessionModel::setColorMap(const ColorMap &color_map)
+{
+    _color_map = color_map;
+
+    emit signalChangeColorMap(_color_map);
+}
+
+const ColorMap& SessionModel::colorMap() const
+{
+    return _color_map;
+}
+
+void SessionModel::setDetectorViewTransformation(DETECTOR_VIEW detector_view)
+{
+    QTransform detector_view_transformation;
+
+    switch (detector_view) {
+    case (DETECTOR_VIEW::FROM_SAMPLE):
+        detector_view_transformation.scale(1,-1);
+        break;
+    case (DETECTOR_VIEW::FROM_BEHIND):
+        detector_view_transformation.scale(-1,-1);
+        break;
+    default:
+        break;
+    }
+
+    _detector_view_transformation = detector_view_transformation;
+
+    emit signalChangeDetectorViewTransformation(_detector_view_transformation);
+}
+
+const QTransform& SessionModel::detectorViewTranformation() const
+{
+    return _detector_view_transformation;
 }

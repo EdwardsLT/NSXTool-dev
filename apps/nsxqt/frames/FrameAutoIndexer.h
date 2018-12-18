@@ -11,8 +11,8 @@ namespace Ui {
 class FrameAutoIndexer;
 }
 
-class CollectedPeaksModel;
 class ExperimentItem;
+class PeakListModel;
 class QAbstractButton;
 
 class FrameAutoIndexer : public NSXQFrame
@@ -57,7 +57,7 @@ private:
 
     ExperimentItem *_experiment_item;
 
-    CollectedPeaksModel *_peaks_model;
+    PeakListModel *_peaks_model;
 
     std::vector<std::pair<nsx::sptrPeak3D,std::shared_ptr<nsx::UnitCell>>> _defaults;
 

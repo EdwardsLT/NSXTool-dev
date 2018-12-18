@@ -2,36 +2,37 @@
 
 #include <string>
 
-#include <QGraphicsScene>
 #include <QMainWindow>
-#include <QMenu>
-#include <QProgressBar>
+#include <QVector>
 
 #include <nsxlib/CrystalTypes.h>
 #include <nsxlib/DataSet.h>
 #include <nsxlib/DataTypes.h>
 #include <nsxlib/UtilsTypes.h>
 
-#include "ProgressView.h"
-#include "TaskManagerModel.h"
-
-class DataItem;
-class NSXMenu;
-class PlottableGraphicsItem;
-class QListWidgetItem;
+class ActionManager;
+class DetectorSceneModel;
+class DetectorSceneView;
+class NoteBook;
+class QCloseEvent;
+class QDockWidget;
+class QSlider;
+class QSpinBox;
 class QStatusBar;
+class QVBoxLayout;
+class QWidget;
 class SessionModel;
-
-namespace Ui {
-class MainWindow;
-}
-
-class QProgressDialog;
+class SessionTreeView;
+class SXPlot;
+class TaskManagerModel;
+class TaskManagerView;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
+
+    enum class DOCKABLE_WIDGETS {SESSION=0, TASK_MANAGER=0, LOGGER=2, PLOTTER=3, PROPERTY=4, COUNT=5};
 
     MainWindow(QWidget *parent=nullptr);
 
@@ -39,65 +40,77 @@ public:
 
     virtual void closeEvent(QCloseEvent *event) override;
 
+    DetectorSceneModel* detectorSceneModel();
+
+    SessionModel* sessionModel();
+
     TaskManagerModel* taskManagerModel();
+
+    void toggleDockableWidgetState(DOCKABLE_WIDGETS dockable_widget_index);
 
 public slots:
 
-    void plotData(const QVector<double>&,const QVector<double>&,const QVector<double>&);
+    void onChangeContrastLevel(int contrast_level);
 
-    void setInspectorWidget(QWidget*);
+    void onChangeSelectedData(nsx::sptrDataSet, int frame);
 
-    void onOpenPeakFinderDialog(DataItem *data_item);
+    void onChangeSelectedFrame(int selected_frame);
+
+    void onDisplaySessionItemPropertyWidget(QWidget*);
 
     void onNewExperiment();
-    void onTogglePlotterPanel();
-    void onToggleMonitorPanel();
-    void onToggleWidgetPropertyPanel();
-    void onViewDetectorFromBehind();
-    void onViewDetectorFromSample();
 
-    void onSelectPixelPositionCursorMode();
-    void onSelectGammaNuCursorMode();
-    void onSelect2ThetaCursorMode();
-    void onSelectDSpacingCursorMode();
-    void onSelectMillerIndicesCursorMode();
+    void onChangePlot(SXPlot *plot);
 
-    void onDisplayPeakAreas(bool flag);
-    void onDisplayPeakIntegrationAreas(bool flag);
-    void onDisplayPeakLabels(bool flag);
-
-    void onSetColorMap(const std::string& color_map);
-
-private slots:
-
-    void updatePlot(PlottableGraphicsItem* cutter);
-
-    void on_checkBox_AspectRatio_toggled(bool checked);
-
-    void on_actionLogarithmic_Scale_triggered(bool checked);
-
-
-    void slotChangeSelectedData(nsx::sptrDataSet, int frame);
-
-    void slotChangeSelectedPeak(nsx::sptrPeak3D peak);
-
-    void slotChangeSelectedFrame(int selected_frame);
+    void onChangeSelectedPeak(nsx::sptrPeak3D selected_peak);
 
 private:
 
-    void initLoggers();
+    void createActions();
+
+    void createConnections();
+
+    void createDockWindows();
+
+    void createLoggers();
+
+    void createMainWindow();
+
+    void createModels();
+
+    void createStatusBar();
 
 private:
 
-    Ui::MainWindow* _ui;
-
-    NSXMenu *_menu_bar;
-
-    QStatusBar *_status_bar;
+    DetectorSceneModel *_detector_scene_model;
 
     SessionModel *_session_model;
 
     TaskManagerModel *_task_manager_model;
 
-    std::string _color_map;
+    QVBoxLayout *_main_layout;
+
+    std::vector<QDockWidget*> _dockable_widgets;
+
+    DetectorSceneView *_detector_scene_view;
+
+    QSlider *_frame_slider;
+
+    QSpinBox *_frame_value;
+
+    QSlider *_contrast_level_slider;
+
+    QSpinBox *_contrast_level_value;
+
+    SessionTreeView *_session_tree_view;
+
+    TaskManagerView *_task_manager_view;
+
+    NoteBook *_logger;
+
+    SXPlot *_plotter;
+
+    QWidget *_property_widget;
+
+    ActionManager *_action_manager;
 };

@@ -13,8 +13,8 @@ namespace Ui {
 class DialogPeakFilter;
 }
 
-class CollectedPeaksModel;
 class ExperimentItem;
+class PeakListModel;
 
 class DialogPeakFilter : public QDialog {
     Q_OBJECT
@@ -49,7 +49,7 @@ private:
 
     ExperimentItem *_experiment_item;
 
-    CollectedPeaksModel *_peaks_model;
+    PeakListModel *_peaks_model;
 
     nsx::PeakList _peaks;
 };

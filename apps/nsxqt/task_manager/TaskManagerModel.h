@@ -17,7 +17,7 @@ class TaskManagerModel : public QAbstractTableModel
 
 public:
 
-    TaskManagerModel(QObject *parent = nullptr);
+    TaskManagerModel(QObject *parent=nullptr);
 
     ~TaskManagerModel();
 

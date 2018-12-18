@@ -19,7 +19,6 @@ class ITask;
 }
 
 class ExperimentItem;
-class PeakTableView;
 class QAbstractButton;
 class QCheckBox;
 class QDialogButtonBox;
@@ -46,13 +45,13 @@ public:
 
     virtual ~FramePeakFinder();
 
-    void setColorMap(const std::string &name);
-
     virtual void showEvent(QShowEvent*) override;
 
     virtual void resizeEvent(QResizeEvent*) override;
 
 private slots:
+
+    void onChangeColorMap(const ColorMap &name);
 
     //! Update peak finder maximum blob size for a peak
     void changeMaxBlobSize();
@@ -122,7 +121,7 @@ private:
 
     QGraphicsPixmapItem *_pixmap;
 
-    std::unique_ptr<ColorMap> _colormap;
+    ColorMap _color_map;
 
     std::set<std::shared_ptr<nsx::PeakFinder>> _peak_finders;
 };

@@ -10,8 +10,9 @@
 #include "ExperimentItem.h"
 #include "InstrumentItem.h"
 #include "PeakListItem.h"
+#include "PeakListModel.h"
 #include "PeakListPropertyWidget.h"
-#include "PeakTableView.h"
+#include "PeakListView.h"
 #include "SampleItem.h"
 #include "UnitCellItem.h"
 
@@ -30,7 +31,7 @@ PeakListPropertyWidget::PeakListPropertyWidget(PeakListItem* peak_list_item, QWi
         peaks.push_back(peak);
     }
 
-    auto* peaks_model = new CollectedPeaksModel(peak_list_item->model(),peak_list_item->experiment(), peaks, this);
+    auto* peaks_model = new PeakListModel(peak_list_item->model(),peak_list_item->experiment(), peaks, this);
 
     _ui->tableView->setModel(peaks_model);
 
@@ -43,7 +44,7 @@ PeakListPropertyWidget::~PeakListPropertyWidget()
     delete _ui;
 }
 
-CollectedPeaksModel* PeakListPropertyWidget::model()
+PeakListModel* PeakListPropertyWidget::model()
 {
-    return dynamic_cast<CollectedPeaksModel*>(_ui->tableView->model());
+    return dynamic_cast<PeakListModel*>(_ui->tableView->model());
 }

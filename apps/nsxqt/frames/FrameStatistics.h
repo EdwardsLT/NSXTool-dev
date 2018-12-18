@@ -12,7 +12,6 @@ namespace Ui {
 class FrameStatistics;
 }
 
-class CollectedPeaksModel;
 class ExperimentItem;
 class QAbstractButton;
 class QTableView;

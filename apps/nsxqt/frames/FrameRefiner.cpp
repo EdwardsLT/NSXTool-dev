@@ -1,10 +1,10 @@
 #include <nsxlib/Logger.h>
 #include <nsxlib/Peak3D.h>
 
-#include "CollectedPeaksModel.h"
 #include "DoubleItemDelegate.h"
 #include "ExperimentItem.h"
 #include "FrameRefiner.h"
+#include "PeakListModel.h"
 #include "PeaksItem.h"
 #include "SXPlot.h"
 #include "WidgetRefinerFit.h"
@@ -36,7 +36,7 @@ FrameRefiner::FrameRefiner(ExperimentItem* experiment_item, const nsx::PeakList 
 
     _ui->tabs->tabBar()->tabButton(0,QTabBar::RightSide)->hide();
 
-    CollectedPeaksModel *peaks_model = new CollectedPeaksModel(_experiment_item->model(),_experiment_item->experiment(),peaks);
+    PeakListModel *peaks_model = new PeakListModel(_experiment_item->model(),_experiment_item->experiment(),peaks);
     _ui->peaks->setModel(peaks_model);
     _ui->peaks->selectAll();
 
@@ -102,7 +102,7 @@ void FrameRefiner::refine()
         return;
     }
 
-    auto peaks_model = dynamic_cast<CollectedPeaksModel*>(_ui->peaks->model());
+    auto peaks_model = dynamic_cast<PeakListModel*>(_ui->peaks->model());
     auto&& peaks = peaks_model->peaks();
     nsx::PeakList selected_peaks;
     for (auto r : selected_rows) {

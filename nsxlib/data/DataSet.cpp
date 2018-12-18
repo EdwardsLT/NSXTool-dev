@@ -23,6 +23,7 @@
 #include "IDataReader.h"
 #include "IntegrationRegion.h"
 #include "Logger.h"
+#include "Mask.h"
 #include "MathematicsTypes.h"
 #include "Monochromator.h"
 #include "Path.h"
@@ -82,7 +83,7 @@ DataSet::DataSet(const DataSet &other)
     _states = other._states;
 
     for (auto m : other._masks) {
-        _masks.insert(m->clone());
+        _masks.insert(std::shared_ptr<Mask>(new Mask(*m)));
     }
 
     _iteratorCallback = other._iteratorCallback;
@@ -107,7 +108,7 @@ DataSet& DataSet::operator=(const DataSet &other)
         _states = other._states;
 
         for (auto m : other._masks) {
-            _masks.insert(m->clone());
+            _masks.insert(std::shared_ptr<Mask>(new Mask(*m)));
         }
 
         _iteratorCallback = other._iteratorCallback;
@@ -337,12 +338,12 @@ void DataSet::saveHDF5(const std::string& filename) //const
     blosc_destroy();
 }
 
-void DataSet::addMask(IMask* mask)
+void DataSet::addMask(std::shared_ptr<Mask> mask)
 {
     _masks.insert(mask);
 }
 
-void DataSet::removeMask(IMask* mask)
+void DataSet::removeMask(std::shared_ptr<Mask> mask)
 {
     auto&& p = _masks.find(mask);
     if (p != _masks.end()) {
@@ -350,28 +351,9 @@ void DataSet::removeMask(IMask* mask)
     }
 }
 
-const std::set<IMask*>& DataSet::masks()
+const std::set<std::shared_ptr<Mask>>& DataSet::masks()
 {
     return _masks;
-}
-
-void DataSet::maskPeaks(PeakList& peaks) const
-{
-    for (auto peak: peaks) {
-        // peak belongs to another dataset
-        if (peak->data().get() != this) {
-            continue;
-        }
-
-        peak->setMasked(false);
-        for (auto&& m : _masks) {
-            // If the background of the peak intercept the mask, unselected the peak
-            if (m->collide(peak->shape())) {
-                peak->setMasked(true);
-                break;
-            }
-        }
-    }
 }
 
 std::vector<DetectorEvent> DataSet::events(const std::vector<ReciprocalVector>& sample_qs) const

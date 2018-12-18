@@ -12,11 +12,11 @@
 #include <nsxlib/ShapeLibrary.h>
 #include <nsxlib/Logger.h>
 
-#include "CollectedPeaksModel.h"
+#include "DialogShapeLibrary.h"
 #include "ExperimentItem.h"
+#include "PeakListModel.h"
 #include "ProgressView.h"
 
-#include "DialogShapeLibrary.h"
 #include "ui_DialogShapeLibrary.h"
 
 DialogShapeLibrary::DialogShapeLibrary(ExperimentItem* experiment_item,
@@ -72,7 +72,7 @@ DialogShapeLibrary::DialogShapeLibrary(ExperimentItem* experiment_item,
     ui->sigmaD->setValue(std::sqrt(0.5*(cov(0,0)+cov(1,1))));
     ui->sigmaM->setValue(std::sqrt(cov(2,2)));
     
-    auto peaks_model = new CollectedPeaksModel(experiment_item->model(),experiment_item->experiment(),peaks);
+    auto peaks_model = new PeakListModel(experiment_item->model(),experiment_item->experiment(),peaks);
     ui->peaks->setModel(peaks_model);
     ui->peaks->verticalHeader()->show();
 
@@ -91,7 +91,7 @@ DialogShapeLibrary::~DialogShapeLibrary()
 
 void DialogShapeLibrary::selectTargetPeak(int row)
 {
-    auto model = dynamic_cast<CollectedPeaksModel*>(ui->peaks->model());
+    auto model = dynamic_cast<PeakListModel*>(ui->peaks->model());
 
     auto& peaks = model->peaks();
 

@@ -13,9 +13,9 @@
 #include <nsxlib/UserDefinedUnitCellIndexer.h>
 #include <nsxlib/Units.h>
 
-#include "CollectedPeaksModel.h"
 #include "ExperimentItem.h"
 #include "FrameUserDefinedUnitCellIndexer.h"
+#include "PeakListModel.h"
 #include "PeaksItem.h"
 #include "SessionModel.h"
 #include "UnitCellItem.h"
@@ -50,7 +50,7 @@ FrameUserDefinedUnitCellIndexer::FrameUserDefinedUnitCellIndexer(ExperimentItem*
 
     _ui->tabs->tabBar()->tabButton(0,QTabBar::RightSide)->hide();
 
-    CollectedPeaksModel *peaks_model = new CollectedPeaksModel(_experiment_item->model(),_experiment_item->experiment(),peaks);
+    PeakListModel *peaks_model = new PeakListModel(_experiment_item->model(),_experiment_item->experiment(),peaks);
     _ui->peaks->setModel(peaks_model);
     _ui->peaks->selectAll();
 
@@ -156,7 +156,7 @@ void FrameUserDefinedUnitCellIndexer::slotSelectSolution(int index)
 
     selected_unit_cell->setName("new unit cell");
 
-    auto peaks_model = dynamic_cast<CollectedPeaksModel*>(_ui->peaks->model());
+    auto peaks_model = dynamic_cast<PeakListModel*>(_ui->peaks->model());
 
     auto peaks = peaks_model->peaks();
 
@@ -210,7 +210,7 @@ void FrameUserDefinedUnitCellIndexer::slotTabEdited(int index)
     _ui->tabs->setTabText(index,unit_cell_name);
     unit_cell_tab->unitCell()->setName(unit_cell_name.toStdString());
 
-    auto peaks_model = dynamic_cast<CollectedPeaksModel*>(_ui->peaks->model());
+    auto peaks_model = dynamic_cast<PeakListModel*>(_ui->peaks->model());
 
     QModelIndex topleft_index = peaks_model->index(0,0);
     QModelIndex bottomright_index = peaks_model->index(peaks_model->rowCount(QModelIndex())-1,peaks_model->columnCount(QModelIndex())-1);
@@ -247,7 +247,7 @@ void FrameUserDefinedUnitCellIndexer::resetPeaks()
         delete tab;
     }
 
-    auto peaks_model = dynamic_cast<CollectedPeaksModel*>(_ui->peaks->model());
+    auto peaks_model = dynamic_cast<PeakListModel*>(_ui->peaks->model());
 
     // Update the peak table view
     QModelIndex topLeft = peaks_model->index(0, 0);
@@ -267,7 +267,7 @@ void FrameUserDefinedUnitCellIndexer::index()
         return;
     }
 
-    auto peaks_model = dynamic_cast<CollectedPeaksModel*>(_ui->peaks->model());
+    auto peaks_model = dynamic_cast<PeakListModel*>(_ui->peaks->model());
     auto peaks = peaks_model->peaks();
 
     nsx::PeakList selected_peaks;

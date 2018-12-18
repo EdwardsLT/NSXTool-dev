@@ -58,8 +58,7 @@ Peak3D::Peak3D(sptrDataSet data):
     _shape(),
     _unitCell(nullptr),
     _scale(1.0),
-    _selected(true),
-    _masked(false),
+    _status(Status::Selected),
     _predicted(true),
     _transmission(1.0),
     _data(data),
@@ -147,27 +146,36 @@ void Peak3D::setTransmission(double transmission)
 
 bool Peak3D::enabled() const
 {
-    return (!_masked && _selected);
+    return (!masked() && _status == Status::Selected);
 }
 
-void Peak3D::setSelected(bool s)
+Peak3D::Status Peak3D::status() const
 {
-    _selected = s;
+    return _status;
+}
+
+void Peak3D::setStatus(Peak3D::Status status)
+{
+    _status = status;
 }
 
 bool Peak3D::selected() const
 {
-    return _selected;
-}
-
-void Peak3D::setMasked(bool masked)
-{
-    _masked = masked;
+    return _status == Status::Selected;
 }
 
 bool Peak3D::masked() const
 {
-    return _masked;
+    bool masked(false);
+    for (auto&& m : _data->masks()) {
+        // If the background of the peak intercept the mask, unselected the peak
+        if (m->collide(shape())) {
+            masked = true;
+            break;
+        }
+    }
+
+    return masked;
 }
 
 void Peak3D::setPredicted(bool predicted)
@@ -208,6 +216,11 @@ ReciprocalVector Peak3D::q() const
     const auto* detector = _data->reader()->diffractometer()->detector();
     auto detector_position = DirectVector(detector->pixelPosition(pixel_coords[0], pixel_coords[1]));
     return state.sampleQ(detector_position);
+}
+
+double Peak3D::d() const
+{
+    return 1.0/q().rowVector().norm();
 }
 
 //! This method computes an ellipsoid in q-space which is approximately the transformation from

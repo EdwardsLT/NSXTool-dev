@@ -65,7 +65,7 @@ PeakList predictPeaks(ShapeLibrary library,
     for (auto peak : peaks) {
         peak->setUnitCell(unit_cell);
         peak->setPredicted(true);
-        peak->setSelected(true);
+        peak->setStatus(Peak3D::Status::Selected);
 
         // Skip the peak if any error occur when computing its mean covariance (e.g. too few or no neighbouring peaks found)
         try {

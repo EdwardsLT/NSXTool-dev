@@ -92,7 +92,7 @@ void IPeakIntegrator::integrate(PeakList peaks, sptrDataSet data, double peak_en
             regions.emplace(std::make_pair(peak, IntegrationRegion(peak, peak_end, bkg_begin, bkg_end)));
             integrated.emplace(std::make_pair(peak, false));
         } catch (...) {
-            peak->setSelected(false);
+            peak->setStatus(Peak3D::Status::BadlyIntegrated);
             continue;
         }
 
@@ -103,11 +103,11 @@ void IPeakIntegrator::integrate(PeakList peaks, sptrDataSet data, double peak_en
         auto hi = bb.upper();
 
         if (lo[0] < 0 || lo[1] < 0 || lo[2] < 0) {
-            peak->setSelected(false);
+            peak->setStatus(Peak3D::Status::OutOfBounds);
         }
 
         if (hi[0] >= data->nCols() || hi[1] >= data->nRows() || hi[2] >= data->nFrames()) {
-            peak->setSelected(false);
+            peak->setStatus(Peak3D::Status::OutOfBounds);
         }
     }
 
@@ -142,12 +142,12 @@ void IPeakIntegrator::integrate(PeakList peaks, sptrDataSet data, double peak_en
                     if (compute(peak, regions[peak])) {
                         peak->updateIntegration(*this, peak_end, bkg_begin, bkg_end);
                     } else {
-                        peak->setSelected(false);
+                        peak->setStatus(Peak3D::Status::BadlyIntegrated);
                     }
                 } catch(std::exception& e) {
                     // integration failed...
                     nsx::info() << "integration failed: " << e.what();
-                    peak->setSelected(false);
+                    peak->setStatus(Peak3D::Status::BadlyIntegrated);
                 }
                 // free memory (important!!)
                 regions[peak].reset();

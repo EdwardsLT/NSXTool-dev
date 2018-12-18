@@ -3,11 +3,13 @@
 #include <QFileDialog>
 #include <QPrinter>
 
+#include "MainWindow.h"
 #include "NoteBook.h"
 
-NoteBook::NoteBook(QWidget* parent):QTextEdit(parent)
+NoteBook::NoteBook(MainWindow* main_window) : QTextEdit(main_window)
 {
-    this->setContextMenuPolicy(Qt::CustomContextMenu);
+    setContextMenuPolicy(Qt::CustomContextMenu);
+
     connect(this,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(customMenuRequested(QPoint)));
 }
 
@@ -15,11 +17,6 @@ bool NoteBook::canInsertFromMimeData(const QMimeData* source) const
 {
     return source->hasImage() || source->hasUrls() ||
         QTextEdit::canInsertFromMimeData(source);
-}
-
-NoteBook::~NoteBook()
-{
-
 }
 
 void NoteBook::insertFromMimeData(const QMimeData* source)

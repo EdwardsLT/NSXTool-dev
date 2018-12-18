@@ -38,12 +38,14 @@
 #include "CrystalTypes.h"
 #include "DataTypes.h"
 #include "GeometryTypes.h"
-#include "IMask.h"
+#include "Mask.h"
 #include "InstrumentTypes.h"
 #include "InterpolatedState.h"
 #include "UtilsTypes.h"
 
 namespace nsx {
+
+class Mask;
 
 //! \brief Class used to manage loading detector images and metadata from disk.
 class DataSet {
@@ -85,16 +87,13 @@ public:
     InterpolatedState interpolatedState(double frame) const;
 
     //! Add a new mask to the data
-    void addMask(IMask* mask);
+    void addMask(std::shared_ptr<Mask> mask);
 
     //! Remove a mask from the data, by reference
-    void removeMask(IMask* mask);
+    void removeMask(std::shared_ptr<Mask> mask);
 
     //! Return the list of masks
-    const std::set<IMask*>& masks();
-
-    //! Mask a given peak
-    void maskPeaks(PeakList& peaks) const;
+    const std::set<std::shared_ptr<Mask>>& masks();
 
     //! Return the intensity at point x,y,z.
     int dataAt(unsigned int x=0, unsigned int y=0, unsigned int z=0);
@@ -149,7 +148,7 @@ private:
     InstrumentStateList _states;
 
     //! The set of masks bound to the data
-    std::set<IMask*> _masks;
+    std::set<std::shared_ptr<Mask>> _masks;
 
     FrameIteratorCallback _iteratorCallback;
 

@@ -34,7 +34,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="2,0,1">
        <item>
-        <widget class="PeakTableView" name="peaks"/>
+        <widget class="PeakListView" name="peaks"/>
        </item>
        <item>
         <widget class="QGroupBox" name="groupBox_2">
@@ -497,9 +497,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PeakTableView</class>
+   <class>PeakListView</class>
    <extends>QTableView</extends>
-   <header>PeakTableView.h</header>
+   <header>PeakListView.h</header>
   </customwidget>
   <customwidget>
    <class>NSXQFrame</class>

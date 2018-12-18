@@ -4,9 +4,9 @@
 #include <nsxlib/UnitCell.h>
 #include <nsxlib/Units.h>
 
-#include "CollectedPeaksModel.h"
 #include "ExperimentItem.h"
 #include "FrameAutoIndexer.h"
+#include "PeakListModel.h"
 #include "UnitCellItem.h"
 #include "UnitCellsItem.h"
 #include "WidgetUnitCell.h"
@@ -63,7 +63,7 @@ FrameAutoIndexer::FrameAutoIndexer(ExperimentItem *experiment_item, const nsx::P
     _ui->subdiv->setMaximum(999999);
     _ui->subdiv->setValue(params.subdiv);
 
-    _peaks_model = new CollectedPeaksModel(_experiment_item->model(),_experiment_item->experiment(),peaks);
+    _peaks_model = new PeakListModel(_experiment_item->model(),_experiment_item->experiment(),peaks);
     _ui->peaks->setModel(_peaks_model);
 
     _defaults.reserve(peaks.size());

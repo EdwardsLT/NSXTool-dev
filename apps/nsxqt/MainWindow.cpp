@@ -1,37 +1,25 @@
-#include <cmath>
 #include <fstream>
 #include <functional>
 #include <stdexcept>
 
-#include <Eigen/Dense>
-
 #include <QDateTime>
 #include <QDockWidget>
 #include <QFileDialog>
-#include <QGraphicsBlurEffect>
-#include <QGraphicsEllipseItem>
 #include <QMouseEvent>
 #include <QProgressDialog>
+#include <QSlider>
+#include <QSpinBox>
 #include <QStatusBar>
-#include <QShortcut>
-#include <QThread>
 #include <QTransform>
+#include <QLayout>
 
-#include <nsxlib/AABB.h>
 #include <nsxlib/AggregateStreamWrapper.h>
 #include <nsxlib/CrystalTypes.h>
 #include <nsxlib/Detector.h>
-#include <nsxlib/Diffractometer.h>
-#include <nsxlib/Ellipsoid.h>
-#include <nsxlib/GruberReduction.h>
 #include <nsxlib/LogFileStreamWrapper.h>
 #include <nsxlib/Logger.h>
-#include <nsxlib/MathematicsTypes.h>
-#include <nsxlib/NiggliReduction.h>
 #include <nsxlib/Path.h>
 #include <nsxlib/Peak3D.h>
-#include <nsxlib/PeakFilter.h>
-#include <nsxlib/PeakFinder.h>
 #include <nsxlib/ProgressHandler.h>
 #include <nsxlib/Sample.h>
 #include <nsxlib/Source.h>
@@ -40,108 +28,116 @@
 #include <nsxlib/Units.h>
 #include <nsxlib/Version.h>
 
-#include "AbsorptionWidget.h"
-#include "CollectedPeaksModel.h"
-#include "CutLineGraphicsItem.h"
-#include "CutSliceGraphicsItem.h"
-#include "CutterGraphicsItem.h"
+#include "ActionManager.h"
 #include "DataItem.h"
-#include "DetectorScene.h"
+#include "DetectorSceneModel.h"
+#include "DetectorSceneView.h"
 #include "DialogExperiment.h"
 #include "DialogIntegrate.h"
 #include "DialogPeakFilter.h"
-#include "ExperimentTree.h"
-#include "FramePeakFinder.h"
 #include "MainWindow.h"
-#include "MouseInteractionModeModel.h"
 #include "NoteBook.h"
-#include "NSXMenu.h"
 #include "PeakGraphicsItem.h"
-#include "PlottableGraphicsItem.h"
-#include "PeakTableView.h"
-#include "PlotFactory.h"
+#include "PlotterFactory.h"
 #include "QtStreamWrapper.h"
 #include "SessionModel.h"
+#include "SessionTreeView.h"
+#include "SimplePlot.h"
 #include "SXPlot.h"
-
-#include "ui_MainWindow.h"
+#include "TaskManagerModel.h"
+#include "TaskManagerView.h"
 
 MainWindow::MainWindow(QWidget *parent)
-: QMainWindow(parent),
-  _ui(new Ui::MainWindow)
+: QMainWindow(parent)
 {
-    _ui->setupUi(this);
+    createModels();
 
-    _status_bar = new QStatusBar(this);
-    setStatusBar(_status_bar);
+    createMainWindow();
 
-    _menu_bar = new NSXMenu(this);
+    createDockWindows();
 
-    // make experiment tree aware of the session
-    _session_model = new SessionModel();
-    _ui->experimentTree->setModel(_session_model);
-    _ui->experimentTree->setMainWindow(this);
+    createActions();
 
-    _task_manager_model = new TaskManagerModel(this);
-    _ui->task_manager->setModel(_task_manager_model);
+    createStatusBar();
 
-    _ui->dview->getScene()->setSession(_session_model);
+    createLoggers();
 
-    _ui->frameLayout->setEnabled(false);
-    _ui->intensityLayout->setEnabled(false);
-
-    MouseInteractionModeModel *mouse_interaction_model = new MouseInteractionModeModel(this);
-    _ui->selectionMode->setModel(mouse_interaction_model);
-
-    // Vertical splitter between Tree and Inspector Widget
-    _ui->splitterVertical->setStretchFactor(0,50);
-    _ui->splitterVertical->setStretchFactor(1,50);
-
-    // Horizontal splitter between Tree and DetectorScene
-    _ui->splitterHorizontal->setStretchFactor(0,10);
-    _ui->splitterHorizontal->setStretchFactor(1,90);
-
-    // signals and slots
-    connect(_session_model, SIGNAL(signalSelectedDataChanged(nsx::sptrDataSet,int)), this, SLOT(slotChangeSelectedData(nsx::sptrDataSet,int)));
-    connect(_session_model, SIGNAL(signalSelectedPeakChanged(nsx::sptrPeak3D)), this, SLOT(slotChangeSelectedPeak(nsx::sptrPeak3D)));
-
-    connect(_ui->frame,SIGNAL(valueChanged(int)),_ui->dview->getScene(),SLOT(slotChangeSelectedFrame(int)));
-
-    connect(_ui->intensity,SIGNAL(valueChanged(int)),_ui->dview->getScene(),SLOT(setMaxIntensity(int)));
-    connect(_ui->selectionMode,SIGNAL(currentIndexChanged(int)),_ui->dview->getScene(),SLOT(changeInteractionMode(int)));
-    connect(_ui->dview->getScene(),SIGNAL(updatePlot(PlottableGraphicsItem*)),this,SLOT(updatePlot(PlottableGraphicsItem*)));
-
-    connect(_ui->experimentTree, SIGNAL(resetScene()), _ui->dview->getScene(), SLOT(resetScene()));
-    connect(_ui->experimentTree,&ExperimentTree::openPeakFindDialog,[=](DataItem *data_item){onOpenPeakFinderDialog(data_item);});
-
-    connect(_session_model, SIGNAL(updatePeaks()), _ui->dview->getScene(), SLOT(resetPeakGraphicsItems()));
-
-    _ui->monitorDockWidget->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
-    _ui->plotterDockWidget->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
-    _ui->dockWidget_Property->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
-
-    _ui->plotterDockWidget->show();
-    _ui->dockWidget_Property->show();
-
-    connect(_ui->experimentTree,SIGNAL(inspectWidget(QWidget*)),this,SLOT(setInspectorWidget(QWidget*)));
+    createConnections();
 }
 
-void MainWindow::onDisplayPeakLabels(bool flag)
+void MainWindow::createActions()
 {
-    _ui->dview->getScene(),SLOT(showPeakLabels(flag));
+    _action_manager = new ActionManager(this);
 }
 
-void MainWindow::onDisplayPeakAreas(bool flag)
+void MainWindow::createConnections()
 {
-    _ui->dview->getScene(),SLOT(showPeakAreas(flag));
+    connect(_session_model,&SessionModel::signalSelectedDataChanged, this,&MainWindow::onChangeSelectedData);
+    connect(_session_model,&SessionModel::signalChangeSelectedPeak, this,&MainWindow::onChangeSelectedPeak);
+
+    connect(_frame_slider,&QSlider::valueChanged,this,&MainWindow::onChangeSelectedFrame);
+    connect(_frame_value,static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),this,&MainWindow::onChangeSelectedFrame);
+
+    connect(_contrast_level_slider,&QSlider::valueChanged,this,&MainWindow::onChangeContrastLevel);
+    connect(_contrast_level_value,static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),this,&MainWindow::onChangeContrastLevel);
+
+    connect(_session_model,&SessionModel::signalChangePlot,this,&MainWindow::onChangePlot);
+
+    connect(_session_tree_view,&SessionTreeView::signalSelectSessionTreeItem,this,&MainWindow::onDisplaySessionItemPropertyWidget);
 }
 
-void MainWindow::onDisplayPeakIntegrationAreas(bool flag)
+void MainWindow::createDockWindows()
 {
-    _ui->dview->getScene()->drawIntegrationRegion(flag);
+    // Setup the session tree widget
+    auto *session_tree_view_dock_widget = new QDockWidget("session",this);
+    session_tree_view_dock_widget->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
+    session_tree_view_dock_widget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    _session_tree_view = new SessionTreeView(this);
+    _session_tree_view->header()->hide();
+    _session_tree_view->setModel(_session_model);
+    session_tree_view_dock_widget->setWidget(_session_tree_view);
+    addDockWidget(Qt::LeftDockWidgetArea,session_tree_view_dock_widget);
+    _dockable_widgets.push_back(session_tree_view_dock_widget);
+
+    // Setup the task manager widget
+    auto *task_manager_view_dock_widget = new QDockWidget("tasks",this);
+    task_manager_view_dock_widget->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
+    task_manager_view_dock_widget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    _task_manager_view = new TaskManagerView(this);
+    _task_manager_view->setModel(_task_manager_model);
+    task_manager_view_dock_widget->setWidget(_task_manager_view);
+    addDockWidget(Qt::LeftDockWidgetArea,task_manager_view_dock_widget);
+    _dockable_widgets.push_back(task_manager_view_dock_widget);
+
+    // Setup the logger widget
+    auto *logger_dock_widget = new QDockWidget("logger",this);
+    logger_dock_widget->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
+    logger_dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
+    _logger = new NoteBook(this);
+    logger_dock_widget->setWidget(_logger);
+    addDockWidget(Qt::BottomDockWidgetArea,logger_dock_widget);
+    _dockable_widgets.push_back(logger_dock_widget);
+
+    // Setup the plotter widget
+    auto *plotter_dock_widget = new QDockWidget("plot",this);
+    plotter_dock_widget->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
+    plotter_dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
+    _plotter = new SXPlot(this);
+    plotter_dock_widget->setWidget(_plotter);
+    addDockWidget(Qt::BottomDockWidgetArea,plotter_dock_widget);
+    _dockable_widgets.push_back(plotter_dock_widget);
+
+    // Setup the property widget
+    auto *property_widget_dock_widget = new QDockWidget("property",this);
+    property_widget_dock_widget->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
+    property_widget_dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
+    _property_widget = new QWidget(this);
+    property_widget_dock_widget->setWidget(_property_widget);
+    addDockWidget(Qt::BottomDockWidgetArea,property_widget_dock_widget);
+    _dockable_widgets.push_back(property_widget_dock_widget);
 }
 
-void MainWindow::initLoggers()
+void MainWindow::createLoggers()
 {
     auto debug_log = [this]() -> nsx::Logger
     {
@@ -150,7 +146,7 @@ void MainWindow::initLoggers()
 
         nsx::AggregateStreamWrapper* wrapper = new nsx::AggregateStreamWrapper();
         wrapper->addWrapper(new nsx::LogFileStreamWrapper("nsx_debug.txt",initialize,finalize));
-        wrapper->addWrapper(new QtStreamWrapper(this->_ui->logger,initialize));
+        wrapper->addWrapper(new QtStreamWrapper(_logger,initialize));
 
         return nsx::Logger(wrapper);
     };
@@ -162,7 +158,7 @@ void MainWindow::initLoggers()
 
         nsx::AggregateStreamWrapper* wrapper = new nsx::AggregateStreamWrapper();
         wrapper->addWrapper(new nsx::LogFileStreamWrapper("nsx_info.txt",initialize,finalize));
-        wrapper->addWrapper(new QtStreamWrapper(this->_ui->logger,initialize));
+        wrapper->addWrapper(new QtStreamWrapper(_logger,initialize));
 
         return nsx::Logger(wrapper);
     };
@@ -174,7 +170,7 @@ void MainWindow::initLoggers()
 
         nsx::AggregateStreamWrapper* wrapper = new nsx::AggregateStreamWrapper();
         wrapper->addWrapper(new nsx::LogFileStreamWrapper("nsx_error.txt",initialize,finalize));
-        wrapper->addWrapper(new QtStreamWrapper(this->_ui->logger, initialize));
+        wrapper->addWrapper(new QtStreamWrapper(_logger, initialize));
 
         return nsx::Logger(wrapper);
     };
@@ -184,6 +180,74 @@ void MainWindow::initLoggers()
     nsx::setError(error_log);
 }
 
+void MainWindow::createMainWindow()
+{
+    _detector_scene_view = new DetectorSceneView(this);
+    _detector_scene_view->setScene(_detector_scene_model);
+
+    // The frame control settings
+
+    QGridLayout *control_layout(new QGridLayout());
+
+    QLabel *frame_label(new QLabel("frame"));
+
+    _frame_slider = new QSlider(Qt::Horizontal);
+    _frame_slider->setSingleStep(1);
+
+    _frame_value = new QSpinBox();
+    _frame_value->setSingleStep(1);
+    _frame_value->setWrapping(true);
+
+    control_layout->addWidget(frame_label,0,0);
+    control_layout->addWidget(_frame_slider,0,1);
+    control_layout->addWidget(_frame_value,0,2);
+
+    // The contrast level control settings
+
+    QLabel *contrast_level_label(new QLabel("contrast level"));
+
+    _contrast_level_slider = new QSlider(Qt::Horizontal);
+    _contrast_level_slider->setSingleStep(1);
+    _contrast_level_slider->setRange(0,1000);
+    _contrast_level_slider->setValue(_detector_scene_model->contrastLevel());
+
+    _contrast_level_value = new QSpinBox();
+    _contrast_level_value->setRange(0,1000);
+    _contrast_level_value->setSingleStep(1);
+    _contrast_level_value->setValue(_detector_scene_model->contrastLevel());
+    _contrast_level_value->setWrapping(true);
+
+    control_layout->addWidget(contrast_level_label,1,0);
+    control_layout->addWidget(_contrast_level_slider,1,1);
+    control_layout->addWidget(_contrast_level_value,1,2);
+
+    control_layout->setColumnStretch(0,0);
+    control_layout->setColumnStretch(1,1);
+    control_layout->setColumnStretch(2,0);
+
+    _main_layout = new QVBoxLayout();
+    _main_layout->addWidget(_detector_scene_view);
+    _main_layout->addLayout(control_layout);
+    _main_layout->setStretch(0,1);
+    _main_layout->setStretch(1,0);
+
+    QWidget * main_window(new QWidget());
+    main_window->setLayout(_main_layout);
+
+    setCentralWidget(main_window);
+}
+
+void MainWindow::createModels()
+{
+    _session_model = new SessionModel();
+    _detector_scene_model = new DetectorSceneModel(_session_model);
+    _task_manager_model = new TaskManagerModel();
+}
+
+void MainWindow::createStatusBar()
+{
+    statusBar()->showMessage("NSXTool session started on " + QDateTime::currentDateTime().toString());
+}
 
 void MainWindow::onNewExperiment()
 {
@@ -232,17 +296,19 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QMainWindow::closeEvent(event);
 }
 
-void MainWindow::onSetColorMap(const std::string &color_map)
+MainWindow::~MainWindow()
 {
-    _color_map = color_map;
-    _ui->dview->getScene()->setColorMap(_color_map);
+    qInstallMessageHandler(0);
 }
 
-MainWindow::~MainWindow()
-{    
-    qInstallMessageHandler(0);
+DetectorSceneModel* MainWindow::detectorSceneModel()
+{
+    return _detector_scene_model;
+}
 
-    delete _ui;
+SessionModel* MainWindow::sessionModel()
+{
+    return _session_model;
 }
 
 TaskManagerModel* MainWindow::taskManagerModel()
@@ -250,203 +316,85 @@ TaskManagerModel* MainWindow::taskManagerModel()
     return _task_manager_model;
 }
 
-void MainWindow::slotChangeSelectedData(nsx::sptrDataSet data, int frame)
+void MainWindow::onChangeSelectedData(nsx::sptrDataSet data, int frame)
 {
-    _ui->frameLayout->setEnabled(true);
-    _ui->intensityLayout->setEnabled(true);
+    int max_frames = int(data->nFrames()) - 1;
 
-    int nFrames = int(data->nFrames());
+    _frame_slider->setRange(0,max_frames);
+    _frame_slider->setValue(frame);
 
-    frame = frame%nFrames >= 0 ? frame : frame+nFrames;
-
-    _ui->frame->setValue(frame);
-
-    _ui->frame->setMinimum(0);
-    _ui->frame->setMaximum(nFrames-1);
-
-    _ui->spinBox_Frame->setMinimum(0);
-    _ui->spinBox_Frame->setMaximum(nFrames-1);
+    _frame_value->setRange(0,max_frames);
+    _frame_value->setValue(frame);
 }
 
-void MainWindow::slotChangeSelectedPeak(nsx::sptrPeak3D peak)
+void MainWindow::onChangeSelectedPeak(nsx::sptrPeak3D selected_peak)
 {
+    auto ellipsoid = selected_peak->shape();
+    ellipsoid.scale(selected_peak->bkgEnd());
+    const auto& aabb = ellipsoid.aabb();
+
+    auto data = selected_peak->data();
+
     // Get frame number to adjust the data
-    size_t frame = size_t(std::lround(peak->shape().aabb().center()[2]));
+    int frame = static_cast<int>(std::lround(aabb.center()[2]));
 
-    slotChangeSelectedData(peak->data(),frame);
+    onChangeSelectedData(data,frame);
 }
 
-void MainWindow::slotChangeSelectedFrame(int selected_frame)
+void MainWindow::onChangeSelectedFrame(int selected_frame)
 {
-    _ui->frame->setValue(selected_frame);
+    _frame_slider->setValue(selected_frame);
+    _frame_value->setValue(selected_frame);
+    _detector_scene_model->changeSelectedFrame(selected_frame);
 }
 
-void MainWindow::onSelectPixelPositionCursorMode()
+void MainWindow::onChangeContrastLevel(int contrast_level)
 {
-   _ui->dview->getScene()->changeCursorMode(DetectorScene::PIXEL);
+    _contrast_level_slider->setValue(contrast_level);
+    _contrast_level_value->setValue(contrast_level);
+    _detector_scene_model->changeContrastLevel(contrast_level);
 }
 
-void MainWindow::onSelect2ThetaCursorMode()
+void MainWindow::toggleDockableWidgetState(DOCKABLE_WIDGETS dockable_widget_index)
 {
-    _ui->dview->getScene()->changeCursorMode(DetectorScene::THETA);
-}
+    auto index = static_cast<int>(dockable_widget_index);
 
-void MainWindow::onSelectGammaNuCursorMode()
-{
-    _ui->dview->getScene()->changeCursorMode(DetectorScene::GAMMA_NU);
-}
+    auto *dockable_widget = _dockable_widgets[index];
 
-void MainWindow::onSelectDSpacingCursorMode()
-{
-    _ui->dview->getScene()->changeCursorMode(DetectorScene::D_SPACING);
-}
-
-void MainWindow::onSelectMillerIndicesCursorMode()
-{
-    _ui->dview->getScene()->changeCursorMode(DetectorScene::MILLER_INDICES);
-}
-
-void MainWindow::onToggleMonitorPanel()
-{
-    if (_ui->monitorDockWidget->isHidden()) {
-        _ui->monitorDockWidget->show();
+    if (dockable_widget->isHidden()) {
+        dockable_widget->show();
     } else {
-        _ui->monitorDockWidget->hide();
+        dockable_widget->hide();
     }
 }
 
-void MainWindow::onTogglePlotterPanel()
+void MainWindow::onChangePlot(SXPlot* plot)
 {
-    if (_ui->plotterDockWidget->isHidden())
-        _ui->plotterDockWidget->show();
-    else
-        _ui->plotterDockWidget->hide();
-}
+    QDockWidget *plotter_dock_widget = _dockable_widgets[static_cast<int>(DOCKABLE_WIDGETS::PLOTTER)];
 
-void MainWindow::onToggleWidgetPropertyPanel()
-{
-    if (_ui->dockWidget_Property->isHidden())
-        _ui->dockWidget_Property->show();
-    else
-        _ui->dockWidget_Property->hide();
-}
-
-void MainWindow::plotData(const QVector<double>& x,const QVector<double>& y,const QVector<double>& e)
-{
-    if (_ui->plot1D->getType().compare("simple") != 0) {
-        // Store the old size policy
-        QSizePolicy oldSizePolicy = _ui->plot1D->sizePolicy();
-        // Remove the current plotter from the ui
-        _ui->horizontalLayout_4->removeWidget(_ui->plot1D);
-        // Delete the plotter instance
-        delete _ui->plot1D;
-
-        PlotFactory* pFactory=PlotFactory::Instance();
-
-        _ui->plot1D = pFactory->create("simple",_ui->dockWidgetContents_4);
-
-        // Restore the size policy
-        _ui->plot1D->setSizePolicy(oldSizePolicy);
-
-        // Sets some properties of the plotter
-        _ui->plot1D->setObjectName(QStringLiteral("1D plotter"));
-        _ui->plot1D->setFocusPolicy(Qt::StrongFocus);
-        _ui->plot1D->setStyleSheet(QStringLiteral(""));
-
-        // Add the plot to the ui
-        _ui->horizontalLayout_4->addWidget(_ui->plot1D);
+    // Delete the previous plotter instance
+    if (_plotter) {
+        delete _plotter;
     }
 
-    _ui->plot1D->graph(0)->setDataValueError(x,y,e);
-    _ui->plot1D->rescaleAxes();
-    _ui->plot1D->replot();
-}
+    _plotter = plot;
 
-void MainWindow::updatePlot(PlottableGraphicsItem* item)
-{
-    if (!item)
-        return;
+    // Add the plot to the ui
+    plotter_dock_widget->setWidget(_plotter);
 
-    if (!item->isPlottable(_ui->plot1D)) {
-        // Store the old size policy
-        QSizePolicy oldSizePolicy = _ui->plot1D->sizePolicy();
-        // Remove the current plotter from the ui
-        _ui->horizontalLayout_4->removeWidget(_ui->plot1D);
-        // Delete the plotter instance
-        delete _ui->plot1D;
-
-        PlotFactory* pFactory=PlotFactory::Instance();
-
-        _ui->plot1D = pFactory->create(item->getPlotType(),_ui->dockWidgetContents_4);
-
-        // Restore the size policy
-        _ui->plot1D->setSizePolicy(oldSizePolicy);
-
-        // Sets some properties of the plotter
-        _ui->plot1D->setObjectName(QStringLiteral("1D plotter"));
-        _ui->plot1D->setFocusPolicy(Qt::StrongFocus);
-        _ui->plot1D->setStyleSheet(QStringLiteral(""));
-
-        // Add the plot to the ui
-        _ui->horizontalLayout_4->addWidget(_ui->plot1D);
-    }
-
-    // Plot the data
-    item->plot(_ui->plot1D);
     update();
-
 }
 
-void MainWindow::onViewDetectorFromSample()
+void MainWindow::onDisplaySessionItemPropertyWidget(QWidget* w)
 {
-    QTransform trans;
-    trans.scale(1,-1);
-    _ui->dview->setTransform(trans);
-    _ui->dview->fitScene();
-}
+    auto *property_dock_widget = _dockable_widgets[static_cast<int>(DOCKABLE_WIDGETS::PROPERTY)];
 
-void MainWindow::onViewDetectorFromBehind()
-{
-    QTransform trans;
-    trans.scale(-1,-1);
-    _ui->dview->setTransform(trans);
-    _ui->dview->fitScene();
-}
-
-void MainWindow::setInspectorWidget(QWidget* w)
-{
     // Ensure that previous Property Widget is deleted.
-    auto previous_widget = _ui->dockWidget_Property->widget();
+    auto previous_widget = property_dock_widget->widget();
     if (previous_widget) {
         delete previous_widget;
     }
 
     // Assign current property Widget
-    _ui->dockWidget_Property->setWidget(w);
-}
-
-void MainWindow::on_checkBox_AspectRatio_toggled(bool checked)
-{
-    _ui->dview->fixDetectorAspectRatio(checked);
-}
-
-void MainWindow::on_actionLogarithmic_Scale_triggered(bool checked)
-{
-    _ui->dview->getScene()->setLogarithmic(checked);
-}
-
-void MainWindow::onOpenPeakFinderDialog(DataItem *data_item)
-{
-    nsx::DataList data = data_item->selectedData();
-
-    if (data.empty()) {
-        nsx::error()<<"No numors selected for finding peaks";
-        return;
-    }
-
-    auto experiment_item = data_item->experimentItem();
-
-    FramePeakFinder* frame = FramePeakFinder::create(this,experiment_item,data);
-
-    frame->show();
+    property_dock_widget->setWidget(w);
 }

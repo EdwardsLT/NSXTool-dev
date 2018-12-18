@@ -18,7 +18,6 @@
 #include <nsxlib/ResolutionShell.h>
 #include <nsxlib/RFactor.h>
 
-#include "CollectedPeaksModel.h"
 #include "DoubleItemDelegate.h"
 #include "ExperimentItem.h"
 #include "FrameStatistics.h"

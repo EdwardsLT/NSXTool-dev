@@ -202,7 +202,7 @@ bool PeakFinder::doTask()
 
             // peak's bounding box not completely contained in detector image
             if (!dAABB.contains(p->shape().aabb())) {
-                p->setSelected(false);
+                p->setStatus(Peak3D::Status::OutOfBounds);
             }
 
             p->setPredicted(false);

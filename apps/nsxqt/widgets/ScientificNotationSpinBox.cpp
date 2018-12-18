@@ -1,7 +1,54 @@
 #include "ScientificNotationSpinBox.h"
  
 #include <limits>
-  
+
+
+// reimplemented function, copied from qspinbox.cpp
+bool isIntermediateValueHelper(qint64 num, qint64 min, qint64 max, qint64 *match)
+{
+    if (num >= min && num <= max) {
+        if (match)
+            *match = num;
+        return true;
+    }
+    qint64 tmp = num;
+
+    int numDigits = 0;
+    int digits[10];
+    if (tmp == 0) {
+        numDigits = 1;
+        digits[0] = 0;
+    } else {
+        tmp = qAbs(num);
+        for (int i=0; tmp > 0; ++i) {
+            digits[numDigits++] = tmp % 10;
+            tmp /= 10;
+        }
+    }
+
+    int failures = 0;
+    qint64 number;
+    for (number=max; number>=min; --number) {
+        tmp = qAbs(number);
+        for (int i=0; tmp > 0;) {
+            if (digits[i] == (tmp % 10)) {
+                if (++i == numDigits) {
+                    if (match)
+                        *match = number;
+                    return true;
+                }
+            }
+            tmp /= 10;
+        }
+        if (failures++ == 500000) { //upper bound
+            if (match)
+                *match = num;
+            return true;
+        }
+    }
+    return false;
+}
+
 ScientificNotationSpinBox::ScientificNotationSpinBox(QWidget * parent)
 : QDoubleSpinBox(parent)
 {
@@ -182,14 +229,14 @@ bool ScientificNotationSpinBox::isIntermediateValue(const QString &str) const
             if (min_left == max_left) {
                 const bool ret = isIntermediateValueHelper(qAbs(left),
                                                            negative ? max_right : min_right,
-                                                           negative ? min_right : max_right);
+                                                           negative ? min_right : max_right,nullptr);
                 return ret;
             } else if (qAbs(max_left - min_left) == 1) {
-                const bool ret = isIntermediateValueHelper(qAbs(left), min_right, negative ? 0 : dec)
-                                 || isIntermediateValueHelper(qAbs(left), negative ? dec : 0, max_right);
+                const bool ret = isIntermediateValueHelper(qAbs(left), min_right, negative ? 0 : dec, nullptr)
+                                 || isIntermediateValueHelper(qAbs(left), negative ? dec : 0, max_right, nullptr);
                 return ret;
             } else {
-                const bool ret = isIntermediateValueHelper(qAbs(left), 0, dec);
+                const bool ret = isIntermediateValueHelper(qAbs(left), 0, dec, nullptr);
                 return ret;
             }
         }
@@ -201,7 +248,7 @@ bool ScientificNotationSpinBox::isIntermediateValue(const QString &str) const
         }
         qint64 tmpl = negative ? max_right : min_right;
         qint64 tmpr = negative ? min_right : max_right;
-        const bool ret = isIntermediateValueHelper(right, tmpl, tmpr);
+        const bool ret = isIntermediateValueHelper(right, tmpl, tmpr, nullptr);
         return ret;
     }
     return true;
@@ -444,50 +491,4 @@ QString ScientificNotationSpinBox::stripped(const QString &t, int *pos) const
     if (pos)
         (*pos) -= (s - text.size());
     return text;
-}
-
-// reimplemented function, copied from qspinbox.cpp
-bool isIntermediateValueHelper(qint64 num, qint64 min, qint64 max, qint64 *match)
-{
-    if (num >= min && num <= max) {
-        if (match)
-            *match = num;
-        return true;
-    }
-    qint64 tmp = num;
- 
-    int numDigits = 0;
-    int digits[10];
-    if (tmp == 0) {
-        numDigits = 1;
-        digits[0] = 0;
-    } else {
-        tmp = qAbs(num);
-        for (int i=0; tmp > 0; ++i) {
-            digits[numDigits++] = tmp % 10;
-            tmp /= 10;
-        }
-    }
- 
-    int failures = 0;
-    qint64 number;
-    for (number=max; number>=min; --number) {
-        tmp = qAbs(number);
-        for (int i=0; tmp > 0;) {
-            if (digits[i] == (tmp % 10)) {
-                if (++i == numDigits) {
-                    if (match)
-                        *match = number;
-                    return true;
-                }
-            }
-            tmp /= 10;
-        }
-        if (failures++ == 500000) { //upper bound
-            if (match)
-                *match = num;
-            return true;
-        }
-    }
-    return false;
 }
