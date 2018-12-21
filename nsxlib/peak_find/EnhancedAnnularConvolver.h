@@ -34,12 +34,12 @@
 
 #pragma once
 
-#include "Convolver.h"
+#include "AnnularConvolver.h"
 
 namespace nsx {
 
 //! \brief More sophisticated version of local background subtraction.
-class EnhancedAnnularConvolver : public Convolver {
+class EnhancedAnnularConvolver : public AnnularConvolver {
 
 public:
 
@@ -47,15 +47,13 @@ public:
 
     EnhancedAnnularConvolver(const EnhancedAnnularConvolver &other)=default;
 
-    EnhancedAnnularConvolver(const std::map<std::string,double>& parameters);
+    EnhancedAnnularConvolver(const std::map<std::string,int>& parameters);
 
     ~EnhancedAnnularConvolver()=default;
 
     EnhancedAnnularConvolver& operator=(const EnhancedAnnularConvolver &other)=default;
 
-    Convolver* clone() const override;
-
-    virtual std::pair<size_t,size_t> kernelSize() const override;
+    IConvolver* clone() const override;
 
     RealMatrix convolve(const RealMatrix& image) override;
 };

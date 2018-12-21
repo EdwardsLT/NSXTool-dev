@@ -1,7 +1,5 @@
 #pragma once
 
-#include <map>
-
 #include <nsxlib/CrystalTypes.h>
 #include <nsxlib/MergedData.h>
 #include <nsxlib/SpaceGroup.h>
@@ -23,9 +21,7 @@ class FrameStatistics : public NSXQFrame
 
 public:
 
-    static FrameStatistics* create(const nsx::PeakList& peaks, const nsx::SpaceGroup& space_group);
-
-    static FrameStatistics* Instance();
+    FrameStatistics(const nsx::PeakList& peaks);
 
     ~FrameStatistics();
 
@@ -43,8 +39,6 @@ private slots:
 
 private:
 
-    explicit FrameStatistics(const nsx::PeakList& peaks, const nsx::SpaceGroup& space_group);
-
     void plotStatistics(int column);
 
     void saveToFullProf(QTableView* table);
@@ -58,8 +52,6 @@ private:
     void updateStatisticsTab();
 
 private:
-
-    static FrameStatistics *_instance;
 
     Ui::FrameStatistics *_ui;
 

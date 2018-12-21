@@ -35,33 +35,35 @@
 
 #include "AtomicConvolver.h"
 
+#include <iostream>
+
 namespace nsx {
 
 std::mutex g_mutex;
 
 AtomicConvolver::AtomicConvolver()
-: Convolver(),
+: IConvolver(),
   _n_rows(0),
   _n_cols(0),
-  _halfCols(0),
-  _forwardPlan(nullptr),
-  _backwardPlan(nullptr),
-  _realData(nullptr),
-  _transformedData(nullptr),
-  _transformedKernel()
+  _half_cols(0),
+  _forward_plan(nullptr),
+  _backward_plan(nullptr),
+  _data(nullptr),
+  _data_spectrum(nullptr),
+  _kernel_spectrum()
 {
 }
 
-AtomicConvolver::AtomicConvolver(const std::map<std::string,double> &parameters)
-: Convolver(parameters),
+AtomicConvolver::AtomicConvolver(const std::map<std::string,int> &parameters)
+: IConvolver(parameters),
   _n_rows(0),
   _n_cols(0),
-  _halfCols(0),
-  _forwardPlan(nullptr),
-  _backwardPlan(nullptr),
-  _realData(nullptr),
-  _transformedData(nullptr),
-  _transformedKernel()
+  _half_cols(0),
+  _forward_plan(nullptr),
+  _backward_plan(nullptr),
+  _data(nullptr),
+  _data_spectrum(nullptr),
+  _kernel_spectrum()
 {
 }
 
@@ -76,39 +78,43 @@ void AtomicConvolver::reset()
     // See http://www.fftw.org/fftw3_doc/Thread-safety.html
     std::unique_lock<std::mutex> lock(g_mutex);
 
-    if (_forwardPlan) {
-        fftw_destroy_plan(_forwardPlan);
+    if (_forward_plan) {
+        fftw_destroy_plan(_forward_plan);
     }
-    if (_backwardPlan) {
-        fftw_destroy_plan(_backwardPlan);
-    }
-
-    if (_realData) {
-        fftw_free(_realData);
+    if (_backward_plan) {
+        fftw_destroy_plan(_backward_plan);
     }
 
-    if (_transformedData) {
-        fftw_free(_transformedData);
+    if (_data) {
+        fftw_free(_data);
+    }
+
+    if (_data_spectrum) {
+        fftw_free(_data_spectrum);
     }
 
     _n_rows = 0;
 
     _n_cols = 0;
 
-    _halfCols = 0;
+    _half_cols = 0;
 
-    _forwardPlan = _backwardPlan = nullptr;
+    _forward_plan = _backward_plan = nullptr;
 
-    _realData = nullptr;
+    _data = nullptr;
 
-    _transformedData = nullptr;
+    _data_spectrum = nullptr;
 
-    _transformedKernel.resize(0);
+    _kernel_spectrum.resize(0);
 }
 
 void AtomicConvolver::updateKernel(int n_rows, int n_cols)
 {
-    if (n_rows == _n_rows && n_cols == _n_cols) {
+    if (n_rows != _n_rows || n_cols != _n_cols) {
+        _update_kernel = true;
+    }
+
+    if (!_update_kernel) {
         return;
     }
 
@@ -124,112 +130,142 @@ void AtomicConvolver::updateKernel(int n_rows, int n_cols)
     const auto kernel_size = kernelSize();
     const int kernel_n_rows = kernel_size.first;
     const int kernel_n_cols = kernel_size.second;
-    const int n_enlarged_rows = _n_rows + 2*kernel_n_rows;
-    const int n_enlarged_cols = _n_cols + 2*kernel_n_cols;
 
-    RealMatrix kernel = _matrix(n_enlarged_rows,n_enlarged_cols);
-    const int n_pixels = kernel.size();
+    const int pad_n_rows = kernel_n_rows >> 1;
+    const int pad_n_cols = kernel_n_cols >> 1;
+
+    const int padded_image_n_rows = _n_rows + 2*pad_n_rows;
+    const int padded_image_n_cols = _n_cols + 2*pad_n_cols;
+
+    const int padded_image_n_pixels = padded_image_n_rows * padded_image_n_cols;
+
+    RealMatrix kernel = extendKernel(padded_image_n_rows,padded_image_n_cols);
 
     // Used by FFTW; check documentation for details
-    _halfCols = (n_enlarged_cols>>1) + 1;
+    _half_cols = (padded_image_n_cols>>1) + 1;
 
     // Use fftw_malloc instead of fftw_alloc_* to support older version of fftw3
-    _realData = (double*)fftw_malloc(n_pixels * sizeof(double));
-    _transformedData = (fftw_complex*)fftw_malloc(n_enlarged_rows * _halfCols * sizeof(fftw_complex));
+    _data = (double*)fftw_malloc(padded_image_n_pixels * sizeof(double));
+    _data_spectrum = (fftw_complex*)fftw_malloc(padded_image_n_rows * _half_cols * sizeof(fftw_complex));
 
-    _transformedKernel.resize(n_enlarged_rows*_halfCols);
+    _kernel_spectrum.resize(padded_image_n_rows*_half_cols);
 
-    // Create plans
-    _forwardPlan = fftw_plan_dft_r2c_2d(n_enlarged_rows, n_enlarged_cols, _realData, _transformedData, FFTW_MEASURE);
-    _backwardPlan = fftw_plan_dft_c2r_2d(n_enlarged_rows, n_enlarged_cols, _transformedData, _realData, FFTW_MEASURE);
+    // Create FFTW planner for FFT and inverse FFT
+    _forward_plan = fftw_plan_dft_r2c_2d(padded_image_n_rows, padded_image_n_cols, _data, _data_spectrum, FFTW_ESTIMATE);
+    _backward_plan = fftw_plan_dft_c2r_2d(padded_image_n_rows, padded_image_n_cols, _data_spectrum, _data, FFTW_ESTIMATE);
 
     // Precompute the transformation of the kernel
-    std::memcpy(_realData, kernel.data(), n_pixels*sizeof(double));
-    fftw_execute(_forwardPlan);
+    std::memcpy(_data, kernel.data(), padded_image_n_pixels*sizeof(double));
 
-    // Store transformed kernel as vector of complexes (convenient for convolution)
-    for (int i = 0; i < n_enlarged_rows*_halfCols; ++i) {
-        _transformedKernel[i] = std::complex<double>(_transformedData[i][0], _transformedData[i][1]);
+    lock.unlock();
+
+    // Compute the FFT of the kernel
+    fftw_execute(_forward_plan);
+    // Store the FFT transformed kernel as vector of complexes (convenient for convolution)
+    for (int i = 0; i < padded_image_n_rows*_half_cols; ++i) {
+        _kernel_spectrum[i] = std::complex<double>(_data_spectrum[i][0], _data_spectrum[i][1]);
+    }
+
+    _update_kernel = true;
+}
+
+void AtomicConvolver::padImage(const RealMatrix& image) const
+{
+    const auto kernel_size = kernelSize();
+    const int kernel_n_rows = kernel_size.first;
+    const int kernel_n_cols = kernel_size.second;
+
+    const int pad_n_rows = kernel_n_rows >> 1;
+    const int pad_n_cols = kernel_n_cols >> 1;
+
+    const int image_n_rows = image.rows();
+    const int image_n_cols = image.cols();
+
+    const int padded_image_n_rows = image_n_rows + 2*pad_n_rows;
+    const int padded_image_n_cols = image_n_cols + 2*pad_n_cols;
+
+    // Fill the enlarged matrix by mirroring the original image
+    for (int r = 0; r < padded_image_n_rows; ++r) {
+        int ii;
+        if (r < pad_n_rows) {
+            ii = pad_n_rows - r - 1;
+        } else if (r >= image_n_rows + pad_n_rows) {
+            ii = 2*image_n_rows + pad_n_rows - r - 1;
+        } else {
+            ii = r - pad_n_rows;
+        }
+        for (int c = 0; c < padded_image_n_cols; c++) {
+            int jj;
+            if (c < pad_n_cols) {
+                jj = pad_n_cols - c - 1;
+            } else if (c >= image_n_cols + pad_n_cols) {
+                jj = 2*image_n_cols + pad_n_cols - c - 1;
+            } else {
+                jj = c - pad_n_cols;
+            }
+            if (!(r >= pad_n_rows && r < padded_image_n_rows - pad_n_rows &&
+                  c >= pad_n_cols && c < padded_image_n_cols - pad_n_cols)) {
+                const int index = r*padded_image_n_cols + c;
+                *(_data + index) = image(ii,jj);
+            }
+        }
+    }
+
+    for (int r = 0; r < image_n_rows; ++r) {
+        const int shifted_index = (r+pad_n_rows)*padded_image_n_cols + pad_n_cols;
+        std::memcpy(_data+shifted_index,image.data()+r*image_n_cols,image_n_cols*sizeof(double));
     }
 }
 
 RealMatrix AtomicConvolver::convolve(const RealMatrix& image)
 {
-    const int n_rows = image.rows();
-    const int n_cols = image.cols();
+    const int image_n_rows = image.rows();
+    const int image_n_cols = image.cols();
 
-    updateKernel(n_rows,n_cols);
+    updateKernel(image_n_rows,image_n_cols);
 
     const auto kernel_size = kernelSize();
     const int kernel_n_rows = kernel_size.first;
     const int kernel_n_cols = kernel_size.second;
-    const int n_enlarged_rows = _n_rows + 2*kernel_n_rows;
-    const int n_enlarged_cols = _n_cols + 2*kernel_n_cols;
 
-    // Create an enlarged and double-casted version of the initial matrix
-    RealMatrix padded_image(n_enlarged_rows,n_enlarged_cols);
+    const int pad_n_rows = kernel_n_rows >> 1;
+    const int pad_n_cols = kernel_n_cols >> 1;
 
-    padded_image.block(kernel_n_rows,kernel_n_cols,n_rows,n_cols) = image;
+    const int padded_image_n_rows = image_n_rows + 2*pad_n_rows;
+    const int padded_image_n_cols = image_n_cols + 2*pad_n_cols;
 
-    // Fill the enlarged matrix by mirroring the original image
-    for (int r = 0; r < n_enlarged_rows; ++r) {
-        int ii;
-        if (r < kernel_n_rows) {
-            ii = kernel_n_rows - r - 1;
-        } else if (r >= n_rows + kernel_n_rows) {
-            ii = 2*n_rows + kernel_n_rows - r - 1;
-        } else {
-            ii = r - kernel_n_rows;
-        }
-        for (int c = 0; c < n_enlarged_cols; c++) {
-            int jj;
-            if (c < kernel_n_cols) {
-                jj = kernel_n_cols - c - 1;
-            } else if (c >= n_cols + kernel_n_cols) {
-                jj = 2*n_cols + kernel_n_cols - c - 1;
-            } else {
-                jj = c - kernel_n_cols;
-            }
+    const int padded_image_n_pixels = padded_image_n_rows * padded_image_n_cols;
 
-            if (r < kernel_n_rows || r >= n_enlarged_rows - kernel_n_rows ||
-                c < kernel_n_cols || c >= n_enlarged_cols - kernel_n_cols) {
-                padded_image(r,c) = image(ii,jj);
-            }
-        }
-    }
-
-    const int n_pixels = padded_image.size();
+    padImage(image);
 
     // factor needed to get correct inverse transform
-    const double factor = 1.0 / ((double)(n_pixels));
+    const double fft_norm_factor = 1.0 / static_cast<double>(padded_image_n_pixels);
 
     // precompute the transformation of the kernel
-    std::memcpy(_realData, padded_image.data(), n_pixels*sizeof(double));
-    fftw_execute(_forwardPlan);
+    fftw_execute(_forward_plan);
 
     // multiply fourier modes component-by-component
-    for (int i = 0; i < n_enlarged_rows*_halfCols; ++i) {
-        auto result = factor * _transformedKernel[i] * std::complex<double>(_transformedData[i][0], _transformedData[i][1]);
-        _transformedData[i][0] = result.real();
-        _transformedData[i][1] = result.imag();
+    for (int i = 0; i < padded_image_n_rows*_half_cols; ++i) {
+        auto result = fft_norm_factor * _kernel_spectrum[i] * std::complex<double>(_data_spectrum[i][0], _data_spectrum[i][1]);
+        _data_spectrum[i][0] = result.real();
+        _data_spectrum[i][1] = result.imag();
     }
 
     // Perform inverse transform: _realData now stores the convolution
-    fftw_execute(_backwardPlan);
+    fftw_execute(_backward_plan);
 
-    RealMatrix result(n_enlarged_rows, n_enlarged_cols);
-    memcpy(result.data(), _realData, n_pixels*sizeof(double));
-    return result.block(kernel_n_rows,kernel_n_cols,n_rows,n_cols);
-}
+    // Offet factor for even-sized kernel
+    const int offset_row = kernel_n_rows % 2 ? 0 : 1;
+    const int offset_col = kernel_n_cols % 2 ? 0 : 1;
 
-RealMatrix AtomicConvolver::matrix(int nrows, int ncols) const
-{
-    // sanity checks
-    if (nrows < 0 || ncols < 0) {
-        throw std::runtime_error("Invalid dimensions for kernel matrix");
+    RealMatrix fft_convolved_image(image_n_rows,image_n_cols);
+    for (int r = 0; r < image_n_rows; ++r) {
+        const int index = r*image_n_cols;
+        const int shifted_index = (r+pad_n_rows - offset_row)*padded_image_n_cols + (pad_n_cols - offset_col);
+        std::memcpy(fft_convolved_image.data()+index,_data+shifted_index,image_n_cols*sizeof(double));
     }
 
-    return _matrix(nrows,ncols);
+    return fft_convolved_image;
 }
 
 } // end namespace nsx

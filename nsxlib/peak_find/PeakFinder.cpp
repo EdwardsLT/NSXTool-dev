@@ -265,12 +265,12 @@ const PeakList& PeakFinder::peaks() const
     return _peaks;
 }
 
-void PeakFinder::setConvolver(std::unique_ptr<Convolver> convolver)
+void PeakFinder::setConvolver(std::unique_ptr<IConvolver> convolver)
 {
     _convolver = std::move(convolver);
 }
 
-void PeakFinder::setConvolver(const Convolver& convolver) {
+void PeakFinder::setConvolver(const IConvolver& convolver) {
     _convolver.reset(convolver.clone());
 }
 
@@ -316,7 +316,7 @@ void PeakFinder::findPrimaryBlobs(const DataSet &dataset, std::map<int,Blob3D>& 
     size_t ncols = dataset.nCols();
 
     // this is the filter function to be applied to each frame
-    auto convolve_frame = [&] (const RealMatrix& input) -> RealMatrix {
+    auto convolve_frame = [this] (const RealMatrix& input) -> RealMatrix {
         RealMatrix output;
         #pragma omp critical
         output = _convolver->convolve(input);
@@ -361,12 +361,12 @@ void PeakFinder::findPrimaryBlobs(const DataSet &dataset, std::map<int,Blob3D>& 
         auto filtered_frame = convolve_frame(frame_data);
 
         // Go the the beginning of data
-        index2D=0;
+        index2D = 0;
         for (unsigned int row = 0; row < nrows; ++row) {
             for (unsigned int col = 0; col < ncols; ++col) {
                 // Discard pixel if value < threshold
                 if (filtered_frame(row, col) < _threshold) {
-                    labels[index2D]=labels2[index2D]=0;
+                    labels[index2D] = labels2[index2D] = 0;
                     index2D++;
                     continue;
                 }
@@ -378,7 +378,7 @@ void PeakFinder::findPrimaryBlobs(const DataSet &dataset, std::map<int,Blob3D>& 
                 top=  (row == 0 ? 0 : labels[index2D-ncols]) ;
                 previous= (idx == begin ? 0 : labels2[index2D]);
                 // Encode type of config.
-                code=0;
+                code = 0;
                 code |= ( (left!=0) << 0);
                 code |= ( (top!=0) << 1);
                 code |= ( (previous!=0)  << 2);
@@ -387,44 +387,44 @@ void PeakFinder::findPrimaryBlobs(const DataSet &dataset, std::map<int,Blob3D>& 
                 case 0:
                     #pragma omp critical
                     label = ++_current_label;
-                    newlabel=true;
+                    newlabel = true;
                     break;
                 case 1: // Only left pixel
-                    label=left;
+                    label = left;
                     break;
                 case 2: // Only top pixel
-                    label=top;
+                    label = top;
                     break;
                 case 3: // Top and left
-                    label=top;
-                    if (top!=left)
+                    label = top;
+                    if (top != left)
                         registerEquivalence(top, left, equivalences);
                     break;
                 case 4: // Only previous
-                    label=previous;
+                    label = previous;
                     break;
                 case 5: // Left and previous
-                    label=left;
-                    if (left!=previous)
+                    label = left;
+                    if (left != previous)
                         registerEquivalence(left, previous, equivalences);
                     break;
                 case 6: // Top and previous
-                    label=top;
-                    if (top!=previous)
+                    label = top;
+                    if (top != previous)
                         registerEquivalence(top, previous, equivalences);
                     break;
                 case 7: // All three
-                    label=left;
-                    if ((top==left) && (top!=previous)) {
+                    label = left;
+                    if ((top == left) && (top != previous)) {
                         registerEquivalence(top, previous, equivalences);
                     }
-                    else if ((top==previous) && (top!=left)) {
+                    else if ((top == previous) && (top != left)) {
                         registerEquivalence(top, left, equivalences);
                     }
-                    else if ((left==previous) && (left!=top)) {
+                    else if ((left == previous) && (left != top)) {
                         registerEquivalence(left, top, equivalences);
                     }
-                    else if ((left!=previous) && (left!=top) && (top!=previous)) {
+                    else if ((left != previous) && (left != top) && (top != previous)) {
                         registerEquivalence(top, previous, equivalences);
                         registerEquivalence(top, left, equivalences);
                         registerEquivalence(left, previous, equivalences);

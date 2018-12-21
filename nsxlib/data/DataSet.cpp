@@ -132,7 +132,7 @@ Eigen::MatrixXi DataSet::frame(std::size_t idx) const
     return _reader->data(idx);
 }
 
-Eigen::MatrixXd DataSet::convolvedFrame(std::size_t idx, const std::string& convolver_type, const std::map<std::string,double>& parameters)
+Eigen::MatrixXd DataSet::convolvedFrame(std::size_t idx, const std::string& convolver_type, const std::map<std::string,int>& parameters)
 {
     ConvolverFactory convolver_factory;
     auto convolver = convolver_factory.create(convolver_type,parameters);

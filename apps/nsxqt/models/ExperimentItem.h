@@ -36,8 +36,6 @@ public:
 
     LibraryItem* libraryItem();
 
-    void writeLogFiles();
-
 private:
 
     nsx::sptrExperiment _experiment;

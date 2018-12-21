@@ -22,6 +22,7 @@
 
 #include <nsxlib/ConvolverFactory.h>
 #include <nsxlib/DataSet.h>
+#include <nsxlib/IConvolver.h>
 #include <nsxlib/ITask.h>
 #include <nsxlib/Logger.h>
 #include <nsxlib/Peak3D.h>
@@ -40,22 +41,6 @@
 #include "WidgetFoundPeaks.h"
 
 #include "ui_FramePeakFinder.h"
-
-FramePeakFinder* FramePeakFinder::_instance = nullptr;
-
-FramePeakFinder* FramePeakFinder::create(MainWindow *main_window, ExperimentItem *experiment_item, const nsx::DataList& data)
-{
-    if (!_instance) {
-        _instance = new FramePeakFinder(main_window, experiment_item, data);
-    }
-
-    return _instance;
-}
-
-FramePeakFinder* FramePeakFinder::Instance()
-{
-    return _instance;
-}
 
 FramePeakFinder::FramePeakFinder(MainWindow *main_window, ExperimentItem *experiment_item, const nsx::DataList& data)
 : NSXQFrame(),
@@ -132,10 +117,6 @@ FramePeakFinder::~FramePeakFinder()
     delete _ui;
 
     disconnect(_main_window->taskManagerModel(),SIGNAL(sendCompletedTask(std::shared_ptr<nsx::ITask>)),this,SLOT(onShowFoundPeaks(std::shared_ptr<nsx::ITask>)));
-
-    if (_instance) {
-        _instance = nullptr;
-    }
 }
 
 void FramePeakFinder::slotTabRemoved(int index)
@@ -257,7 +238,7 @@ void FramePeakFinder::run()
     auto convolver = convolver_factory.create(convolver_type,parameters);
 
     // Propagate changes to peak finder
-    peak_finder->setConvolver(std::unique_ptr<nsx::Convolver>(convolver));
+    peak_finder->setConvolver(std::unique_ptr<nsx::IConvolver>(convolver));
 
     auto *task_manager_model = _main_window->taskManagerModel();
 
@@ -300,13 +281,13 @@ void FramePeakFinder::showFoundPeaks(std::shared_ptr<nsx::ITask> task)
     nsx::info() << "Peak search complete. Found " << peaks.size() << " peaks.";
 }
 
-std::map<std::string,double> FramePeakFinder::convolutionParameters() const
+std::map<std::string,int> FramePeakFinder::convolutionParameters() const
 {
-    std::map<std::string,double> parameters;
+    std::map<std::string,int> parameters;
 
     for (int i = 0; i < _ui->convolution_parameters->rowCount(); ++i) {
         std::string pname = _ui->convolution_parameters->item(i,0)->text().toStdString();
-        double pvalue = _ui->convolution_parameters->item(i,1)->text().toDouble();
+        double pvalue = _ui->convolution_parameters->item(i,1)->text().toInt();
         parameters.insert(std::make_pair(pname,pvalue));
     }
 
@@ -342,7 +323,7 @@ void FramePeakFinder::updateConvolutionParameters()
     auto convolution_kernel = convolution_kernel_factory.create(convolution_kernel_name,{});
 
     // Get its corresponding parameters
-    const std::map<std::string, double>& parameters = convolution_kernel->parameters();
+    const auto& parameters = convolution_kernel->parameters();
 
     disconnect(_ui->convolution_parameters,SIGNAL(cellChanged(int,int)),this,SLOT(changeConvolutionParameters(int,int)));
 
@@ -397,7 +378,14 @@ void FramePeakFinder::preview()
     std::string convolver_type = _ui->convolution_kernels->currentText().toStdString();
     auto&& convolver_parameters = convolutionParameters();
 
-    Eigen::MatrixXd convolved_frame = data->convolvedFrame(selected_frame,convolver_type, convolver_parameters);
+    Eigen::MatrixXd convolved_frame;
+
+    try {
+        convolved_frame = data->convolvedFrame(selected_frame,convolver_type, convolver_parameters);
+    } catch (const std::exception& e) {
+        nsx::error() << e.what();
+        return;
+    }
 
     // apply threshold in preview
     if (_ui->apply_threshold->isChecked()) {

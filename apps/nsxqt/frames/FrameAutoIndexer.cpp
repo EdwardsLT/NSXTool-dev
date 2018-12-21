@@ -15,22 +15,6 @@
 
 #include <QInputDialog>
 
-FrameAutoIndexer* FrameAutoIndexer::_instance = nullptr;
-
-FrameAutoIndexer* FrameAutoIndexer::create(ExperimentItem *experiment_item, const nsx::PeakList &peaks)
-{
-    if (!_instance) {
-        _instance = new FrameAutoIndexer(experiment_item, peaks);
-    }
-
-    return _instance;
-}
-
-FrameAutoIndexer* FrameAutoIndexer::Instance()
-{
-    return _instance;
-}
-
 FrameAutoIndexer::FrameAutoIndexer(ExperimentItem *experiment_item, const nsx::PeakList &peaks)
 : NSXQFrame(),
   _ui(new Ui::FrameAutoIndexer),
@@ -91,10 +75,6 @@ FrameAutoIndexer::~FrameAutoIndexer()
     }
 
     delete _ui;
-
-    if (_instance) {
-        _instance = nullptr;
-    }
 }
 
 void FrameAutoIndexer::slotTabRemoved(int index)

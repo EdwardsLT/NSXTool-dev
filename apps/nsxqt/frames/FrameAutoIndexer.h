@@ -21,9 +21,7 @@ class FrameAutoIndexer : public NSXQFrame
 
 public:
 
-    static FrameAutoIndexer* create(ExperimentItem* experiment_item, const nsx::PeakList& peaks);
-
-    static FrameAutoIndexer* Instance();
+    FrameAutoIndexer(ExperimentItem* experiment_item, const nsx::PeakList& peaks);
 
     ~FrameAutoIndexer();
 
@@ -39,8 +37,6 @@ private slots:
 
 private:
 
-    FrameAutoIndexer(ExperimentItem* experiment_item, const nsx::PeakList& peaks);
-
     void accept();
 
     void buildSolutionsTable();
@@ -50,8 +46,6 @@ private:
     void run();
 
 private:
-
-    static FrameAutoIndexer *_instance;
 
     Ui::FrameAutoIndexer *_ui;
 

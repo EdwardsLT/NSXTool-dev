@@ -36,7 +36,6 @@
 #include <map>
 #include <ratio>
 #include <string>
-#include <tuple>
 
 #include <boost/fusion/adapted/std_pair.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
@@ -47,39 +46,41 @@
 
 namespace nsx {
 
-// Define a dimension as a 7 elements array, each element corresponding to one of the SI unit
-// The order is the following [m,s,K,kg,A,mol,cd]
-using dimension = std::array<int,7>;
-// Define one of the unit prefix
-using unit_prefix = std::pair<std::string,double>;
-// Define a physical unit as a tuple of the form <prefix,scale,dimension> where
+// Helper struct for defining a physical unit:
 // - prefix is a unit prefix (e.g. k=kilo=1.0e-3)
 // - scale is a factor that scale the unit from its SI corresponding unit (e.g. angstrom=1.e-10*m)
 // - dimension is the array of the dimensions of its corresponding SI unit
-using physical_unit = std::tuple<double,double,dimension>;
+struct PhysicalUnitDefinition
+{
+    double prefix;
+    double scale;
+    // Define a dimension as a 8 elements array, each element corresponding to one of the SI unit
+    // The order is the following [m,s,K,kg,A,mol,cd,angle]
+    std::array<int,8> dimension;
+};
 
 //! @class: PrefixOperator.
 //! Apply a prefix to a given physical unit.
 struct PrefixOperator {
-    bool operator()(double factor, physical_unit& unit) const;
+    bool operator()(double prefix, PhysicalUnitDefinition& unit) const;
 };
 
 //! @class: PowerOperator.
 //! Apply the power operator to a given physical unit.
 struct PowerOperator {
-    bool operator()(physical_unit& unit, int power) const;
+    bool operator()(PhysicalUnitDefinition& unit, int power) const;
 };
 
 //! @class: MultiplyOperator.
 //! Multiply a physical unit by another one.
 struct MultiplyOperator {
-    bool operator()(physical_unit& unit1, const physical_unit& unit2) const;
+    bool operator()(PhysicalUnitDefinition& unit1, const PhysicalUnitDefinition& unit2) const;
 };
 
 //! @class: DivideOperator.
 //! Divide a physical unit by another one.
 struct DivideOperator {
-    bool operator()(physical_unit& unit1, const physical_unit& unit2) const;
+    bool operator()(PhysicalUnitDefinition& unit1, const PhysicalUnitDefinition& unit2) const;
 };
 
 //! @class: PhysicalUnit.
@@ -91,13 +92,14 @@ struct DivideOperator {
 //! - have the same dimension
 //! - have an equivalence registered
 class PhysicalUnit {
+
 private:
     //! Stores the prefixes defined so far
     static std::map<std::string,double> _definedPrefixes;
     //! Stores the uits defined so far
-    static std::map<std::string,physical_unit> _definedUnits;
+    static std::map<std::string,PhysicalUnitDefinition> _definedUnits;
     //! Stores the equivalences defined so far
-    static std::map<dimension,double> _unitEquivalences;
+    static std::map<std::array<int,8>,double> _unitEquivalences;
 
 public:
 
@@ -109,10 +111,10 @@ public:
 
     //! Construct a physical unit from a prefix, a scale and a dimension
     //! The value is set to 1.0 by default
-    PhysicalUnit(double prefix, double scale, const dimension& dimension);
+    PhysicalUnit(double prefix, double scale, const std::array<int,8>& dimension);
 
     //! Construct a physical unit from a value, a prefix, a scale and a dimension
-    PhysicalUnit(double value, double prefix, double scale, const dimension& dimension);
+    PhysicalUnit(double value, double prefix, double scale, const std::array<int,8>& dimension);
 
     //! Construct a physical unit from a string encoding the unit
     //! The value is set to 1.0 by default
@@ -129,35 +131,35 @@ public:
     //! Set the value of the physical unit
     void setValue(double value);
     //! Return the value of the physical unit
-    double getValue() const;
+    double value() const;
 
     //! Return the prefix of the physical unit
-    double getPrefix() const;
+    double prefix() const;
 
     //! Return the scale of the physical unit
-    double getScale() const;
+    double scale() const;
 
     //! Return the dimension of the physical unit
-    const dimension& getDimension() const;
+    const std::array<int,8>& dimension() const;
 
     //! Return the value of the physical unit converted into SI unit
-    double convertToSI() const;
+    double toSI() const;
 
     //! Add a new prefix to the prefixes defined statically so far
     void addPrefix(const std::string& name, double factor);
 
     //! Add a new unit to the prefixes defined statically so far
-    void addUnit(const std::string& name, const physical_unit& physicalUnit);
+    void addUnit(const std::string& name, const PhysicalUnitDefinition& physicalUnit);
 
     //! Return the value of the conversion from the physical unit to another one
     double convert(const std::string& ounit) const;
 
     //! Return the value of the conversion from the physical unit to another one
-    double convert(double oprefix, double oscale, const dimension& odimension) const;
+    double convert(double oprefix, double oscale, const std::array<int,8>& odimension) const;
 
 private:
     //! Inner class that defines the boost::spirit parser for a physical unit
-    struct PhysicalUnitParser : boost::spirit::qi::grammar<std::string::const_iterator, physical_unit()> {
+    struct PhysicalUnitParser : boost::spirit::qi::grammar<std::string::const_iterator, PhysicalUnitDefinition()> {
         //! Default constructor
         PhysicalUnitParser();
 
@@ -172,21 +174,21 @@ private:
         void updatePrefixParser(const std::string& name, double prefix);
 
         //! Update the symbols defined so far for the physical units
-        void updateUnitParser(const std::string& mame, const physical_unit& physicalUnit);
+        void updateUnitParser(const std::string& mame, const PhysicalUnitDefinition& physicalUnit);
 
     private:
         //! Defines the rule for matching a prefix
         boost::spirit::qi::symbols<char,double> _prefix;
         //! Defines the rule for matching a unit
-        boost::spirit::qi::symbols<char,physical_unit> _unit;
+        boost::spirit::qi::symbols<char,PhysicalUnitDefinition> _unit;
         //! Defines the rule for matching a prefixed unit
-        boost::spirit::qi::rule<std::string::const_iterator,physical_unit(),boost::spirit::qi::locals<double>> _prefixedUnit;
+        boost::spirit::qi::rule<std::string::const_iterator,PhysicalUnitDefinition(),boost::spirit::qi::locals<double>> _prefixedUnit;
         //! Defines the rule for matching a prefixed unit with an integer exponent
-        boost::spirit::qi::rule<std::string::const_iterator,physical_unit(),boost::spirit::qi::locals<int>> _poweredUnit;
+        boost::spirit::qi::rule<std::string::const_iterator,PhysicalUnitDefinition(),boost::spirit::qi::locals<int>> _poweredUnit;
         //! Defines the rule for matching an arithmetic expression of several physical units
-        boost::spirit::qi::rule<std::string::const_iterator,physical_unit(),boost::spirit::qi::locals<physical_unit>> _compositeUnit;
+        boost::spirit::qi::rule<std::string::const_iterator,PhysicalUnitDefinition(),boost::spirit::qi::locals<PhysicalUnitDefinition>> _compositeUnit;
         //! The starting rule
-        boost::spirit::qi::rule<std::string::const_iterator,physical_unit()> _start;
+        boost::spirit::qi::rule<std::string::const_iterator,PhysicalUnitDefinition()> _start;
     };
 
 private:
@@ -195,7 +197,7 @@ private:
     double _value;
     double _prefix;
     double _scale;
-    dimension _dimension;
+    std::array<int,8> _dimension;
 
 };
 

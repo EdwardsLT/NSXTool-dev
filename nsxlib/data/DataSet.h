@@ -105,7 +105,7 @@ public:
     Eigen::MatrixXd transformedFrame(std::size_t idx);
 
     //! Return a convolved frame
-    Eigen::MatrixXd convolvedFrame(std::size_t idx, const std::string& convolver_type, const std::map<std::string,double>& parameters);
+    Eigen::MatrixXd convolvedFrame(std::size_t idx, const std::string& convolver_type, const std::map<std::string,int>& parameters);
 
     //! Get the file handle.
     void open();

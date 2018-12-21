@@ -24,14 +24,14 @@ int main()
 
     // Check a valid conversion
     NSX_CHECK_CLOSE(u1.convert("m/s"), 1.0e+3, smallTolerance);
-    NSX_CHECK_CLOSE(u1.convertToSI(), 1.0e+3, smallTolerance);
+    NSX_CHECK_CLOSE(u1.toSI(), 1.0e+3, smallTolerance);
 
     // Change the value
     u1.setValue(5.0);
 
     // Check again a valid conversion
     NSX_CHECK_CLOSE(u1.convert("m/s"), 5.0e+3, smallTolerance);
-    NSX_CHECK_CLOSE(u1.convertToSI(), 5.0e+3, smallTolerance);
+    NSX_CHECK_CLOSE(u1.toSI(), 5.0e+3, smallTolerance);
 
     nsx::PhysicalUnit u2(5.0,"J");
     NSX_CHECK_CLOSE(u2.convert("keV"), 3.121e+16, largeTolerance);
@@ -51,4 +51,11 @@ int main()
 
     nsx::PhysicalUnit u6(5.0,"meV**2");
     NSX_CHECK_CLOSE(u6.convert("g**2"), 5*1.782662695946e-36*1.782662695946e-36, largeTolerance);
+
+    nsx::PhysicalUnit u7(2.0,"cm");
+    NSX_CHECK_CLOSE(u7.convert("ang"), 2.0e8, largeTolerance);
+    NSX_CHECK_CLOSE(u7.toSI(), 2.0e-2, largeTolerance);
+
+    nsx::PhysicalUnit u8(1.0,"deg");
+    NSX_CHECK_CLOSE(u8.toSI(), M_PI/180.0, largeTolerance);
 }

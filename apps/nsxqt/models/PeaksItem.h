@@ -19,8 +19,6 @@ public:
 
     nsx::PeakList selectedPeaks();
 
-    void openAutoIndexingFrame();
-
     void openPeakFilterDialog();
 
     void removeUnitCell(nsx::sptrUnitCell unit_cell);

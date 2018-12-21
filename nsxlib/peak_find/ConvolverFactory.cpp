@@ -1,14 +1,17 @@
 #include "AnnularConvolver.h"
+#include "BoxConvolver.h"
 #include "ConvolverFactory.h"
-#include "EnhancedAnnularConvolver.h"
-#include "ConstantConvolver.h"
 #include "DeltaConvolver.h"
+#include "EnhancedAnnularConvolver.h"
+#include "GaussianConvolver.h"
 #include "RadialConvolver.h"
 
 namespace nsx {
 
+using convolver_callback = std::function<IConvolver*(const std::map<std::string,int>&)>;
+
 template <typename T>
-T* create_convolver(const std::map<std::string,double>& parameters)
+T* create_convolver(const std::map<std::string,int>& parameters)
 {
     return new T(parameters);
 }
@@ -16,14 +19,15 @@ T* create_convolver(const std::map<std::string,double>& parameters)
 ConvolverFactory::ConvolverFactory(): _callbacks()
 {
     _callbacks["annular"] = &create_convolver<AnnularConvolver>;
-    _callbacks["constant"] = &create_convolver<ConstantConvolver>;
+    _callbacks["box"] = &create_convolver<BoxConvolver>;
     _callbacks["delta"] = &create_convolver<DeltaConvolver>;
     _callbacks["enhanced annular"] = &create_convolver<EnhancedAnnularConvolver>;
+    _callbacks["gaussian"] = &create_convolver<GaussianConvolver>;
     _callbacks["none"] = &create_convolver<DeltaConvolver>;
     _callbacks["radial"] = &create_convolver<RadialConvolver>;
 }
 
-Convolver* ConvolverFactory::create(const std::string& convolver_type, const std::map<std::string,double>& parameters) const
+IConvolver* ConvolverFactory::create(const std::string& convolver_type, const std::map<std::string,int>& parameters) const
 {
     const auto it = _callbacks.find(convolver_type);
 
@@ -35,7 +39,7 @@ Convolver* ConvolverFactory::create(const std::string& convolver_type, const std
     return (it->second)(parameters);
 }
 
-const std::map<std::string,ConvolverFactory::callback>& ConvolverFactory::callbacks() const
+const std::map<std::string,convolver_callback>& ConvolverFactory::callbacks() const
 {
     return _callbacks;
 }

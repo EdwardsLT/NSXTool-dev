@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "Blob3D.h"
-#include "Convolver.h"
+#include "IConvolver.h"
 #include "CrystalTypes.h"
 #include "DataTypes.h"
 #include "GeometryTypes.h"
@@ -13,6 +13,8 @@
 namespace nsx {
 
 //! \brief Class to handle peak search in datasets
+//! The algorithm used is based on connected component labelling
+//! see https://en.wikipedia.org/wiki/Connected-component_labeling#Two-pass for info
 class PeakFinder : public ITask {
 
 public:
@@ -35,10 +37,10 @@ public:
     const PeakList& peaks() const;
 
 #ifndef SWIG
-    void setConvolver(std::unique_ptr<Convolver> convolver);
+    void setConvolver(std::unique_ptr<IConvolver> convolver);
 #endif
 
-    void setConvolver(const Convolver& convolver);
+    void setConvolver(const IConvolver& convolver);
 
     void setThreshold(double value);
 
@@ -56,7 +58,7 @@ private:
 
 private:
 
-    std::unique_ptr<Convolver> _convolver;
+    std::unique_ptr<IConvolver> _convolver;
 
     DataList _datasets;
 
