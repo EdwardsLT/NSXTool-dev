@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "Convolver.h"
+#include "IConvolver.h"
 
 namespace nsx {
 
@@ -10,19 +10,18 @@ namespace nsx {
 class ConvolverFactory {
 
 public:
-    using callback = std::function<Convolver*(const std::map<std::string,double>&)>;
 
     ConvolverFactory();
 
-    Convolver* create(const std::string& convolver_type, const std::map<std::string,double>& parameters) const;
+    IConvolver* create(const std::string& convolver_type, const std::map<std::string,int>& parameters) const;
 
     //! return the keys of the object currently registered in the factory
-    const std::map<std::string,callback>& callbacks() const;
+    const std::map<std::string,std::function<IConvolver*(const std::map<std::string,int>&)>>& callbacks() const;
 
     ~ConvolverFactory()=default;
 
 private:
-    std::map<std::string, callback> _callbacks;
+    std::map<std::string, std::function<IConvolver*(const std::map<std::string,int>&)>> _callbacks;
 };
 
 } // end namespace nsx

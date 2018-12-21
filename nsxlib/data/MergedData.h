@@ -44,13 +44,19 @@ class DataSet;
 //! \brief Class to handle merged datasets.
 class MergedData {
 public:
+
+    //! Construct a default merged dataset with P1 spacegroup including friedel reflections.
+    MergedData();
+
     //! Construct merged dataset with given spacegroup. Paramter \p friedel determines whether
     //! to include the Friedel relation \f$q \mapsto -q\f$, if this is not already part of the
     //! space group symmetry.  
-    MergedData(const SpaceGroup& grp, bool friedel);
+    MergedData(const SpaceGroup& space_group, bool include_friedel);
+
     //! Add a peak to the data set. It will be automatically merged correctly according to
     //! the space group symmetry.
     bool addPeak(const sptrPeak3D& peak);
+
     //! Retern the set of merged peaks.
     const MergedPeakSet& peaks() const;
 
@@ -64,8 +70,10 @@ public:
     void clear();
 
 private:
-    SpaceGroup _group;
-    bool _friedel;
+    SpaceGroup _space_group;
+
+    bool _include_friedel;
+
     MergedPeakSet _peaks;
 };
 

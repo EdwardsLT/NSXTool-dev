@@ -39,11 +39,9 @@ class FramePeakFinder : public NSXQFrame
 
 public:
 
-    static FramePeakFinder* create(MainWindow *main_window, ExperimentItem* experiment_tree, const nsx::DataList& data);
+    FramePeakFinder(MainWindow *main_window, ExperimentItem *experiment_item, const nsx::DataList &data);
 
-    static FramePeakFinder* Instance();
-
-    virtual ~FramePeakFinder();
+    ~FramePeakFinder();
 
     virtual void showEvent(QShowEvent*) override;
 
@@ -95,13 +93,11 @@ private slots:
 
 private:
 
-    FramePeakFinder(MainWindow *main_window, ExperimentItem *experiment_item, const nsx::DataList &data);
-
     void showFoundPeaks(std::shared_ptr<nsx::ITask> task);
 
     void updateConvolutionParameters();
 
-    std::map<std::string,double> convolutionParameters() const;
+    std::map<std::string,int> convolutionParameters() const;
 
     void preview();
 
@@ -110,8 +106,6 @@ private:
     void accept();
 
 private:
-
-    static FramePeakFinder *_instance;
 
     Ui::FramePeakFinder *_ui;
 

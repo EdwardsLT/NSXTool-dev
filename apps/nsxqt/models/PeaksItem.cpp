@@ -30,7 +30,6 @@
 #include "DialogShapeLibrary.h"
 #include "DialogSpaceGroup.h"
 #include "ExperimentItem.h"
-#include "FrameAutoIndexer.h"
 #include "FrameRefiner.h"
 #include "FrameUserDefinedUnitCellIndexer.h"
 #include "GLSphere.h"
@@ -289,17 +288,6 @@ void PeaksItem::openPeakFilterDialog()
     dialog->show();
 
     dialog->raise();
-}
-
-void PeaksItem::openAutoIndexingFrame()
-{
-    auto&& selected_peaks = selectedPeaks();
-
-    FrameAutoIndexer *frame_autoindexer = FrameAutoIndexer::create(experimentItem(), selected_peaks);
-
-    frame_autoindexer->show();
-
-    frame_autoindexer->raise();
 }
 
 void PeaksItem::openUserDefinedUnitCellIndexerFrame()

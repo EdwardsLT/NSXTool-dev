@@ -17,6 +17,7 @@
 #include <nsxlib/Peak3D.h>
 #include <nsxlib/ResolutionShell.h>
 #include <nsxlib/RFactor.h>
+#include <nsxlib/SpaceGroup.h>
 
 #include "DoubleItemDelegate.h"
 #include "ExperimentItem.h"
@@ -28,28 +29,11 @@
 
 #include "ui_FrameStatistics.h"
 
-FrameStatistics* FrameStatistics::_instance = nullptr;
-
-FrameStatistics* FrameStatistics::create(const nsx::PeakList& peaks, const nsx::SpaceGroup& space_group)
-{
-    if (!_instance) {
-        _instance = new FrameStatistics(peaks,space_group);
-    }
-
-    return _instance;
-}
-
-FrameStatistics* FrameStatistics::Instance()
-{
-    return _instance;
-}
-
-FrameStatistics::FrameStatistics(const nsx::PeakList& peaks, const nsx::SpaceGroup& space_group)
+FrameStatistics::FrameStatistics(const nsx::PeakList& peaks)
 : NSXQFrame(),
   _ui(new Ui::FrameStatistics),
   _peaks(peaks),
-  _space_group(space_group),
-  _merged_data(space_group,true)
+  _merged_data()
 {
     _ui->setupUi(this);
 
@@ -97,10 +81,6 @@ FrameStatistics::FrameStatistics(const nsx::PeakList& peaks, const nsx::SpaceGro
 FrameStatistics::~FrameStatistics()
 {
     delete _ui;
-
-    if (_instance) {
-        _instance = nullptr;
-    }
 }
 
 void FrameStatistics::slotActionClicked(QAbstractButton *button)
@@ -318,9 +298,11 @@ void FrameStatistics::saveToFullProf(QTableView* table) {
 
 void FrameStatistics::update()
 {
+    auto space_group = _peaks[0]->unitCell()->spaceGroup();
+
     bool include_friedel = _ui->friedel->isChecked();
 
-    _merged_data = nsx::MergedData(_space_group,include_friedel);
+    _merged_data = nsx::MergedData(space_group,include_friedel);
 
     for (auto peak : _peaks) {
         _merged_data.addPeak(peak);
@@ -334,11 +316,13 @@ void FrameStatistics::update()
 
 void FrameStatistics::updateStatisticsTab()
 {
+    auto space_group = _peaks[0]->unitCell()->spaceGroup();
+
+    bool include_friedel = _ui->friedel->isChecked();
+
     double dmin  = _ui->dmin->value();
     double dmax  = _ui->dmax->value();
     int n_shells = _ui->n_shells->value();
-
-    bool include_friedel = _ui->friedel->isChecked();
 
     nsx::ResolutionShell resolution_shells(dmin, dmax, n_shells);
     for (auto peak : _peaks) {
@@ -356,7 +340,7 @@ void FrameStatistics::updateStatisticsTab()
         const double d_lower = resolution_shells.shell(i).dmin;
         const double d_upper = resolution_shells.shell(i).dmax;
 
-        nsx::MergedData merged_data_per_shell(_space_group, include_friedel);
+        nsx::MergedData merged_data_per_shell(space_group, include_friedel);
 
         for (auto&& peak: resolution_shells.shell(i).peaks) {
             merged_data_per_shell.addPeak(peak);

@@ -28,36 +28,51 @@
 // The motivation is as follows: if a peak is contained inside region 1, then
 // the convolution with region 1 computes the average intensity of the peak,
 // and the convolution with region 2 computes (minus) the average background
-// The the total convolution computes the average intensity minus the average background.
+// Thus the total convolution computes the average intensity minus the average background.
 // This make the kernel effective for peak-finding in images which have a non-homogeneous
 // background.
 
 #pragma once
 
-#include "Convolver.h"
+#include <memory>
+
+#include "IConvolver.h"
 
 namespace nsx {
 
+class RadialConvolver;
+
 //! Annular convolution kernel used for local background subtraction.
-class AnnularConvolver: public Convolver {
+class AnnularConvolver: public IConvolver {
 
 public:
 
     AnnularConvolver();
 
-    AnnularConvolver(const AnnularConvolver &other)=default;
+    AnnularConvolver(const AnnularConvolver &other);
 
-    AnnularConvolver(const std::map<std::string,double>& parameters);
+    AnnularConvolver(const std::map<std::string,int>& parameters);
 
     ~AnnularConvolver()=default;
 
-    AnnularConvolver& operator=(const AnnularConvolver &other)=default;
+    AnnularConvolver& operator=(const AnnularConvolver &other);
 
-    Convolver* clone() const override;
+    IConvolver* clone() const override;
 
     virtual std::pair<size_t,size_t> kernelSize() const override;
 
+    void setParameters(const std::map<std::string,int>& parameters) override;
+
     RealMatrix convolve(const RealMatrix& image) override;
+
+    RealMatrix matrix() const override;
+
+protected:
+
+    std::unique_ptr<RadialConvolver> _radial_convolver_peak;
+
+    std::unique_ptr<RadialConvolver> _radial_convolver_background;
+
 };
 
 } // end namespace nsx

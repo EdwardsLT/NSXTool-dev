@@ -28,7 +28,7 @@ DialogIsotopesDatabase::DialogIsotopesDatabase(QWidget *parent)
 
     unsigned int comp(0);
     for (const auto& prop : properties) {
-        QString unit = QString("%1 (%2)").arg(QString::fromStdString(prop.first)).arg(QString::fromStdString(prop.second.first));
+        QString unit = QString("%1 (%2)").arg(QString::fromStdString(prop.first)).arg(QString::fromStdString(prop.second.second));
         model->setHorizontalHeaderItem(comp++,new QStandardItem(unit));
     }
 

@@ -38,38 +38,43 @@
 
 namespace nsx {
 
-class Convolver {
+//! This implements an interface for the convolvers used for smoothing data frames prior searcing for peaks
+class IConvolver {
 
 public:
 
-    Convolver();
+    IConvolver()=default;
 
-    Convolver(const std::map<std::string,double> &parameters);
+    IConvolver(const std::map<std::string,int> &parameters);
 
-    Convolver(const Convolver& other)=default;
+    virtual ~IConvolver()=0;
 
-    Convolver& operator=(const Convolver& other)=default;
-
-    virtual ~Convolver()=0;
-
-    virtual Convolver* clone() const=0;
-
-    // Non-const getter for kernel parameter
-    std::map<std::string,double>& parameters();
+    //! Clone this convolver
+    virtual IConvolver* clone() const=0;
 
     // Const getter for kernel parameter
-    const std::map<std::string,double>& parameters() const;
+    const std::map<std::string,int>& parameters() const;
 
-    void setParameters(const std::map<std::string,double>& parameters);
+    virtual void setParameters(const std::map<std::string,int>& parameters);
 
     //! Convolve an image
     virtual RealMatrix convolve(const RealMatrix& image)=0;
 
+    //! Return the size of the kernel
     virtual std::pair<size_t,size_t> kernelSize() const=0;
+
+    //! Return the kernel matrix
+    virtual RealMatrix matrix() const=0;
+
+    //! Extend the kernel by padding up to n_rows and n_cols and shifting its center to (0,0)
+    RealMatrix extendKernel(int n_rows, int n_cols) const;
 
 protected:
 
-    std::map<std::string,double> _parameters;
+    //! The parameters used for this convolver
+    std::map<std::string,int> _parameters;
+
+    bool _update_kernel;
 };
 
 } // end namespace nsx

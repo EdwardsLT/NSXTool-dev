@@ -8,75 +8,85 @@
 
 namespace nsx {
 
-bool PrefixOperator::operator()(double prefix, physical_unit& unit) const
+bool PrefixOperator::operator()(double prefix, PhysicalUnitDefinition& unit) const
 {
-    auto& currentPrefix=std::get<0>(unit);
-    currentPrefix *= prefix;
+    auto& current_prefix = unit.prefix;
+    current_prefix *= prefix;
     return true;
 }
 
-bool PowerOperator::operator()(physical_unit& unit, int power) const
+bool PowerOperator::operator()(PhysicalUnitDefinition& unit, int power) const
 {
-    auto& currentPrefix=std::get<0>(unit);
-    currentPrefix = std::pow(currentPrefix,power);
+    auto& current_prefix = unit.prefix;
+    current_prefix = std::pow(current_prefix,power);
 
-    auto& currentScale=std::get<1>(unit);
-    currentScale = std::pow(currentScale,power);
+    auto& current_scale = unit.scale;
+    current_scale = std::pow(current_scale,power);
 
-    auto& dimension=std::get<2>(unit);
+    auto& dimension = unit.dimension;
     std::for_each(dimension.begin(),dimension.end(), [power](int &element){ element*=power;});
 
     return true;
 }
 
-bool MultiplyOperator::operator()(physical_unit& unit1, const physical_unit& unit2) const
+bool MultiplyOperator::operator()(PhysicalUnitDefinition& unit1, const PhysicalUnitDefinition& unit2) const
 {
-    auto& currentPrefix=std::get<0>(unit1);
-    currentPrefix *= std::get<0>(unit2);
+    auto& current_prefix = unit1.prefix;
+    current_prefix *= unit2.prefix;
 
-    auto& currentScale=std::get<1>(unit1);
-    currentScale *= std::get<1>(unit2);
+    auto& current_scale = unit1.scale;
+    current_scale *= unit2.scale;
 
-    auto& dimension1=std::get<2>(unit1);
-    auto& dimension2=std::get<2>(unit2);
+    auto& dimension1 = unit1.dimension;
+    auto& dimension2 = unit2.dimension;
     std::transform(dimension1.begin(),dimension1.end(),dimension2.begin(),dimension1.begin(),std::plus<int>());
 
     return true;
 }
 
-bool DivideOperator::operator()(physical_unit& unit1, const physical_unit& unit2) const
+bool DivideOperator::operator()(PhysicalUnitDefinition& unit1, const PhysicalUnitDefinition& unit2) const
 {
-    auto& currentPrefix=std::get<0>(unit1);
-    currentPrefix *= std::get<0>(unit2);
+    auto& current_prefix = unit1.prefix;
+    current_prefix *= unit2.prefix;
 
-    auto& currentScale=std::get<1>(unit1);
-    currentScale *= std::get<1>(unit2);
+    auto& current_scale = unit1.scale;
+    current_scale *= unit2.scale;
 
-    auto& dimension1=std::get<2>(unit1);
-    auto& dimension2=std::get<2>(unit2);
+    auto& dimension1 = unit1.dimension;
+    auto& dimension2 = unit2.dimension;
     std::transform(dimension1.begin(),dimension1.end(),dimension2.begin(),dimension1.begin(),std::minus<int>());
 
     return true;
 }
 
-std::map<std::string,physical_unit> PhysicalUnit::_definedUnits = {
-    {"m"  , physical_unit(1.0    ,1.0,            {{ 1, 0, 0, 0, 0, 0, 0}})}, // length [meter]
-    {"s"  , physical_unit(1.0    ,1.0,            {{ 0, 1, 0, 0, 0, 0, 0}})}, // time [second]
-    {"K"  , physical_unit(1.0    ,1.0,            {{ 0, 0, 1, 0, 0, 0, 0}})}, // temperature [kelvin]
-    {"kg" , physical_unit(1.0    ,1.0,            {{ 0, 0, 0, 1, 0, 0, 0}})}, // mass [kilogram]
-    {"A"  , physical_unit(1.0    ,1.0,            {{ 0, 0, 0, 0, 1, 0, 0}})}, // current [ampere]
-    {"mol", physical_unit(1.0    ,1.0,            {{ 0, 0, 0, 0, 0, 1, 0}})}, // substance [mole]
-    {"cd" , physical_unit(1.0    ,1.0,            {{ 0, 0, 0, 0, 0, 0, 1}})}, // luminosity [candela]
-    {"ang", physical_unit(1.0e-10,1.0,            {{ 1, 0, 0, 0, 0, 0, 0}})}, // distance [angstrom]
-    {"J"  , physical_unit(1.0    ,1.0,            {{ 2,-2, 0, 1, 0, 0, 0}})}, // energy [joule]
-    {"eV" , physical_unit(1.0    ,1.602176565e-19,{{ 2,-2, 0, 1, 0, 0, 0}})}, // energy [electron-volt]
-    {"min", physical_unit(1.0    ,60.0           ,{{ 0, 1, 0, 0, 0, 0, 0}})}, // time [minute]
-    {"h"  , physical_unit(1.0    ,3660.0         ,{{ 0, 1, 0, 0, 0, 0, 0}})}, // time [hour]
-    {"g"  , physical_unit(1.0e-3 ,1.0            ,{{ 0, 0, 0, 1, 0, 0, 0}})}, // time [gram]
+std::map<std::string,PhysicalUnitDefinition> PhysicalUnit::_definedUnits = {
+    {"m"  , {1.0, 1.0, {{ 1, 0, 0, 0, 0, 0, 0, 0}}}}, // meter [length]
+    {"s"  , {1.0, 1.0, {{ 0, 1, 0, 0, 0, 0, 0, 0}}}}, // second [time]
+    {"K"  , {1.0, 1.0, {{ 0, 0, 1, 0, 0, 0, 0, 0}}}}, // kelvin [temperature]
+    {"kg" , {1.0, 1.0, {{ 0, 0, 0, 1, 0, 0, 0, 0}}}}, // kilogram [mass]
+    {"A"  , {1.0, 1.0, {{ 0, 0, 0, 0, 1, 0, 0, 0}}}}, // ampere [current]
+    {"mol", {1.0, 1.0, {{ 0, 0, 0, 0, 0, 1, 0, 0}}}}, // mole [substance]
+    {"cd" , {1.0, 1.0, {{ 0, 0, 0, 0, 0, 0, 1, 0}}}}, // candela [luminosity]
+    {"rad" ,{1.0, 1.0, {{ 0, 0, 0, 0, 0, 0, 0, 1}}}}, // candela [luminosity]
+
+    {"b"  , {1.0e-28,               1.0, {{ 2, 0, 0, 0, 0, 0, 0, 0}}}}, // barn [length^2]
+    {"ang", {1.0e-10,               1.0, {{ 1, 0, 0, 0, 0, 0, 0, 0}}}}, // angstrom [length]
+    {"J"  , {1.0    ,               1.0, {{ 2,-2, 0, 1, 0, 0, 0, 0}}}}, // joule [energy]
+    {"eV" , {1.0    ,   1.602176565e-19, {{ 2,-2, 0, 1, 0, 0, 0, 0}}}}, // electron-volt [energy]
+    {"min", {1.0    ,              60.0, {{ 0, 1, 0, 0, 0, 0, 0, 0}}}}, // minute [time]
+    {"h"  , {1.0    ,            3600.0, {{ 0, 1, 0, 0, 0, 0, 0, 0}}}}, // hour [time]
+    {"g"  , {1.0e-3 ,               1.0, {{ 0, 0, 0, 1, 0, 0, 0, 0}}}}, // gram [mass]
+    {"y"  , {1.0    ,        31536000.0, {{ 0, 1, 0, 0, 0, 0, 0, 0}}}}, // year [time]
+    {"%"  , {1.0    ,            1.0e-2, {{ 0, 0, 0, 0, 0, 0, 0, 0}}}}, // percentage [no unit]
+    {"au" , {1.0    ,               1.0, {{ 0, 0, 0, 0, 0, 0, 0, 0}}}}, // arbitrary unit [no unit]
+    {"Da" , {1.0    ,1.0-3/6.0221367e23, {{ 0, 0, 0, 0, 0,-1, 0, 0}}}}, // arbitrary unit [no unit]
+    {"uma" ,{1.0    ,1.0-3/6.0221367e23, {{ 0, 0, 0, 0, 0,-1, 0, 0}}}}, // arbitrary unit [no unit]
+    {"Na" , {1.0    ,      6.0221367e23, {{ 0, 0, 0, 0, 0,-1, 0, 0}}}}, // arbitrary unit [no unit]
+    {"deg" ,{1.0    ,        M_PI/180.0, {{ 0, 0, 0, 0, 0, 0, 0, 1}}}}, // trigonometric degree [rad]
 };
 
 std::map<std::string,double> PhysicalUnit::_definedPrefixes = {
-    {"y" ,1.0e-24}, //yocto
+    {"y" ,1.0e-24}, // yocto
     {"z" ,1.0e-21}, // zepto
     {"a" ,1.0e-18}, // atto
     {"f" ,1.0e-15}, // femto
@@ -98,11 +108,11 @@ std::map<std::string,double> PhysicalUnit::_definedPrefixes = {
     {"Y" ,1.0e+24}  // yotta
 };
 
-std::map<dimension,double> PhysicalUnit::_unitEquivalences = {
-    {{{ 2,-2, 0, 0, 0, 0, 0}},1.1126500948414508e-17}, // energy to mass (J <--> kg)
-    {{{ 2,-2,-1, 1, 0, 0, 0}},7.242971666667e+22},     // energy to temperature (J <--> K)
-    {{{ 2,-3, 0, 1, 0, 0, 0}},4108.235723695035},      // energy to time (J <--> s)
-    {{{ 1,-2, 0, 1, 0, 0, 0}},1.2316183141775015e12},  // energy to distance (J <--> m)
+std::map<std::array<int,8>,double> PhysicalUnit::_unitEquivalences = {
+    {{{ 2,-2, 0, 0, 0, 0, 0, 0}},1.1126500948414508e-17}, // energy to mass (J <--> kg)
+    {{{ 2,-2,-1, 1, 0, 0, 0, 0}},7.242971666667e+22},     // energy to temperature (J <--> K)
+    {{{ 2,-3, 0, 1, 0, 0, 0, 0}},4108.235723695035},      // energy to time (J <--> s)
+    {{{ 1,-2, 0, 1, 0, 0, 0, 0}},1.2316183141775015e12},  // energy to distance (J <--> m)
 };
 
 PhysicalUnit::PhysicalUnit(const PhysicalUnit& other)
@@ -115,39 +125,36 @@ PhysicalUnit::PhysicalUnit(const PhysicalUnit& other)
 
 PhysicalUnit::PhysicalUnit(double value, const std::string& unit) : _value(value)
 {
-    physical_unit u;
+    PhysicalUnitDefinition u;
     auto f = unit.begin();
     auto l = unit.end();
-    bool ok = boost::spirit::qi::phrase_parse(f,l,_parser,boost::spirit::qi::space,u);
-    if (ok)
-    {
-        _prefix = std::get<0>(u);
-        _scale = std::get<1>(u);
-        _dimension = std::get<2>(u);
+    bool unit_parsing_ok = boost::spirit::qi::phrase_parse(f,l,_parser,boost::spirit::qi::space,u);
+    if (unit_parsing_ok) {
+        _prefix = u.prefix;
+        _scale = u.scale;
+        _dimension = u.dimension;
+    } else {
+        throw std::runtime_error("Invalid input unit: "+unit);
     }
-    else
-        throw std::runtime_error("Invalid input unit");
-
 }
 
 PhysicalUnit::PhysicalUnit(const std::string& unit) : _value(1.0)
 {
-    physical_unit u;
+    PhysicalUnitDefinition u;
     auto f = unit.begin();
     auto l = unit.end();
-    bool ok = boost::spirit::qi::phrase_parse(f,l,_parser,boost::spirit::qi::space,u);
-    if (ok)
-    {
-        _prefix = std::get<0>(u);
-        _scale = std::get<1>(u);
-        _dimension = std::get<2>(u);
-    }
-    else
+    bool unit_parsing_ok = boost::spirit::qi::phrase_parse(f,l,_parser,boost::spirit::qi::space,u);
+    if (unit_parsing_ok) {
+        _prefix = u.prefix;
+        _scale = u.scale;
+        _dimension = u.dimension;
+    } else {
         throw std::runtime_error("Invalid input unit");
+    }
 
 }
 
-PhysicalUnit::PhysicalUnit(double value, double prefix, double scale, const dimension& dimension)
+PhysicalUnit::PhysicalUnit(double value, double prefix, double scale, const std::array<int,8>& dimension)
 : _value(value),
   _prefix(prefix),
   _scale(scale),
@@ -155,7 +162,7 @@ PhysicalUnit::PhysicalUnit(double value, double prefix, double scale, const dime
 {
 }
 
-PhysicalUnit::PhysicalUnit(double prefix, double scale, const dimension& dimension)
+PhysicalUnit::PhysicalUnit(double prefix, double scale, const std::array<int,8>& dimension)
 : _value(1.0),
   _prefix(prefix),
   _scale(scale),
@@ -177,11 +184,11 @@ PhysicalUnit& PhysicalUnit::operator=(const PhysicalUnit& other)
 
 void PhysicalUnit::addPrefix(const std::string& name, double factor)
 {
-    _definedPrefixes.insert(unit_prefix(name,factor));
+    _definedPrefixes.emplace(name,factor);
     _parser.updatePrefixParser(name,factor);
 }
 
-void PhysicalUnit::addUnit(const std::string& name, const physical_unit& physicalUnit)
+void PhysicalUnit::addUnit(const std::string& name, const PhysicalUnitDefinition& physicalUnit)
 {
     _definedUnits.insert(std::make_pair(name,physicalUnit));
     _parser.updateUnitParser(name,physicalUnit);
@@ -189,27 +196,26 @@ void PhysicalUnit::addUnit(const std::string& name, const physical_unit& physica
 
 double PhysicalUnit::convert(const std::string& ounit) const
 {
-    physical_unit u;
+    PhysicalUnitDefinition u;
     auto f = ounit.begin();
     auto l = ounit.end();
     bool ok = boost::spirit::qi::phrase_parse(f,l,_parser,boost::spirit::qi::space,u);
-    if (ok)
-        return convert(std::get<0>(u),std::get<1>(u),std::get<2>(u));
-    else
+    if (ok) {
+        return convert(u.prefix,u.scale,u.dimension);
+    } else {
         throw std::runtime_error("Invalid output unit");
+    }
 }
 
-double PhysicalUnit::convert(double oprefix, double oscale, const dimension& odimension) const
+double PhysicalUnit::convert(double oprefix, double oscale, const std::array<int,8>& odimension) const
 {
-    bool dimEqualityTest = std::equal(_dimension.begin(),_dimension.end(),odimension.begin());
-    if (dimEqualityTest)
+    bool check_dimension_euqlaity = std::equal(_dimension.begin(),_dimension.end(),odimension.begin());
+    if (check_dimension_euqlaity)
     {
         double conversionFactor(_value*_prefix*_scale/(oprefix*oscale));
         return conversionFactor;
-    }
-    else
-    {
-        dimension dimDifference;
+    } else {
+        std::array<int,8> dimDifference;
 
         std::transform(_dimension.begin(),_dimension.end(),odimension.begin(),dimDifference.begin(), std::minus<int>());
 
@@ -244,17 +250,17 @@ double PhysicalUnit::convert(double oprefix, double oscale, const dimension& odi
     }
 }
 
-double PhysicalUnit::getPrefix() const
+double PhysicalUnit::prefix() const
 {
     return _prefix;
 }
 
-double PhysicalUnit::getScale() const
+double PhysicalUnit::scale() const
 {
     return _scale;
 }
 
-const dimension& PhysicalUnit::getDimension() const
+const std::array<int,8>& PhysicalUnit::dimension() const
 {
     return _dimension;
 }
@@ -264,12 +270,12 @@ void PhysicalUnit::setValue(double value)
     _value = value;
 }
 
-double PhysicalUnit::getValue() const
+double PhysicalUnit::value() const
 {
     return _value;
 }
 
-double PhysicalUnit::convertToSI() const
+double PhysicalUnit::toSI() const
 {
     return _prefix*_scale*_value;
 }
@@ -312,7 +318,7 @@ void PhysicalUnit::PhysicalUnitParser::updatePrefixParser(const std::string& nam
     _prefix.add(name,prefix);
 }
 
-void PhysicalUnit::PhysicalUnitParser::updateUnitParser(const std::string& name, const physical_unit& physicalUnit)
+void PhysicalUnit::PhysicalUnitParser::updateUnitParser(const std::string& name, const PhysicalUnitDefinition& physicalUnit)
 {
     _unit.add(name,physicalUnit);
 }

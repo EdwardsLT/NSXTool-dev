@@ -41,18 +41,18 @@
 
 #include <Eigen/Dense>
 
-#include "Convolver.h"
+#include "IConvolver.h"
 #include "MathematicsTypes.h"
 
 namespace nsx {
 
-class AtomicConvolver : public Convolver {
+class AtomicConvolver : public IConvolver {
 
 public:
 
     AtomicConvolver();
 
-    AtomicConvolver(const std::map<std::string,double> &parameters);
+    AtomicConvolver(const std::map<std::string,int> &parameters);
 
     AtomicConvolver(const AtomicConvolver& other)=default;
 
@@ -60,9 +60,7 @@ public:
 
     virtual ~AtomicConvolver()=0;
 
-    Convolver* clone() const=0;
-
-    RealMatrix matrix(int n_rows, int n_cols) const;
+    IConvolver* clone() const=0;
 
     //! Convolve an image
     virtual RealMatrix convolve(const RealMatrix& image) override;
@@ -73,9 +71,9 @@ protected:
 
     void updateKernel(int nrows, int ncols);
 
-    virtual RealMatrix _matrix(int nrows, int cols) const=0;
-
 private:
+
+    void padImage(const RealMatrix& image) const;
 
     void reset();
 
@@ -85,18 +83,17 @@ protected:
 
     int _n_cols;
 
-    int _halfCols;
+    int _half_cols;
 
-    // used directly with FFTW3
-    fftw_plan _forwardPlan;
+    fftw_plan _forward_plan;
 
-    fftw_plan _backwardPlan;
+    fftw_plan _backward_plan;
 
-    double* _realData;
+    double* _data;
 
-    fftw_complex* _transformedData;
+    fftw_complex* _data_spectrum;
 
-    std::vector<std::complex<double>> _transformedKernel;
+    std::vector<std::complex<double>> _kernel_spectrum;
 };
 
 } // end namespace nsx

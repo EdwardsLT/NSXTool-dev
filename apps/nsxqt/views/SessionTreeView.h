@@ -13,7 +13,11 @@
 
 class DataItem;
 class ExperimentItem;
+class FrameAutoIndexer;
+class FramePeakFinder;
+class FrameStatistics;
 class MainWindow;
+class PeaksItem;
 class SessionModel;
 
 class SessionTreeView: public QTreeView {
@@ -41,13 +45,23 @@ public slots:
 
 private:
 
-    void openPeakFinderDialog(DataItem *data_item);
+    void openAutoIndexerDialog(PeaksItem *peaks_item);
 
     void openInstrumentStatesDialog();
+
+    void openPeakFinderDialog(DataItem *data_item);
+
+    void openStatisticsDialog(ExperimentItem *experiment_item);
 
 private:
 
     MainWindow *_main_window;
 
     SessionModel *_session_model;
+
+    FrameAutoIndexer *_frame_autoindexer;
+
+    FramePeakFinder *_frame_peak_finder;
+
+    FrameStatistics *_frame_statistics;
 };

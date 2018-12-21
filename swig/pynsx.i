@@ -173,12 +173,13 @@ using sptrPeak3D = std::shared_ptr<nsx::Peak3D>;
 #include "CylindricalDetector.h"
 #include "Gonio.h"
 
-#include "Convolver.h"
+#include "IConvolver.h"
 #include "AtomicConvolver.h"
 #include "DeltaConvolver.h"
 #include "AnnularConvolver.h"
 #include "EnhancedAnnularConvolver.h"
-#include "ConstantConvolver.h"
+#include "GaussianConvolver.h"
+#include "BoxConvolver.h"
 #include "ConvolverFactory.h"
 #include "RadialConvolver.h"
 
@@ -230,15 +231,6 @@ using sptrUnitCell = std::shared_ptr<nsx::UnitCell>;
 using sptrDiffractometer = std::shared_ptr<nsx::Diffractometer>;
 
 #include "Singleton.h"
-
-#include "Convolver.h"
-#include "AtomicConvolver.h"
-#include "ConvolverFactory.h"
-#include "DeltaConvolver.h"
-#include "AnnularConvolver.h"
-#include "EnhancedAnnularConvolver.h"
-#include "ConstantConvolver.h"
-#include "RadialConvolver.h"
 
 #include "MetaData.h"
 #include "IDataReader.h"
@@ -408,15 +400,15 @@ namespace nsx {
 
 %include "PeakFilter.h"
 
-%template(ConvolverParameters) std::map<std::string,double>;
-%include "Convolver.h"
+%template(ConvolverParameters) std::map<std::string,int>;
+%include "IConvolver.h"
 %include "ConvolverFactory.h"
-%include "ConstantConvolver.h"
+%include "BoxConvolver.h"
 %include "DeltaConvolver.h"
 %include "AnnularConvolver.h"
 %include "EnhancedAnnularConvolver.h"
+%include "GaussianConvolver.h"
 %include "RadialConvolver.h"
-%include "Convolver.h"
 %include "AtomicConvolver.h"
 
 %include "mosaic.h"
@@ -512,11 +504,12 @@ namespace nsx {
 %include "TiffDataReader.h"
 %include "BloscFilter.h"
 
-%include "Convolver.h"
+%include "IConvolver.h"
 %include "AtomicConvolver.h"
-%include "ConstantConvolver.h"
+%include "BoxConvolver.h"
 %include "DeltaConvolver.h"
 %include "AnnularConvolver.h"
+%include "GaussianConvolver.h"
 %include "EnhancedAnnularConvolver.h"
 %include "RadialConvolver.h"
 %include "ConvolverFactory.h"

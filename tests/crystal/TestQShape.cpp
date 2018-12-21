@@ -4,6 +4,7 @@
 #include <nsxlib/DataSet.h>
 #include <nsxlib/Diffractometer.h>
 #include <nsxlib/Experiment.h>
+#include <nsxlib/IConvolver.h>
 #include <nsxlib/NSXTest.h>
 #include <nsxlib/Peak3D.h>
 #include <nsxlib/PeakFinder.h>
@@ -45,7 +46,7 @@ int main()
 
     nsx::ConvolverFactory convolver_factory;
     auto convolver = convolver_factory.create("annular",{});
-    peakFinder.setConvolver(std::unique_ptr<nsx::Convolver>(convolver));
+    peakFinder.setConvolver(std::unique_ptr<nsx::IConvolver>(convolver));
 
     peakFinder.setThreshold(15.0);
     peakFinder.setPeakMergingScale(1.0);

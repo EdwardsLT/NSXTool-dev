@@ -97,29 +97,3 @@ UnitCellsItem* ExperimentItem::unitCellsItem()
 {
     return _unitCells;
 }
-
-void ExperimentItem::writeLogFiles()
-{
-    auto&& peaks = _peaks->selectedPeaks();
-
-    nsx::PeakFilter peak_filter;
-    nsx::PeakList filtered_peaks;
-    filtered_peaks = peak_filter.enabled(peaks,true);
-    filtered_peaks = peak_filter.hasUnitCell(filtered_peaks);
-
-    if (filtered_peaks.empty()) {
-        nsx::error() << "No valid peaks in the table";
-        return;
-    }
-
-    auto cell = filtered_peaks[0]->unitCell();
-
-    filtered_peaks = peak_filter.unitCell(filtered_peaks,cell);
-    filtered_peaks = peak_filter.indexed(filtered_peaks,*cell,cell->indexingTolerance());
-
-    FrameStatistics *frame = FrameStatistics::create(filtered_peaks,cell->spaceGroup());
-
-    frame->show();
-
-    frame->raise();
-}

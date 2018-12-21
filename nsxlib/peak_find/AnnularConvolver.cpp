@@ -4,39 +4,87 @@
 namespace nsx {
 
 AnnularConvolver::AnnularConvolver()
-: Convolver({{"r1",5},{"r2",10},{"r3",15}})
+: IConvolver({{"inner_radius",5},{"middle_radius",10},{"outer_radius",15}})
 {
+    _radial_convolver_peak.reset(new RadialConvolver({{"inner_radius",0},{"outer_radius",_parameters.at("inner_radius")}}));
+    _radial_convolver_background.reset(new RadialConvolver({{"inner_radius",_parameters.at("middle_radius")},{"outer_radius",_parameters.at("outer_radius")}}));
 }
 
-AnnularConvolver::AnnularConvolver(const std::map<std::string,double>& parameters)
+AnnularConvolver::AnnularConvolver(const std::map<std::string,int>& parameters)
 : AnnularConvolver()
 {
     setParameters(parameters);
+
+    // An annular convolver is made of two concentric radial convolver.
+    _radial_convolver_peak.reset(new RadialConvolver({{"inner_radius",0},{"outer_radius",_parameters.at("inner_radius")}}));
+    _radial_convolver_background.reset(new RadialConvolver({{"inner_radius",_parameters.at("middle_radius")},{"outer_radius",_parameters.at("outer_radius")}}));
 }
 
-Convolver* AnnularConvolver::clone() const
+AnnularConvolver::AnnularConvolver(const AnnularConvolver& other)
+{
+    _radial_convolver_peak.reset(new RadialConvolver(*other._radial_convolver_peak));
+    _radial_convolver_background.reset(new RadialConvolver(*other._radial_convolver_background));
+}
+
+AnnularConvolver& AnnularConvolver::operator =(const AnnularConvolver& other)
+{
+    if (this != &other) {
+        _radial_convolver_peak.reset(new RadialConvolver(*other._radial_convolver_peak));
+        _radial_convolver_background.reset(new RadialConvolver(*other._radial_convolver_background));
+    }
+    return *this;
+}
+
+void AnnularConvolver::setParameters(const std::map<std::string,int>& parameters)
+{
+    IConvolver::setParameters(parameters);
+    _radial_convolver_peak->setParameters({{"inner_radius",0},{"outer_radius",_parameters.at("inner_radius")}});
+    _radial_convolver_background->setParameters({{"inner_radius",_parameters.at("middle_radius")},{"outer_radius",_parameters.at("outer_radius")}});
+}
+
+IConvolver* AnnularConvolver::clone() const
 {
     return new AnnularConvolver(*this);
 }
 
 std::pair<size_t,size_t> AnnularConvolver::kernelSize() const
 {
-    size_t r = _parameters.at("r3");
-
-    return std::make_pair(r,r);
+    return _radial_convolver_background->kernelSize();
 }
 
 RealMatrix AnnularConvolver::convolve(const RealMatrix& image)
 {
-    RadialConvolver radial_convolver_peak({{"r_in",0.0},{"r_out",_parameters.at("r1")}});
-    RealMatrix conv_peak = radial_convolver_peak.convolve(image);
+    RealMatrix conv_peak = _radial_convolver_peak->convolve(image);
 
-    RadialConvolver radial_convolver_bkg({{"r_in",_parameters.at("r2")},{"r_out",_parameters.at("r3")}});
-    RealMatrix conv_bkg = radial_convolver_bkg.convolve(image);
+    RealMatrix conv_bkg = _radial_convolver_background->convolve(image);
 
     RealMatrix result = conv_peak - conv_bkg;
 
     return result;
+}
+
+RealMatrix AnnularConvolver::matrix() const
+{
+    if ((_parameters.at("inner_radius") < 0) ||
+        (_parameters.at("inner_radius") > _parameters.at("middle_radius")) ||
+        (_parameters.at("middle_radius") > _parameters.at("outer_radius"))) {
+        throw std::runtime_error("AnnularConvolver convolver called with invalid parameters");
+    }
+
+    const int inner_radius = _parameters.at("inner_radius");
+
+    const int outer_radius = _parameters.at("outer_radius");
+    const double center = outer_radius;
+
+    RealMatrix outer_kernel = -_radial_convolver_background->matrix();
+
+    RealMatrix inner_kernel = _radial_convolver_peak->matrix();
+
+    // Insert the inner kernel inside the outer one
+    const int topleft_pixel = center-inner_radius;
+    outer_kernel.block(topleft_pixel,topleft_pixel,inner_kernel.rows(),inner_kernel.cols()) = inner_kernel;
+
+    return outer_kernel;
 }
 
 } // end namespace nsx

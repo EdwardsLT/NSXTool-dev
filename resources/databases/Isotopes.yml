@@ -1,5 +1,8 @@
 ---
 Properties:
+    name:
+        type: string
+        unit: au
     b_coherent:
         type: complex
         unit: fm
@@ -20,10 +23,10 @@ Properties:
         unit: au
     half_life:
         type: double
-        unit: year
+        unit: y
     molar_mass:
         type: double
-        unit: g_per_mole
+        unit: g/mol
     n_electrons:
         type: int
         unit: au
@@ -35,7 +38,7 @@ Properties:
         unit: au
     natural_abundance:
         type: double
-        unit: percentage
+        unit: '%'
     nuclear_spin:
         type: double
         unit: au
@@ -47,16 +50,16 @@ Properties:
         unit: au
     xs_absorption:
         type: double
-        unit: barn
+        unit: b
     xs_coherent:
         type: double
-        unit: barn
+        unit: b
     xs_incoherent:
         type: double
-        unit: barn
+        unit: b
     xs_scattering:
         type: double
-        unit: barn
+        unit: b
 
 Isotopes:
     Ag[107]:

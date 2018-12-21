@@ -22,6 +22,7 @@ std::unordered_map<std::string,double> UnitsManager::_unitsMap = {
         {"nm2",nm2 },
         {"pm2",pm2 },
         {"am2",am2 },
+        {"b",barn},
         {"barn",barn},
         {"m3",m3  },
         {"cm3",cm3 },
@@ -44,6 +45,7 @@ std::unordered_map<std::string,double> UnitsManager::_unitsMap = {
         {"Pa",Pa },
         {"Bar",Bar},
         {"day",day },
+        {"y",year},
         {"year",year},
         {"au", au},
         {"%", perCent},
@@ -52,6 +54,7 @@ std::unordered_map<std::string,double> UnitsManager::_unitsMap = {
         {"avogadro", avogadro},
         {"uma",uma},
         {"g_per_mole",g_per_mole},
+        {"g/mol",g_per_mole},
         {"g/cm3",g_per_cm3},
         {"kg/m3",kg_per_m3},
         {"R",R}
