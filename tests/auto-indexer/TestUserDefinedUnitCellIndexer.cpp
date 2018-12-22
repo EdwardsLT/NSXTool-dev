@@ -1,3 +1,17 @@
+// ************************************************************************** //
+//
+//  NSXTool: Neutron Single Xtal analysis Toolkit
+//
+//! @file      tests/auto-indexer/TestUserDefinedUnitCellIndexer.cpp
+//! @brief     Implements module/class/test TestUserDefinedUnitCellIndexer
+//!
+//! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
+//! @license   GNU General Public License v3 or higher (see COPYING)
+//! @copyright Institut Laue Langevin 2013-now
+//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//
+// ************************************************************************** //
+
 #include <iostream>
 #include <limits>
 #include <random>

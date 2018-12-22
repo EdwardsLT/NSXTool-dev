@@ -1,3 +1,17 @@
+// ************************************************************************** //
+//
+//  NSXTool: Neutron Single Xtal analysis Toolkit
+//
+//! @file      tests/chemistry/TestMCAbsorption.cpp
+//! @brief     Implements module/class/test TestMCAbsorption
+//!
+//! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
+//! @license   GNU General Public License v3 or higher (see COPYING)
+//! @copyright Institut Laue Langevin 2013-now
+//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//
+// ************************************************************************** //
+
 #include <memory>
 
 #include <Eigen/Dense>

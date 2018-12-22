@@ -1,4 +1,3 @@
-
 #include <QHeaderView>
 #include <QLayout>
 #include <QStatusBar>
