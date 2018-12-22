@@ -1,3 +1,17 @@
+// ************************************************************************** //
+//
+//  NSXTool: Neutron Single Xtal analysis Toolkit
+//
+//! @file      tests/data/TestHDF5Data.cpp
+//! @brief     Implements module/class/test TestHDF5Data
+//!
+//! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
+//! @license   GNU General Public License v3 or higher (see COPYING)
+//! @copyright Institut Laue Langevin 2013-now
+//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//
+// ************************************************************************** //
+
 #include <Eigen/Dense>
 
 #include <nsxlib/DataSet.h>

@@ -1,3 +1,17 @@
+// ************************************************************************** //
+//
+//  NSXTool: Neutron Single Xtal analysis Toolkit
+//
+//! @file      tests/peak_find/TestDeltaConvolver.cpp
+//! @brief     Implements module/class/test TestDeltaConvolver
+//!
+//! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
+//! @license   GNU General Public License v3 or higher (see COPYING)
+//! @copyright Institut Laue Langevin 2013-now
+//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//
+// ************************************************************************** //
+
 #include <nsxlib/DeltaConvolver.h>
 #include <nsxlib/MathematicsTypes.h>
 #include <nsxlib/NSXTest.h>

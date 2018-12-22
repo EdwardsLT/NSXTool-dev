@@ -1,12 +1,18 @@
-/*
- * mosaic.h
- *
- *  Created on: Feb 10, 2016
- *      Author: pellegrini
- */
+// ************************************************************************** //
+//
+//  NSXTool: Neutron Single Xtal analysis Toolkit
+//
+//! @file      nsxlib/monte-carlo/mosaic.h
+//! @brief     Implements module/class/test mosaic
+//!
+//! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
+//! @license   GNU General Public License v3 or higher (see COPYING)
+//! @copyright Institut Laue Langevin 2013-now
+//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//
+// ************************************************************************** //
 
-#ifndef MOSAIC_H_
-#define MOSAIC_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -49,4 +55,4 @@ private:
 double ellipsoids_overlap(const Ellipsoid& ell1, const Ellipsoid& ell2);
 
 } // namespace nsx
-#endif /* MOSAIC_H_ */
+
