@@ -2,13 +2,13 @@
 //
 //  NSXTool: Neutron Single Xtal analysis Toolkit
 //
-//! @file      nsxlib/crystal/Peak3D.cpp
-//! @brief     Implements module/class/test Peak3D
+//! @file      nsxlib/crystal/Peak.cpp
+//! @brief     Implements module/class/test Peak
 //!
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -24,7 +24,7 @@
 #include "InstrumentState.h"
 #include "IPeakIntegrator.h"
 #include "MillerIndex.h"
-#include "Peak3D.h"
+#include "Peak.h"
 #include "ReciprocalVector.h"
 #include "Sample.h"
 #include "Source.h"
@@ -33,7 +33,7 @@
 
 namespace nsx {
 
-Peak3D::Peak3D(sptrDataSet data):
+Peak::Peak(sptrDataSet data):
     _shape(),
     _unitCell(nullptr),
     _scale(1.0),
@@ -49,13 +49,13 @@ Peak3D::Peak3D(sptrDataSet data):
   
 }
 
-Peak3D::Peak3D(sptrDataSet data, const Ellipsoid &shape):
-    Peak3D(data)
+Peak::Peak(sptrDataSet data, const Ellipsoid &shape):
+    Peak(data)
 {
     setShape(shape);  
 }
 
-void Peak3D::setShape(const Ellipsoid& shape)
+void Peak::setShape(const Ellipsoid& shape)
 {
     // shape should be consistent with data
     if (_data) {
@@ -63,38 +63,38 @@ void Peak3D::setShape(const Ellipsoid& shape)
         if (c[2] < 0.0 || c[2] > _data->nFrames()-1
           || c[0] < 0.0 || c[0] >_data->nCols()-1 
           || c[1] < 0.0 || c[1] > _data->nRows()-1) {
-            throw std::runtime_error("Peak3D::setShape(): peak center out of bounds");
+            throw std::runtime_error("Peak::setShape(): peak center out of bounds");
         }
     }
     _shape = shape;
 }
 
-const Ellipsoid& Peak3D::shape() const
+const Ellipsoid& Peak::shape() const
 {
     return _shape;
 }
 
-const std::vector<Intensity>& Peak3D::rockingCurve() const
+const std::vector<Intensity>& Peak::rockingCurve() const
 {
     return _rockingCurve;
 }
 
-void Peak3D::setUnitCell(sptrUnitCell uc)
+void Peak::setUnitCell(sptrUnitCell uc)
 {
     _unitCell = uc;
 }
 
-sptrUnitCell Peak3D::unitCell() const
+sptrUnitCell Peak::unitCell() const
 {
     return _unitCell;
 }
 
-Intensity Peak3D::rawIntensity() const
+Intensity Peak::rawIntensity() const
 {
     return _rawIntensity;
 }
 
-Intensity Peak3D::correctedIntensity() const
+Intensity Peak::correctedIntensity() const
 {
     auto c = _shape.center();
     auto state = _data->interpolatedState(c[2]);
@@ -103,47 +103,47 @@ Intensity Peak3D::correctedIntensity() const
     return rawIntensity() * factor / state.stepSize;
 }
 
-double Peak3D::transmission() const
+double Peak::transmission() const
 {
     return _transmission;
 }
 
-double Peak3D::scale() const
+double Peak::scale() const
 {
     return _scale;
 }
 
-void Peak3D::setScale(double factor)
+void Peak::setScale(double factor)
 {
     _scale = factor;
 }
 
-void Peak3D::setTransmission(double transmission)
+void Peak::setTransmission(double transmission)
 {
     _transmission = transmission;
 }
 
-bool Peak3D::enabled() const
+bool Peak::enabled() const
 {
     return (!masked() && _status == Status::Selected);
 }
 
-Peak3D::Status Peak3D::status() const
+Peak::Status Peak::status() const
 {
     return _status;
 }
 
-void Peak3D::setStatus(Peak3D::Status status)
+void Peak::setStatus(Peak::Status status)
 {
     _status = status;
 }
 
-bool Peak3D::selected() const
+bool Peak::selected() const
 {
     return _status == Status::Selected;
 }
 
-bool Peak3D::masked() const
+bool Peak::masked() const
 {
     bool masked(false);
     for (auto&& m : _data->masks()) {
@@ -157,17 +157,17 @@ bool Peak3D::masked() const
     return masked;
 }
 
-void Peak3D::setPredicted(bool predicted)
+void Peak::setPredicted(bool predicted)
 {
     _predicted = predicted;
 }
 
-bool Peak3D::predicted() const
+bool Peak::predicted() const
 {
     return _predicted;
 }
 
-void Peak3D::updateIntegration(const IPeakIntegrator& integrator, double peakEnd, double bkgBegin, double bkgEnd)
+void Peak::updateIntegration(const IPeakIntegrator& integrator, double peakEnd, double bkgBegin, double bkgEnd)
 {
     _rockingCurve = integrator.rockingCurve();
     // testing
@@ -182,13 +182,13 @@ void Peak3D::updateIntegration(const IPeakIntegrator& integrator, double peakEnd
     _bkgEnd = bkgEnd;
 }
 
-void Peak3D::setRawIntensity(const Intensity& i)
+void Peak::setRawIntensity(const Intensity& i)
 {  
-    // note: the scaling factor is taken to be consistent with Peak3D::getRawIntensity()
+    // note: the scaling factor is taken to be consistent with Peak::getRawIntensity()
     _rawIntensity = i; // / data()->getSampleStepSize();
 }
 
-ReciprocalVector Peak3D::q() const
+ReciprocalVector Peak::q() const
 {
     auto pixel_coords = _shape.center();
     auto state = _data->interpolatedState(pixel_coords[2]);
@@ -197,7 +197,7 @@ ReciprocalVector Peak3D::q() const
     return state.sampleQ(detector_position);
 }
 
-double Peak3D::d() const
+double Peak::d() const
 {
     return 1.0/q().rowVector().norm();
 }
@@ -209,7 +209,7 @@ double Peak3D::d() const
 //! Then if q = q0 + J(x-x0), then the corresponding ellipsoid.
 //!
 //! This method can throw if there is no valid q-shape corresponding to the detector space shape.
-Ellipsoid Peak3D::qShape() const
+Ellipsoid Peak::qShape() const
 {
     if (!_data) {
         throw std::runtime_error("Attempted to compute q-shape of peak not attached to data");
@@ -229,7 +229,7 @@ Ellipsoid Peak3D::qShape() const
 }
 
 
-ReciprocalVector Peak3D::qPredicted() const
+ReciprocalVector Peak::qPredicted() const
 {
     if (!_unitCell) {
         return {};
@@ -238,7 +238,7 @@ ReciprocalVector Peak3D::qPredicted() const
     return ReciprocalVector(_unitCell->fromIndex(index.rowVector().cast<double>()));
 }
 
-DetectorEvent Peak3D::predictCenter(double frame) const
+DetectorEvent Peak::predictCenter(double frame) const
 {
     const DetectorEvent no_event = {0, 0, -1, -1};
 
@@ -264,20 +264,20 @@ DetectorEvent Peak3D::predictCenter(double frame) const
 }
 
     
-Intensity Peak3D::meanBackground() const {
+Intensity Peak::meanBackground() const {
     return _meanBackground;
 }
 
-double Peak3D::peakEnd() const {
+double Peak::peakEnd() const {
     return _peakEnd;
 }
 
-double Peak3D::bkgBegin() const
+double Peak::bkgBegin() const
 {
     return _bkgBegin;
 }
 
-double Peak3D::bkgEnd() const
+double Peak::bkgEnd() const
 {
     return _bkgEnd;
 }

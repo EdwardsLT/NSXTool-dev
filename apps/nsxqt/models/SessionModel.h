@@ -7,14 +7,14 @@
 
 #include <nsxlib/DataSet.h>
 #include <nsxlib/Experiment.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 
 #include "ColorMap.h"
 
 class DataSet;
 class Experiment;
 class ExperimentItem;
-class Peak3D;
+class Peak;
 class SXPlot;
 
 class SessionModel: public QStandardItemModel {
@@ -43,7 +43,7 @@ public:
     void setDetectorViewTransformation(DETECTOR_VIEW detector_view);
     const QTransform& detectorViewTranformation() const;
 
-    void selectPeak(nsx::sptrPeak3D selected_peak);
+    void selectPeak(nsx::sptrPeak selected_peak);
 
 signals:
 
@@ -55,9 +55,9 @@ signals:
 
     void signalSelectedDataChanged(nsx::sptrDataSet, int frame);
 
-    void signalChangeSelectedPeak(nsx::sptrPeak3D peak);
+    void signalChangeSelectedPeak(nsx::sptrPeak peak);
 
-    void signalEnabledPeakChanged(nsx::sptrPeak3D peak);
+    void signalEnabledPeakChanged(nsx::sptrPeak peak);
 
     void signalMaskedPeaksChanged(nsx::sptrDataSet data);
 

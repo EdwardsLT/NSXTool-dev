@@ -12,7 +12,7 @@
 #include <nsxlib/Experiment.h>
 #include <nsxlib/IDataReader.h>
 #include <nsxlib/Logger.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/ProgressHandler.h>
 #include <nsxlib/PixelSumIntegrator.h>
 #include <nsxlib/RawDataReader.h>

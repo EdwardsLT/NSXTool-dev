@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -28,7 +28,7 @@
 #include <nsxlib/DetectorEvent.h>
 #include <nsxlib/Diffractometer.h>
 #include <nsxlib/Experiment.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/PeakCoordinateSystem.h>
 
 NSX_INIT_TEST
@@ -60,7 +60,7 @@ void run_test(const char* filename, const char* instrument)
         }
     }
     
-    nsx::sptrPeak3D peak(new nsx::Peak3D(dataset));
+    nsx::sptrPeak peak(new nsx::Peak(dataset));
 
     for (auto coord: coords) {
         peak->setShape(nsx::Ellipsoid(coord, 2.0));

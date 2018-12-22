@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -20,7 +20,7 @@
 #include "DetectorEvent.h"
 #include "InstrumentState.h"
 #include "MillerIndex.h"
-#include "Peak3D.h"
+#include "Peak.h"
 #include "PeakFilter.h"
 #include "Refiner.h"
 #include "UnitCell.h"
@@ -36,7 +36,7 @@ Refiner::Refiner(InstrumentStateList& states, sptrUnitCell cell, const PeakList&
     filtered_peaks = peak_filter.enabled(peaks,true);
     filtered_peaks = peak_filter.indexed(filtered_peaks,*cell,cell->indexingTolerance());
 
-    auto sort_peaks_by_frame = [](sptrPeak3D p1, sptrPeak3D p2) -> bool {
+    auto sort_peaks_by_frame = [](sptrPeak p1, sptrPeak p2) -> bool {
         auto&& c1 = p1->shape().center();
         auto&& c2 = p2->shape().center();
         return c1[2] < c2[2];
@@ -154,7 +154,7 @@ int Refiner::updatePredictions(PeakList& peaks) const
 
         // something wrong with new prediction...
         if (events.size() != 1) {
-            peak->setStatus(Peak3D::Status::BadlyPredicted);
+            peak->setStatus(Peak::Status::BadlyPredicted);
             continue;
         }
         
@@ -162,7 +162,7 @@ int Refiner::updatePredictions(PeakList& peaks) const
             peak->setShape(Ellipsoid({events[0]._px, events[0]._py, events[0]._frame}, peak->shape().metric()));
             ++updated;
         } catch(...) {
-            peak->setStatus(Peak3D::Status::BadlyPredicted);
+            peak->setStatus(Peak::Status::BadlyPredicted);
         }
         
     }

@@ -2,13 +2,13 @@
 //
 //  NSXTool: Neutron Single Xtal analysis Toolkit
 //
-//! @file      nsxlib/crystal/Peak3D.h
-//! @brief     Implements module/class/test Peak3D
+//! @file      nsxlib/crystal/Peak.h
+//! @brief     Implements module/class/test Peak
 //!
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -31,25 +31,25 @@
 
 namespace nsx {
 
-//! \class Peak3D
+//! \class Peak
 //! \brief Data type used to store integrated peaks, including their shape and location.
-class Peak3D {
+class Peak {
 
 public:
 
     enum class Status {Selected,Unselected,OutOfBounds,NotIndexed,BadlyIntegrated,BadlyPredicted,Unknown};
 
     //! Create peak belonging to data without setting a position, shape, or intensity
-    Peak3D(sptrDataSet data);
+    Peak(sptrDataSet data);
     //! Create peak belonging to data with given shape
-    Peak3D(sptrDataSet data, const Ellipsoid& shape);
+    Peak(sptrDataSet data, const Ellipsoid& shape);
     //! Copy constructor deleted
-    Peak3D(sptrDataSet data, const Peak3D& other) = delete;
+    Peak(sptrDataSet data, const Peak& other) = delete;
     //! Assignment operator deleted
-    Peak3D& operator=(const Peak3D& other) = delete;
+    Peak& operator=(const Peak& other) = delete;
 
     //! Comparison operator used to sort peaks
-    friend bool operator<(const Peak3D& p1, const Peak3D& p2);
+    friend bool operator<(const Peak& p1, const Peak& p2);
 
     //! Set the Peak region. Peak shaped is owned after setting
     void setShape(const Ellipsoid& peak);

@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -23,7 +23,7 @@
 #include "IDataReader.h"
 #include "Logger.h"
 #include "Minimizer.h"
-#include "Peak3D.h"
+#include "Peak.h"
 #include "ShapeLibrary.h"
 #include "Source.h"
 #include "UnitCell.h"
@@ -42,7 +42,7 @@ static PeakList buildPeaksFromMillerIndices(sptrDataSet data, const std::vector<
     auto events = data->events(qs);
 
     for (auto event: events) {
-        sptrPeak3D peak(new Peak3D(data));
+        sptrPeak peak(new Peak(data));
         Eigen::Vector3d center = {event._px, event._py, event._frame};
 
         // dummy shape
@@ -79,7 +79,7 @@ PeakList predictPeaks(ShapeLibrary library,
     for (auto peak : peaks) {
         peak->setUnitCell(unit_cell);
         peak->setPredicted(true);
-        peak->setStatus(Peak3D::Status::Selected);
+        peak->setStatus(Peak::Status::Selected);
 
         // Skip the peak if any error occur when computing its mean covariance (e.g. too few or no neighbouring peaks found)
         try {
@@ -130,7 +130,7 @@ struct FitData {
     Eigen::Vector3d q;
 
     //! Construct a FitData instance directly from a peak.
-    FitData(sptrPeak3D peak)
+    FitData(sptrPeak peak)
     {
         const auto* detector = peak->data()->reader()->diffractometer()->detector();
         Eigen::Vector3d center = peak->shape().center();
@@ -217,7 +217,7 @@ double ShapeLibrary::bkgEnd() const
     return _bkgEnd;
 }
 
-bool ShapeLibrary::addPeak(sptrPeak3D peak, Profile3D&& profile, Profile1D&& integrated_profile)
+bool ShapeLibrary::addPeak(sptrPeak peak, Profile3D&& profile, Profile1D&& integrated_profile)
 {
     Eigen::Matrix3d A = peak->shape().inverseMetric();
     Eigen::Matrix3d cov = 0.5 * (A + A.transpose());
@@ -287,7 +287,7 @@ void ShapeLibrary::updateFit(int num_iterations)
 #endif
 }
 
-Eigen::Matrix3d ShapeLibrary::predictCovariance(sptrPeak3D peak) const
+Eigen::Matrix3d ShapeLibrary::predictCovariance(sptrPeak peak) const
 {
     FitData f(peak);
     return predictCovariance(f);
@@ -375,7 +375,7 @@ PeakList ShapeLibrary::findNeighbors(const DetectorEvent& ev, double radius, dou
     return neighbors;
 }
 
-Eigen::Matrix3d ShapeLibrary::meanCovariance(sptrPeak3D reference_peak, double radius, double nframes, size_t min_neighbors, PeakInterpolation interpolation) const
+Eigen::Matrix3d ShapeLibrary::meanCovariance(sptrPeak reference_peak, double radius, double nframes, size_t min_neighbors, PeakInterpolation interpolation) const
 {
     Eigen::Matrix3d cov;
     cov.setZero();

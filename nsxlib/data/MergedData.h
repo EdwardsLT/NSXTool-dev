@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -39,7 +39,7 @@ public:
 
     //! Add a peak to the data set. It will be automatically merged correctly according to
     //! the space group symmetry.
-    bool addPeak(const sptrPeak3D& peak);
+    bool addPeak(const sptrPeak& peak);
 
     //! Retern the set of merged peaks.
     const MergedPeakSet& peaks() const;

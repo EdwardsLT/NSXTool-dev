@@ -3,7 +3,7 @@
 #include <QStatusBar>
 
 #include <nsxlib/DataSet.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/PeakCoordinateSystem.h>
 #include <nsxlib/PeakFilter.h>
 #include <nsxlib/Profile3D.h>

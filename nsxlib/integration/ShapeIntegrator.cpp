@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -16,7 +16,7 @@
 #include "Ellipsoid.h"
 #include "Intensity.h"
 #include "MillerIndex.h"
-#include "Peak3D.h"
+#include "Peak.h"
 #include "Profile1D.h"
 #include "ShapeIntegrator.h"
 #include "PeakCoordinateSystem.h"
@@ -33,7 +33,7 @@ ShapeIntegrator::ShapeIntegrator(sptrShapeLibrary lib, const AABB& aabb, int nx,
 
 }
 
-bool ShapeIntegrator::compute(sptrPeak3D peak, const IntegrationRegion& region)
+bool ShapeIntegrator::compute(sptrPeak peak, const IntegrationRegion& region)
 {
     auto uc = peak->unitCell();
     auto data = peak->data();

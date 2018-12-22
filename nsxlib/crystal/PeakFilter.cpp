@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -23,7 +23,7 @@
 #include "MergedData.h"
 #include "MillerIndex.h"
 #include "Octree.h"
-#include "Peak3D.h"
+#include "Peak.h"
 #include "PeakFilter.h"
 #include "ReciprocalVector.h"
 #include "Sample.h"
@@ -256,7 +256,7 @@ PeakList PeakFilter::enabled(const PeakList& peaks, bool flag) const
 {
     PeakList filtered_peaks;
 
-    std::copy_if(peaks.begin(),peaks.end(),std::back_inserter(filtered_peaks),[flag](sptrPeak3D peak){return flag == peak->enabled();});
+    std::copy_if(peaks.begin(),peaks.end(),std::back_inserter(filtered_peaks),[flag](sptrPeak peak){return flag == peak->enabled();});
 
     return filtered_peaks;
 }
@@ -265,7 +265,7 @@ PeakList PeakFilter::selected(const PeakList& peaks, bool flag) const
 {
     PeakList filtered_peaks;
 
-    std::copy_if(peaks.begin(),peaks.end(),std::back_inserter(filtered_peaks),[flag](sptrPeak3D peak){return flag == peak->selected();});
+    std::copy_if(peaks.begin(),peaks.end(),std::back_inserter(filtered_peaks),[flag](sptrPeak peak){return flag == peak->selected();});
 
     return filtered_peaks;
 }
@@ -274,7 +274,7 @@ PeakList PeakFilter::masked(const PeakList& peaks, bool flag) const
 {
     PeakList filtered_peaks;
 
-    std::copy_if(peaks.begin(),peaks.end(),std::back_inserter(filtered_peaks),[flag](sptrPeak3D peak){return flag == peak->masked();});
+    std::copy_if(peaks.begin(),peaks.end(),std::back_inserter(filtered_peaks),[flag](sptrPeak peak){return flag == peak->masked();});
 
     return filtered_peaks;
 }
@@ -356,7 +356,7 @@ PeakList PeakFilter::predicted(const PeakList& peaks, bool flag) const
 {
     PeakList filtered_peaks;
 
-    std::copy_if(peaks.begin(),peaks.end(),std::back_inserter(filtered_peaks),[flag](sptrPeak3D peak){return flag == peak->predicted();});
+    std::copy_if(peaks.begin(),peaks.end(),std::back_inserter(filtered_peaks),[flag](sptrPeak peak){return flag == peak->predicted();});
 
     return filtered_peaks;
 }

@@ -15,7 +15,7 @@
 #include <nsxlib/IntegrationRegion.h>
 #include <nsxlib/Logger.h>
 #include <nsxlib/MillerIndex.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/ReciprocalVector.h>
 #include <nsxlib/Sample.h>
 #include <nsxlib/Source.h>
@@ -123,7 +123,7 @@ void DetectorSceneModel::restorePeaks()
     }
 }
 
-void DetectorSceneModel::changeEnabledPeak(nsx::sptrPeak3D peak)
+void DetectorSceneModel::changeEnabledPeak(nsx::sptrPeak peak)
 {
     Q_UNUSED(peak)
 
@@ -175,7 +175,7 @@ void DetectorSceneModel::changeSelectedFrame(int frame)
     showPeakBox(_selected_peak);
 }
 
-void DetectorSceneModel::changeSelectedPeak(nsx::sptrPeak3D peak)
+void DetectorSceneModel::changeSelectedPeak(nsx::sptrPeak peak)
 {
     if (!peak) {
         return;
@@ -193,7 +193,7 @@ void DetectorSceneModel::changeSelectedPeak(nsx::sptrPeak3D peak)
 }
 
 
-void DetectorSceneModel::showPeakBox(nsx::sptrPeak3D peak)
+void DetectorSceneModel::showPeakBox(nsx::sptrPeak peak)
 {
     auto peak_graphics_item = selectGraphicsItems<PeakGraphicsItem>();
     for (auto item : peak_graphics_item) {
@@ -553,7 +553,7 @@ void DetectorSceneModel::drawIntegrationRegion()
                 auto region = nsx::IntegrationRegion(peak, peak->peakEnd(), peak->bkgBegin(), peak->bkgEnd());
                 region.updateMask(mask, _current_frame_index);
             } catch (...) {
-                peak->setStatus(nsx::Peak3D::Status::BadlyIntegrated);
+                peak->setStatus(nsx::Peak::Status::BadlyIntegrated);
             }
         }
     }

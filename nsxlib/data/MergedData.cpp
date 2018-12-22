@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -25,7 +25,7 @@ MergedData::MergedData(const SpaceGroup& space_group, bool include_friedel): _sp
 {      
 }
 
-bool MergedData::addPeak(const sptrPeak3D& peak)
+bool MergedData::addPeak(const sptrPeak& peak)
 {
     MergedPeak new_peak(_space_group, _include_friedel);
     new_peak.addPeak(peak);

@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -28,9 +28,9 @@ class DataSet;
 class GaussianIntegrator: public IPeakIntegrator {
 public:
     GaussianIntegrator(bool fit_center, bool fit_cov);
-    bool compute(sptrPeak3D peak, const IntegrationRegion& region) override;
+    bool compute(sptrPeak peak, const IntegrationRegion& region) override;
     //! Return the analytic profile computed over the given integration region
-    std::vector<double> profile(sptrPeak3D peak, const IntegrationRegion& region);
+    std::vector<double> profile(sptrPeak peak, const IntegrationRegion& region);
 
 private:
     bool _fitCenter;

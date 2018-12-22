@@ -39,4 +39,4 @@ uc = nsx.UnitCell(45.0, 55.0, 65.0, pi2, pi2, pi2)
 uc.setSpacegroup("P 21 21 21")
 
 det_shape = nsx.Ellipsoid([800.0, 450.0, 10.0], 5.0)
-peak = nsx.Peak3D
+peak = nsx.Peak

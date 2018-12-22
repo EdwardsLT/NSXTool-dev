@@ -25,7 +25,7 @@
 #include <nsxlib/IConvolver.h>
 #include <nsxlib/ITask.h>
 #include <nsxlib/Logger.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/PeakFinder.h>
 #include <nsxlib/PixelSumIntegrator.h>
 

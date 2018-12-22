@@ -10,6 +10,6 @@
 
 std::pair<double,double> dRange(const nsx::PeakList& peaks); 
 
-QColor PeakStatusToColor(nsx::sptrPeak3D peak);
+QColor PeakStatusToColor(nsx::sptrPeak peak);
 
-QString PeakStatusToString(nsx::sptrPeak3D peak);
+QString PeakStatusToString(nsx::sptrPeak peak);

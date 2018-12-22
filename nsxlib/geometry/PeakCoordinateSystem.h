@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -38,7 +38,7 @@ namespace nsx {
 class PeakCoordinateSystem {
 public:
     //! Construct the coordinate system about the given peak.
-    PeakCoordinateSystem(sptrPeak3D peak);
+    PeakCoordinateSystem(sptrPeak peak);
     //! Transform from detector coordinates in to peak coordinates.
     Eigen::Vector3d transform(const DetectorEvent& ev) const;
     //! Compute the Jacobian of the transformation from detector (x, y, frame) -> (alpha, beta, gamma).
@@ -54,7 +54,7 @@ public:
 
 private:
     //! Reference peak about which the coordinate system is based
-    sptrPeak3D _peak;
+    sptrPeak _peak;
     //! DetectorEvent corresponding to peak center
     DetectorEvent _event;
     //! State of the instrument at the time peak was observed.

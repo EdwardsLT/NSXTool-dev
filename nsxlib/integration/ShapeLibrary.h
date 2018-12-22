@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -60,13 +60,13 @@ public:
     bool detectorCoords() const;
 
     //! Add a reference peak to the library
-    bool addPeak(sptrPeak3D peak, Profile3D&& profile, Profile1D&& integrated_profile);
+    bool addPeak(sptrPeak peak, Profile3D&& profile, Profile1D&& integrated_profile);
 
     //! Update the fitted covariances
     void updateFit(int num_iterations);
 
     //! Predict the (detector space) covariance of a given peak
-    Eigen::Matrix3d predictCovariance(sptrPeak3D peak) const;    
+    Eigen::Matrix3d predictCovariance(sptrPeak peak) const;    
 
     //! Return mean Pearson coefficient to measure quality of fit
     double meanPearson() const;
@@ -78,7 +78,7 @@ public:
     std::vector<Intensity> meanProfile1D(const DetectorEvent& ev, double radius, double nframes) const;
 
     //! Return the average peak covariance near the given detector event
-    Eigen::Matrix3d meanCovariance(sptrPeak3D reference_peak, double radius, double nframes, size_t min_neighbors, PeakInterpolation interpolation) const;
+    Eigen::Matrix3d meanCovariance(sptrPeak reference_peak, double radius, double nframes, size_t min_neighbors, PeakInterpolation interpolation) const;
 
     //! Find neighbors of a given peak
     PeakList findNeighbors(const DetectorEvent& ev, double radius, double nframes) const;
@@ -97,7 +97,7 @@ private:
     Eigen::Matrix3d predictCovariance(const FitData& data) const;
 
     //! List of reference peak profiles
-    std::map<sptrPeak3D, std::pair<Profile3D, Profile1D>> _profiles;
+    std::map<sptrPeak, std::pair<Profile3D, Profile1D>> _profiles;
 
     //! Components of the Cholesky factor of beam divergence covariance matrix
     std::array<double, 6> _choleskyD;

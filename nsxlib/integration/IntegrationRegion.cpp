@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -18,7 +18,7 @@
 #include "Diffractometer.h"
 #include "Ellipsoid.h"
 #include "IntegrationRegion.h"
-#include "Peak3D.h"
+#include "Peak.h"
 #include "UnitCell.h"
 
 namespace nsx {
@@ -28,7 +28,7 @@ IntegrationRegion::IntegrationRegion()
     throw std::runtime_error("The default constructor of IntegrationRegion should no be called.");
 }
 
-IntegrationRegion::IntegrationRegion(sptrPeak3D peak, double peak_end, double bkg_begin, double bkg_end):
+IntegrationRegion::IntegrationRegion(sptrPeak peak, double peak_end, double bkg_begin, double bkg_end):
     _shape(peak->shape()),
     _peakEnd(peak_end),
     _bkgBegin(bkg_begin),

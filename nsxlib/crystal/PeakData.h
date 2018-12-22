@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -31,7 +31,7 @@ namespace nsx {
 class PeakData {
 public:
     //! Construct instance associated to the given peak
-    PeakData(sptrPeak3D peak = nullptr);
+    PeakData(sptrPeak peak = nullptr);
     //! Return the list of detector events associated to the peak
     const std::deque<DetectorEvent>& events() const;
     //! Return the list of detector counts associated to the peak
@@ -44,7 +44,7 @@ public:
     void reset();
 
 private:
-    sptrPeak3D _peak;
+    sptrPeak _peak;
     PeakCoordinateSystem _system;
     std::deque<DetectorEvent> _events;
     std::deque<double> _counts;

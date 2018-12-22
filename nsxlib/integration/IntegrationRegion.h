@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -33,7 +33,7 @@ public:
 
     IntegrationRegion(IntegrationRegion&& other) = default;
 
-    IntegrationRegion(sptrPeak3D peak, double peak_end, double bkg_begin, double bkg_end);
+    IntegrationRegion(sptrPeak peak, double peak_end, double bkg_begin, double bkg_end);
 
     //! Update the integration mask of the detector (peak, background, forbiddgen zones)
     void updateMask(Eigen::MatrixXi& mask, double frame) const;

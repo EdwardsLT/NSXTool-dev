@@ -53,7 +53,7 @@ public:
 
     void changeCursorMode(CURSOR_MODE cursor_mode);
 
-    void changeEnabledPeak(nsx::sptrPeak3D peak);
+    void changeEnabledPeak(nsx::sptrPeak peak);
 
     void changeInteractionMode(INTERACTION_MODE interaction_mode);
 
@@ -63,7 +63,7 @@ public:
 
     void changeSelectedFrame(int frame);
 
-    void changeSelectedPeak(nsx::sptrPeak3D peak);
+    void changeSelectedPeak(nsx::sptrPeak peak);
 
     template <typename T>
     void clearGraphicsItems();
@@ -89,7 +89,7 @@ public:
 
     void showPeakCenters(bool flag);
 
-    void showPeakBox(nsx::sptrPeak3D peak);
+    void showPeakBox(nsx::sptrPeak peak);
 
     void showPeakIntegrationAreas(bool);
 
@@ -117,7 +117,7 @@ signals:
 
     void signalChangeSelectedFrame(int selected_frame);
 
-    void signalChangeSelectedPeak(nsx::sptrPeak3D peak);
+    void signalChangeSelectedPeak(nsx::sptrPeak peak);
 
 private:
 
@@ -175,7 +175,7 @@ private:
 
     bool _show_peak_boxes;
 
-    nsx::sptrPeak3D _selected_peak;
+    nsx::sptrPeak _selected_peak;
 };
 
 template <typename T>

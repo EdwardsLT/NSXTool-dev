@@ -37,7 +37,7 @@
 %template(vector_2i) std::vector<std::vector<int>>;
 %template(vector_string) std::vector<std::string>;
 
-%shared_ptr(nsx::Peak3D)
+%shared_ptr(nsx::Peak)
 %shared_ptr(nsx::Diffractometer)
 %shared_ptr(nsx::DataSet)
 %shared_ptr(nsx::IDataReader)
@@ -117,8 +117,8 @@ using Eigen::Quaterniond;
 #include "ResolutionShell.h"
 #include "RFactor.h"
 #include "CC.h"
-#include "Peak3D.h"
-using sptrPeak3D = std::shared_ptr<nsx::Peak3D>;
+#include "Peak.h"
+using sptrPeak = std::shared_ptr<nsx::Peak>;
 
 #include "FFTIndexing.h"
 
@@ -217,7 +217,7 @@ using sptrPeak3D = std::shared_ptr<nsx::Peak3D>;
 #include "Blob3D.h"
 
 #include "FFTIndexing.h"
-#include "Peak3D.h"
+#include "Peak.h"
 #include "SpaceGroup.h"
 #include "UnitCell.h"
 #include "GruberReduction.h"
@@ -386,17 +386,17 @@ namespace nsx {
 %include "Profile3DIntegrator.h"
 %include "ISigmaIntegrator.h"
 %include "PixelSumIntegrator.h"
-%include "Peak3D.h"
+%include "Peak.h"
 %include "Profile1D.h"
 %include "ShapeLibrary.h"
 %include "ShapeIntegrator.h"
 %include "IntegrationRegion.h"
 %include "PeakData.h"
 %include "Intensity.h"
-%include "Peak3D.h"
+%include "Peak.h"
 
-%template(PeakList) std::vector<std::shared_ptr<nsx::Peak3D>>;
-%template(PeakShell) std::vector<std::vector<std::shared_ptr<nsx::Peak3D>>>;
+%template(PeakList) std::vector<std::shared_ptr<nsx::Peak>>;
+%template(PeakShell) std::vector<std::vector<std::shared_ptr<nsx::Peak>>>;
 
 %include "PeakFilter.h"
 
@@ -464,7 +464,7 @@ namespace nsx {
 %include "CC.h"
 %include "CC.h"
 
-%include "Peak3D.h"
+%include "Peak.h"
 
 %include "MillerIndex.h"
 %template(MillerIndexList) std::vector<nsx::MillerIndex>;

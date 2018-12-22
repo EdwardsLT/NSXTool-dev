@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -22,7 +22,7 @@
 #include <nsxlib/DirectVector.h>
 #include <nsxlib/Experiment.h>
 #include <nsxlib/NSXTest.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/PeakFilter.h>
 #include <nsxlib/PeakFinder.h>
 #include <nsxlib/ProgressHandler.h>
@@ -72,16 +72,16 @@ int main()
 
     auto events = dataset->events(qs);
 
-    std::vector<nsx::sptrPeak3D> peaks;
+    std::vector<nsx::sptrPeak> peaks;
 
      for (auto event: events) {
-        nsx::sptrPeak3D peak(new nsx::Peak3D(dataset));
+        nsx::sptrPeak peak(new nsx::Peak(dataset));
         Eigen::Vector3d center = {event._px, event._py, event._frame};
 
         // dummy shape
         try {
             peak->setShape(nsx::Ellipsoid(center, 1.0));
-            peak->setStatus(nsx::Peak3D::Status::Selected);
+            peak->setStatus(nsx::Peak::Status::Selected);
             peaks.push_back(peak);
 
             nsx::MillerIndex hkl(peak->q(), uc);

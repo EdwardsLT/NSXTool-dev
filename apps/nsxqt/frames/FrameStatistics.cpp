@@ -14,7 +14,7 @@
 #include <nsxlib/Logger.h>
 #include <nsxlib/MetaData.h>
 #include <nsxlib/MillerIndex.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/ResolutionShell.h>
 #include <nsxlib/RFactor.h>
 #include <nsxlib/SpaceGroup.h>

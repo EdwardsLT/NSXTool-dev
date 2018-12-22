@@ -32,7 +32,7 @@
 #include <nsxlib/MergedData.h>
 #include <nsxlib/MergedPeak.h>
 #include <nsxlib/MillerIndex.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/PeakFilter.h>
 #include <nsxlib/PeakFinder.h>
 #include <nsxlib/ProgressHandler.h>
@@ -140,7 +140,7 @@ void SessionModel::addExperiment(nsx::sptrExperiment experiment)
     appendRow(expt);
 }
 
-void SessionModel::selectPeak(nsx::sptrPeak3D selected_peak)
+void SessionModel::selectPeak(nsx::sptrPeak selected_peak)
 {
     emit signalChangeSelectedPeak(selected_peak);
 }

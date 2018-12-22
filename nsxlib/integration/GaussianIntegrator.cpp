@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -19,7 +19,7 @@
 #include "Intensity.h"
 #include "Logger.h"
 #include "Minimizer.h"
-#include "Peak3D.h"
+#include "Peak.h"
 
 #include <Eigen/Cholesky>
 
@@ -85,7 +85,7 @@ static void residuals(
     }
 }
 
-bool GaussianIntegrator::compute(sptrPeak3D peak, const IntegrationRegion& region)
+bool GaussianIntegrator::compute(sptrPeak peak, const IntegrationRegion& region)
 {
     if (!peak) {
         return false;
@@ -193,7 +193,7 @@ bool GaussianIntegrator::compute(sptrPeak3D peak, const IntegrationRegion& regio
     }
 }
 
-std::vector<double> GaussianIntegrator::profile(sptrPeak3D peak, const IntegrationRegion& region)
+std::vector<double> GaussianIntegrator::profile(sptrPeak peak, const IntegrationRegion& region)
 {
     const auto& events = region.data().events();
     const Eigen::Matrix3d A = peak->shape().metric();
