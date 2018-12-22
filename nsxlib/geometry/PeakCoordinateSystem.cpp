@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -16,12 +16,12 @@
 #include "Detector.h"
 #include "Diffractometer.h"
 #include "IDataReader.h"
-#include "Peak3D.h"
+#include "Peak.h"
 #include "PeakCoordinateSystem.h"
 
 namespace nsx {
 
-PeakCoordinateSystem::PeakCoordinateSystem(sptrPeak3D peak): _peak(peak)
+PeakCoordinateSystem::PeakCoordinateSystem(sptrPeak peak): _peak(peak)
 {
     if (!_peak) {
         throw std::runtime_error("Cannot construct PeakCoordinateSystem from null Peak3d");

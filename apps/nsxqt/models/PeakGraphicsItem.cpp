@@ -10,7 +10,7 @@
 #include <nsxlib/Ellipsoid.h>
 #include <nsxlib/IDataReader.h>
 #include <nsxlib/MillerIndex.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/UnitCell.h>
 
 #include "PeakGraphicsItem.h"
@@ -18,7 +18,7 @@
 #include "SimplePlot.h"
 #include "SXPlot.h"
 
-PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak3D peak, int current_frame, QGraphicsItem *parent)
+PeakGraphicsItem::PeakGraphicsItem(nsx::sptrPeak peak, int current_frame, QGraphicsItem *parent)
 : SXGraphicsItem(peak->data(),parent),
   _peak(peak),
   _show_label(false),
@@ -125,7 +125,7 @@ void PeakGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     SXGraphicsItem::hoverLeaveEvent(event);
 }
 
-nsx::sptrPeak3D PeakGraphicsItem::peak() const
+nsx::sptrPeak PeakGraphicsItem::peak() const
 {
     return _peak;
 }

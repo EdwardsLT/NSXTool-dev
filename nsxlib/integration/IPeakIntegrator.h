@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -40,7 +40,7 @@ public:
     //! Destructor
     virtual ~IPeakIntegrator();
     //! Compute the integrated intensity of the peak given the integration region.
-    virtual bool compute(sptrPeak3D peak, const IntegrationRegion& region) = 0;
+    virtual bool compute(sptrPeak peak, const IntegrationRegion& region) = 0;
     //! Integrate all peaks in the list which are contained in the specified data set.
     /** \param peak_end Peak boundary (in sigma)
      *  \param bkg_begin Background beginning (in sigma)

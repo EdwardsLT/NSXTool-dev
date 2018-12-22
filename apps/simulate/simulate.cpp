@@ -7,7 +7,7 @@
 #include <nsxlib/Ellipsoid.h>
 #include <nsxlib/Experiment.h>
 #include <nsxlib/FakeDataReader.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/ReciprocalVector.h>
 #include <nsxlib/SpaceGroup.h>
 #include <nsxlib/UnitCell.h>
@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
     Eigen::Matrix3d B = uc->reciprocalBasis();
 
     auto det_shape = nsx::Ellipsoid({800.0, 450.0, 10.0}, 5.0);
-    auto peak = std::make_shared<nsx::Peak3D>(dataset, det_shape);
+    auto peak = std::make_shared<nsx::Peak>(dataset, det_shape);
 
     auto hkls = uc->generateReflectionsInShell(dmin, dmax, wavelength);
     std::vector<nsx::ReciprocalVector> qs;
@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
 
     for (auto&& event: events) {
         Eigen::Vector3d center = {event._px, event._py, event._frame};
-        auto peak = std::make_shared<nsx::Peak3D>(dataset, nsx::Ellipsoid(center, 5.0));
+        auto peak = std::make_shared<nsx::Peak>(dataset, nsx::Ellipsoid(center, 5.0));
         auto coords = nsx::PeakCoordinateSystem(peak);
         auto shape = coords.detectorShape(sigmaD, sigmaM);
         peak->setShape(shape);

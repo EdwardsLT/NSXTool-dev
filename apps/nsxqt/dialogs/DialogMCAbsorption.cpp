@@ -14,7 +14,7 @@
 #include <nsxlib/Material.h>
 #include <nsxlib/MCAbsorption.h>
 #include <nsxlib/Monochromator.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/ReciprocalVector.h>
 #include <nsxlib/Sample.h>
 #include <nsxlib/Source.h>

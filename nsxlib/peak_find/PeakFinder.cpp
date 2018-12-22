@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -25,7 +25,7 @@
 #include "GeometryTypes.h"
 #include "MathematicsTypes.h"
 #include "Octree.h"
-#include "Peak3D.h"
+#include "Peak.h"
 #include "PeakFinder.h"
 #include "ProgressHandler.h"
 #include "Sample.h"
@@ -202,7 +202,7 @@ bool PeakFinder::doTask()
             blob.second.toEllipsoid(1.0, center, eigenvalues, eigenvectors);
             auto shape = Ellipsoid(center, eigenvalues, eigenvectors);
 
-            auto p = sptrPeak3D(new Peak3D(dataset, shape));
+            auto p = sptrPeak(new Peak(dataset, shape));
             const auto extents = p->shape().aabb().extents();
 
             // peak too small or too large
@@ -216,7 +216,7 @@ bool PeakFinder::doTask()
 
             // peak's bounding box not completely contained in detector image
             if (!dAABB.contains(p->shape().aabb())) {
-                p->setStatus(Peak3D::Status::OutOfBounds);
+                p->setStatus(Peak::Status::OutOfBounds);
             }
 
             p->setPredicted(false);

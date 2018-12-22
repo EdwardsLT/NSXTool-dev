@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -28,7 +28,7 @@ class DataSet;
 class Profile3DIntegrator: public IPeakIntegrator {
 public:
     Profile3DIntegrator(sptrShapeLibrary library, double radius, double nframes, bool detector_space);
-    bool compute(sptrPeak3D peak, const IntegrationRegion& region) override;
+    bool compute(sptrPeak peak, const IntegrationRegion& region) override;
 private:
     sptrShapeLibrary _library;
     double _radius;

@@ -53,7 +53,7 @@ private:
 
     PeakListModel *_peaks_model;
 
-    std::vector<std::pair<nsx::sptrPeak3D,std::shared_ptr<nsx::UnitCell>>> _defaults;
+    std::vector<std::pair<nsx::sptrPeak,std::shared_ptr<nsx::UnitCell>>> _defaults;
 
     std::vector<std::pair<nsx::sptrUnitCell,double>> _solutions;
 };

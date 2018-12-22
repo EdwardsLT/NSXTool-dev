@@ -9,7 +9,7 @@
 #include <nsxlib/Diffractometer.h>
 #include <nsxlib/Logger.h>
 #include <nsxlib/MergedData.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/PeakFilter.h>
 #include <nsxlib/ResolutionShell.h>
 #include <nsxlib/RFactor.h>

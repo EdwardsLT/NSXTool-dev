@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -30,7 +30,7 @@ public:
     //! Construct integrator with given library, peak search radius, and frame bound
     Profile1DIntegrator(sptrShapeLibrary library, double radius, double nframes);
     //! Compute the integrated intensity of the given peakd
-    bool compute(sptrPeak3D peak, const IntegrationRegion& region) override;
+    bool compute(sptrPeak peak, const IntegrationRegion& region) override;
 private:
     sptrShapeLibrary _library;
     double _radius;

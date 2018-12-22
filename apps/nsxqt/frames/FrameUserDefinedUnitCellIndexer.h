@@ -57,7 +57,7 @@ private:
 
     ExperimentItem *_experiment_item;
 
-    std::vector<std::pair<nsx::sptrPeak3D,nsx::sptrUnitCell>> _defaults;
+    std::vector<std::pair<nsx::sptrPeak,nsx::sptrUnitCell>> _defaults;
 
     nsx::UserDefinedUnitCellIndexer _indexer;
 

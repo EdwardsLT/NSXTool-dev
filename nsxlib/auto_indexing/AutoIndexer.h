@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -64,7 +64,7 @@ public:
     void autoIndex(const IndexerParameters& params);
 
     //! Add a peak for the auto-indexing procedure
-    void addPeak(sptrPeak3D peak);
+    void addPeak(sptrPeak peak);
 
     //! Returns the best solutions found for the auto-indexing
     //! @return a list of the best solutions ordered by percentage of successfully auto-indexed peaks

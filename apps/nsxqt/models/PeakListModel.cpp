@@ -17,7 +17,7 @@
 #include <nsxlib/Logger.h>
 #include <nsxlib/MetaData.h>
 #include <nsxlib/MillerIndex.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/PeakFilter.h>
 #include <nsxlib/ReciprocalVector.h>
 #include <nsxlib/UnitCell.h>
@@ -76,7 +76,7 @@ PeakListModel::PeakListModel(SessionModel* session_model, nsx::sptrExperiment ex
   _experiment(experiment),
   _peaks(peaks)
 {
-    connect(_session_model,SIGNAL(signalEnabledPeakChanged(nsx::sptrPeak3D)),this,SLOT(slotChangeEnabledPeak(nsx::sptrPeak3D)));
+    connect(_session_model,SIGNAL(signalEnabledPeakChanged(nsx::sptrPeak)),this,SLOT(slotChangeEnabledPeak(nsx::sptrPeak)));
     connect(_session_model,SIGNAL(signalMaskedPeaksChanged(nsx::sptrDataSet)),this,SLOT(slotChangeMaskedPeaks(nsx::sptrDataSet)));
     connect(_session_model,SIGNAL(signalUnitCellRemoved(nsx::sptrUnitCell)),this,SLOT(slotRemoveUnitCell(nsx::sptrUnitCell)));
 }
@@ -121,7 +121,7 @@ const nsx::PeakList& PeakListModel::peaks() const
     return _peaks;
 }
 
-void PeakListModel::slotChangeEnabledPeak(nsx::sptrPeak3D peak)
+void PeakListModel::slotChangeEnabledPeak(nsx::sptrPeak peak)
 {
     auto it = std::find(_peaks.begin(),_peaks.end(),peak);
     if (it == _peaks.end()) {
@@ -285,11 +285,11 @@ QVariant PeakListModel::data(const QModelIndex &index, int role) const
 
 void PeakListModel::sort(int column, Qt::SortOrder order)
 {
-    std::function<bool(nsx::sptrPeak3D, nsx::sptrPeak3D)> compareFn = [](nsx::sptrPeak3D, nsx::sptrPeak3D) { return false; };
+    std::function<bool(nsx::sptrPeak, nsx::sptrPeak)> compareFn = [](nsx::sptrPeak, nsx::sptrPeak) { return false; };
 
     switch (column) {
     case Column::H: {
-        compareFn = [&](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
+        compareFn = [&](nsx::sptrPeak p1, nsx::sptrPeak p2) {
             auto cell1 = p1->unitCell();
             auto cell2 = p2->unitCell();
             if (cell1 && cell2){
@@ -303,7 +303,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         break;
     }
     case Column::K: {
-        compareFn = [&](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
+        compareFn = [&](nsx::sptrPeak p1, nsx::sptrPeak p2) {
             auto cell1 = p1->unitCell();
             auto cell2 = p2->unitCell();
             if (cell1 && cell2){
@@ -317,7 +317,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         break;
     }
     case Column::L: {
-        compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
+        compareFn = [](nsx::sptrPeak p1, nsx::sptrPeak p2) {
             auto cell1 = p1->unitCell();
             auto cell2 = p2->unitCell();
             if (cell1 && cell2){
@@ -331,7 +331,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         break;
     }
     case Column::PixelX: {
-        compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
+        compareFn = [](nsx::sptrPeak p1, nsx::sptrPeak p2) {
             auto center1 = p1->shape().center();
             auto center2 = p2->shape().center();
             return (center1[0] < center2[0]);
@@ -339,7 +339,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         break;
     }
     case Column::PixelY: {
-        compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
+        compareFn = [](nsx::sptrPeak p1, nsx::sptrPeak p2) {
             auto center1 = p1->shape().center();
             auto center2 = p2->shape().center();
             return (center1[1] < center2[1]);
@@ -347,7 +347,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         break;
     }
     case Column::Frame: {
-        compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
+        compareFn = [](nsx::sptrPeak p1, nsx::sptrPeak p2) {
             auto center1 = p1->shape().center();
             auto center2 = p2->shape().center();
             return (center1[2] < center2[2]);
@@ -355,7 +355,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         break;
     }
     case  Column::Intensity: {
-        compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
+        compareFn = [](nsx::sptrPeak p1, nsx::sptrPeak p2) {
             auto intensity1 = p1->correctedIntensity().value();
             auto intensity2 = p2->correctedIntensity().value();
             return (intensity1 < intensity2);
@@ -363,7 +363,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         break;
     }
     case Column::SigmaIntensity: {
-        compareFn = [](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
+        compareFn = [](nsx::sptrPeak p1, nsx::sptrPeak p2) {
             auto sigma_intensity1 = p1->correctedIntensity().sigma();
             auto sigma_intensity2 = p2->correctedIntensity().sigma();
             return (sigma_intensity1 < sigma_intensity2);
@@ -371,7 +371,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         break;
     }
     case Column::DataSet: {
-        compareFn = [&](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
+        compareFn = [&](nsx::sptrPeak p1, nsx::sptrPeak p2) {
             int numor1=p1->data()->reader()->metadata().key<int>("Numor");
             int numor2=p2->data()->reader()->metadata().key<int>("Numor");
             return (numor1 < numor2);
@@ -379,7 +379,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         break;
     }
     case Column::UnitCell: {
-        compareFn = [&](nsx::sptrPeak3D p1, const nsx::sptrPeak3D p2) {
+        compareFn = [&](nsx::sptrPeak p1, const nsx::sptrPeak p2) {
             auto uc1 = p1->unitCell();
             auto uc2 = p2->unitCell();
             std::string uc1Name = uc1 ? uc1->name() : "";
@@ -389,7 +389,7 @@ void PeakListModel::sort(int column, Qt::SortOrder order)
         break;
     }
     case Column::Status: {
-        compareFn = [&](nsx::sptrPeak3D p1, const nsx::sptrPeak3D p2) {
+        compareFn = [&](nsx::sptrPeak p1, const nsx::sptrPeak p2) {
             auto status1 = p1->status();
             auto status2 = p2->status();
             return (status1<status2);
@@ -411,7 +411,7 @@ void PeakListModel::togglePeakSelection(QModelIndex peak_index)
 
     auto peak = _peaks[row];
 
-    using Status = nsx::Peak3D::Status;
+    using Status = nsx::Peak::Status;
 
     peak->setStatus(peak->status() == Status::Selected ? Status::Unselected : Status::Selected);
 
@@ -446,7 +446,7 @@ void PeakListModel::sortEquivalents()
         return;
     }
 
-    std::sort(_peaks.begin(), _peaks.end(), [&](nsx::sptrPeak3D p1, nsx::sptrPeak3D p2) {
+    std::sort(_peaks.begin(), _peaks.end(), [&](nsx::sptrPeak p1, nsx::sptrPeak p2) {
         nsx::MillerIndex miller_index1(p1->q(), *cell);
         nsx::MillerIndex miller_index2(p2->q(), *cell);
         return cell->spaceGroup().isEquivalent(miller_index1,miller_index2);

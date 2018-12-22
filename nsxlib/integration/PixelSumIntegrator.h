@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -31,7 +31,7 @@ public:
      */
     PixelSumIntegrator(bool fit_center, bool fit_covariance);
     ~PixelSumIntegrator();
-    bool compute(sptrPeak3D peak, const IntegrationRegion& region) override;
+    bool compute(sptrPeak peak, const IntegrationRegion& region) override;
 private:
     bool _fitCenter;
     bool _fitCovariance;

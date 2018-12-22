@@ -62,7 +62,7 @@ public slots:
 
     void onChangePlot(SXPlot *plot);
 
-    void onChangeSelectedPeak(nsx::sptrPeak3D selected_peak);
+    void onChangeSelectedPeak(nsx::sptrPeak selected_peak);
 
 private:
 

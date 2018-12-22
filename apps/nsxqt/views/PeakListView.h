@@ -29,7 +29,7 @@ public:
 
 signals:
     void plotData(const QVector<double>&,const QVector<double>&,const QVector<double>&);
-    void plotPeak(nsx::sptrPeak3D);
+    void plotPeak(nsx::sptrPeak);
     void autoIndexed();
     void updateShapeLibrary(nsx::sptrShapeLibrary);
 

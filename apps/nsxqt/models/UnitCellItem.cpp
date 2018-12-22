@@ -5,7 +5,7 @@
 #include <nsxlib/Diffractometer.h>
 #include <nsxlib/Experiment.h>
 #include <nsxlib/Logger.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/Sample.h>
 #include <nsxlib/UnitCell.h>
 

@@ -62,7 +62,7 @@ public:
 
 public slots:
 
-    void slotChangeEnabledPeak(nsx::sptrPeak3D peak);
+    void slotChangeEnabledPeak(nsx::sptrPeak peak);
 
     void slotChangeMaskedPeaks(nsx::sptrDataSet data);
 

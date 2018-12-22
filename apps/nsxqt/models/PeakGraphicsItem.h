@@ -18,7 +18,7 @@ class PeakGraphicsItem : public SXGraphicsItem
 {
 public:
 
-    PeakGraphicsItem(nsx::sptrPeak3D peak, int current_frame, QGraphicsItem *parent=nullptr);
+    PeakGraphicsItem(nsx::sptrPeak peak, int current_frame, QGraphicsItem *parent=nullptr);
 
     virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
 
@@ -28,7 +28,7 @@ public:
 
     QRectF boundingRect() const;
 
-    nsx::sptrPeak3D peak() const;
+    nsx::sptrPeak peak() const;
 
     void showLabel(bool flag);
 
@@ -40,8 +40,8 @@ public:
 
 private:
 
-    //! Pointer to the Peak3D object
-    nsx::sptrPeak3D _peak;
+    //! Pointer to the Peak object
+    nsx::sptrPeak _peak;
 
     bool _show_label;
 

@@ -19,7 +19,7 @@
 #include <nsxlib/LogFileStreamWrapper.h>
 #include <nsxlib/Logger.h>
 #include <nsxlib/Path.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/ProgressHandler.h>
 #include <nsxlib/Sample.h>
 #include <nsxlib/Source.h>
@@ -327,7 +327,7 @@ void MainWindow::onChangeSelectedData(nsx::sptrDataSet data, int frame)
     _frame_value->setValue(frame);
 }
 
-void MainWindow::onChangeSelectedPeak(nsx::sptrPeak3D selected_peak)
+void MainWindow::onChangeSelectedPeak(nsx::sptrPeak selected_peak)
 {
     auto ellipsoid = selected_peak->shape();
     ellipsoid.scale(selected_peak->bkgEnd());

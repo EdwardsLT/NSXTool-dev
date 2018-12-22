@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -17,7 +17,7 @@
 #include "Intensity.h"
 #include "IPeakIntegrator.h"
 #include "Logger.h"
-#include "Peak3D.h"
+#include "Peak.h"
 #include "ProgressHandler.h"
 #include "UnitCell.h"
 #include "UtilsTypes.h"
@@ -53,7 +53,7 @@ const std::vector<Intensity>& IPeakIntegrator::rockingCurve() const
 void IPeakIntegrator::integrate(PeakList peaks, sptrDataSet data, double peak_end, double bkg_begin, double bkg_end)
 {
     // integrate only those peaks that belong to the specified dataset
-    auto it = std::remove_if(peaks.begin(), peaks.end(), [&](const sptrPeak3D& peak) { return peak->data() != data;});
+    auto it = std::remove_if(peaks.begin(), peaks.end(), [&](const sptrPeak& peak) { return peak->data() != data;});
     peaks.erase(it, peaks.end());
 
     std::string status = "Integrating " + std::to_string(peaks.size()) + " peaks...";
@@ -67,8 +67,8 @@ void IPeakIntegrator::integrate(PeakList peaks, sptrDataSet data, double peak_en
     size_t idx = 0;
     int num_frames_done = 0;
 
-    std::map<sptrPeak3D, IntegrationRegion> regions;
-    std::map<sptrPeak3D, bool> integrated;
+    std::map<sptrPeak, IntegrationRegion> regions;
+    std::map<sptrPeak, bool> integrated;
 
     for (auto peak: peaks) {
         try {
@@ -76,7 +76,7 @@ void IPeakIntegrator::integrate(PeakList peaks, sptrDataSet data, double peak_en
             regions.emplace(std::make_pair(peak, IntegrationRegion(peak, peak_end, bkg_begin, bkg_end)));
             integrated.emplace(std::make_pair(peak, false));
         } catch (...) {
-            peak->setStatus(Peak3D::Status::BadlyIntegrated);
+            peak->setStatus(Peak::Status::BadlyIntegrated);
             continue;
         }
 
@@ -87,16 +87,16 @@ void IPeakIntegrator::integrate(PeakList peaks, sptrDataSet data, double peak_en
         auto hi = bb.upper();
 
         if (lo[0] < 0 || lo[1] < 0 || lo[2] < 0) {
-            peak->setStatus(Peak3D::Status::OutOfBounds);
+            peak->setStatus(Peak::Status::OutOfBounds);
         }
 
         if (hi[0] >= data->nCols() || hi[1] >= data->nRows() || hi[2] >= data->nFrames()) {
-            peak->setStatus(Peak3D::Status::OutOfBounds);
+            peak->setStatus(Peak::Status::OutOfBounds);
         }
     }
 
     // only integrate the peaks with valid integration regions
-    it = std::remove_if(peaks.begin(), peaks.end(), [&](const sptrPeak3D& p) { return regions.find(p) == regions.end(); });
+    it = std::remove_if(peaks.begin(), peaks.end(), [&](const sptrPeak& p) { return regions.find(p) == regions.end(); });
     peaks.erase(it, peaks.end());
 
     for (idx = 0; idx < data->nFrames(); ++idx ) {
@@ -126,12 +126,12 @@ void IPeakIntegrator::integrate(PeakList peaks, sptrDataSet data, double peak_en
                     if (compute(peak, regions[peak])) {
                         peak->updateIntegration(*this, peak_end, bkg_begin, bkg_end);
                     } else {
-                        peak->setStatus(Peak3D::Status::BadlyIntegrated);
+                        peak->setStatus(Peak::Status::BadlyIntegrated);
                     }
                 } catch(std::exception& e) {
                     // integration failed...
                     nsx::info() << "integration failed: " << e.what();
-                    peak->setStatus(Peak3D::Status::BadlyIntegrated);
+                    peak->setStatus(Peak::Status::BadlyIntegrated);
                 }
                 // free memory (important!!)
                 regions[peak].reset();

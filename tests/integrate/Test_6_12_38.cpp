@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -28,7 +28,7 @@
 #include <nsxlib/Ellipsoid.h>
 #include <nsxlib/Experiment.h>
 #include <nsxlib/NSXTest.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/PeakFilter.h>
 #include <nsxlib/PeakFinder.h>
 #include <nsxlib/ReciprocalVector.h>
@@ -65,8 +65,8 @@ int main()
     const Eigen::Matrix3d B = A.inverse().transpose();
     const Eigen::Vector3d q0 = Eigen::RowVector3d(-6, 12, -38)*B;
     nsx::Ellipsoid shape(Eigen::Vector3d(434, 802, 10), 2);
-    auto peak = std::make_shared<nsx::Peak3D>(dataset, shape);
-    peak->setStatus(nsx::Peak3D::Status::Selected);
+    auto peak = std::make_shared<nsx::Peak>(dataset, shape);
+    peak->setStatus(nsx::Peak::Status::Selected);
 
     Eigen::Vector3d q1 = peak->q().rowVector();
     NSX_CHECK_SMALL((q1-q0).norm() / q0.norm(), 1e-1);

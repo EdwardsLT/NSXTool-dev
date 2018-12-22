@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -25,7 +25,7 @@ namespace nsx {
 
 class MillerIndex;
 class MergedPeak;
-class Peak3D;
+class Peak;
 class PeakIntegrator;
 class PeakValidator;
 class Profile;
@@ -40,12 +40,12 @@ using affineTransformation=Eigen::Transform<double,3,Eigen::Affine>;
 
 using UnitCellSolution = std::pair<UnitCell,double>;
 
-using sptrPeak3D   = std::shared_ptr<Peak3D>;
+using sptrPeak   = std::shared_ptr<Peak>;
 using sptrUnitCell = std::shared_ptr<UnitCell>;
 
 using RankedSolution = std::pair<sptrUnitCell,double>;
 
-using PeakList = std::vector<sptrPeak3D>;
+using PeakList = std::vector<sptrPeak>;
 
 using MergedPeakSet = std::set<MergedPeak>;
 

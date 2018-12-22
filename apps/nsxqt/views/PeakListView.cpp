@@ -17,7 +17,7 @@
 #include <nsxlib/IDataReader.h>
 #include <nsxlib/Logger.h>
 #include <nsxlib/MetaData.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/ProgressHandler.h>
 #include <nsxlib/UnitCell.h>
 
@@ -223,7 +223,7 @@ void PeakListView::normalizeToMonitor()
     if (!index.isValid()) {
         return;
     }
-    nsx::sptrPeak3D peak=peaks[index.row()];
+    nsx::sptrPeak peak=peaks[index.row()];
     emit plotPeak(peak);
 }
 
@@ -251,7 +251,7 @@ void PeakListView::plotAs(const std::string& key)
     QVector<double> e(nPoints);
 
     for (int i=0;i<nPoints;++i) {
-        nsx::sptrPeak3D p=peaks[indexList[i].row()];
+        nsx::sptrPeak p=peaks[indexList[i].row()];
         x[i]=p->data()->reader()->metadata().key<double>(key);
         y[i]=p->correctedIntensity().value();
         e[i]=p->correctedIntensity().sigma();

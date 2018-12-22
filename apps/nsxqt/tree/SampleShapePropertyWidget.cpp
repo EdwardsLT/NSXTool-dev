@@ -6,7 +6,7 @@
 #include <nsxlib/Logger.h>
 #include <nsxlib/Material.h>
 #include <nsxlib/MCAbsorption.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/Sample.h>
 #include <nsxlib/Source.h>
 #include <nsxlib/Units.h>

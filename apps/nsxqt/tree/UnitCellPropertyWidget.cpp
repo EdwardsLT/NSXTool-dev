@@ -9,7 +9,7 @@
 #include <nsxlib/Gonio.h>
 #include <nsxlib/Logger.h>
 #include <nsxlib/Material.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/SpaceGroup.h>
 #include <nsxlib/UnitCell.h>
 #include <nsxlib/Units.h>

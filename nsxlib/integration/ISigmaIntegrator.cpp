@@ -8,14 +8,14 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
 #include "DataSet.h"
 #include "Ellipsoid.h"
 #include "Intensity.h"
-#include "Peak3D.h"
+#include "Peak.h"
 #include "PeakCoordinateSystem.h"
 #include "ShapeLibrary.h"
 #include "ISigmaIntegrator.h"
@@ -31,7 +31,7 @@ ISigmaIntegrator::ISigmaIntegrator(sptrShapeLibrary library, double radius, doub
 
 }
 
-bool ISigmaIntegrator::compute(sptrPeak3D peak, const IntegrationRegion& region)
+bool ISigmaIntegrator::compute(sptrPeak peak, const IntegrationRegion& region)
 {
     if (!_library) {
         return false;

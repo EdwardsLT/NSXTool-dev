@@ -2,7 +2,7 @@
 
 #include <nsxlib/CrystalTypes.h>
 #include <nsxlib/InstrumentTypes.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 
 #include "InspectableTreeItem.h"
 #include "SessionModel.h"
@@ -17,7 +17,7 @@ public:
 
     nsx::PeakList& peaks();
 
-    void removePeak(nsx::sptrPeak3D peak);
+    void removePeak(nsx::sptrPeak peak);
 
 private:
 

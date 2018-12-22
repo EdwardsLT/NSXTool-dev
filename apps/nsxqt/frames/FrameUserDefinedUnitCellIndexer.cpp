@@ -7,7 +7,7 @@
 #include <nsxlib/Experiment.h>
 #include <nsxlib/Logger.h>
 #include <nsxlib/Monochromator.h>
-#include <nsxlib/Peak3D.h>
+#include <nsxlib/Peak.h>
 #include <nsxlib/ReciprocalVector.h>
 #include <nsxlib/Source.h>
 #include <nsxlib/UserDefinedUnitCellIndexer.h>

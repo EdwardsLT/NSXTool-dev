@@ -344,7 +344,7 @@ void PeaksItem::autoAssignUnitCell()
 
         // could not assign unit cell
         if (assigned == false) {
-            peak->setStatus(nsx::Peak3D::Status::NotIndexed);
+            peak->setStatus(nsx::Peak::Status::NotIndexed);
         }
     }
     nsx::debug() << "Done auto assigning unit cells";

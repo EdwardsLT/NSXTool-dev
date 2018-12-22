@@ -8,7 +8,7 @@
 //! @homepage  http://www.code.ill.fr/scientific-software/nsxtool.git
 //! @license   GNU General Public License v3 or higher (see COPYING)
 //! @copyright Institut Laue Langevin 2013-now
-//! @authors   Scientific Computing Group at ILL and MLZ (see AUTHORS)
+//! @authors   Scientific Computing Groups at ILL and MLZ (see AUTHORS)
 //
 // ************************************************************************** //
 
@@ -39,7 +39,7 @@ public:
     ResolutionShell(double dmin, double dmax, size_t num_shells);
     //! Add a peak to the list of shells. 
     //! It will automatically be added to the appropriate shell.
-    void addPeak(const sptrPeak3D& peak);
+    void addPeak(const sptrPeak& peak);
     //! Return the given shell.
     const DShell& shell(size_t i) const;
     //! Return the number of shells.
