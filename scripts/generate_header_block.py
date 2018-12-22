@@ -42,7 +42,7 @@ if __name__ == "__main__":
         for subdir,_,filenames in os.walk(os.path.join(nsxtool_root,target_dir)):
             for filename in filenames:
                 basename,file_ext = os.path.splitext(filename)
-                if file_ext not in [".h",".cpp",".c",".py"]:
+                if file_ext not in [".h",".cpp",".c",".py",".h.in",".cpp.in"]:
                     continue
 
                 current_header = python_header if file_ext == ".py" else header
