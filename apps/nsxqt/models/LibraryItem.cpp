@@ -22,7 +22,7 @@ LibraryItem::LibraryItem()
 {
     setText("Reference peak library");
 
-    QIcon icon(":/resources/peakListIcon.png");
+    QIcon icon(":/resources/peakLibraryIcon.png");
     setIcon(icon);
 
     setDragEnabled(false);
