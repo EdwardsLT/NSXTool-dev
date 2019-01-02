@@ -52,5 +52,6 @@
         <file>resources/ill_logo.png</file>
         <file>resources/jcns_logo.png</file>
         <file>resources/ellipsoidalMaskIcon.png</file>
+        <file>resources/peakLibraryIcon.png</file>
     </qresource>
 </RCC>
