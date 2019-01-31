@@ -1,0 +1,1 @@
+[INFO]  Mon Jan 28 13:54:42 2019 NSXQt session started

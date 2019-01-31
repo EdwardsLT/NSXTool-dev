@@ -1,0 +1,1 @@
+/usr/bin/c++  -O3 -DNDEBUG  -rdynamic CMakeFiles/make_single_resource.dir/__/cmake/scripts/make_single_resource.cpp.o  -o make_single_resource 

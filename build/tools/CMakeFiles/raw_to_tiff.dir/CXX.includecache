@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/lewisedwards/bin/nsxtool-dev/tools/raw_to_tiff.cpp
+iostream
+-
+tiffio.h
+-
+cstdint
+-
+string
+-
+cstdlib
+-
+fstream
+-
+vector
+-
+
+/usr/include/x86_64-linux-gnu/tiff.h
+tiffconf.h
+/usr/include/x86_64-linux-gnu/tiffconf.h
+
+/usr/include/x86_64-linux-gnu/tiffconf.h
+
+/usr/include/x86_64-linux-gnu/tiffio.h
+tiff.h
+/usr/include/x86_64-linux-gnu/tiff.h
+tiffvers.h
+/usr/include/x86_64-linux-gnu/tiffvers.h
+windows.h
+-
+stdio.h
+-
+stdarg.h
+-
+
+/usr/include/x86_64-linux-gnu/tiffvers.h
+

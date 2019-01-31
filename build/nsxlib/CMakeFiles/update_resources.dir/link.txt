@@ -1,0 +1,1 @@
+/usr/bin/c++  -O3 -DNDEBUG  -rdynamic CMakeFiles/update_resources.dir/__/cmake/scripts/update_resources.cpp.o  -o update_resources 

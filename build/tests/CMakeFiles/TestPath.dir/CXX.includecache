@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/lewisedwards/bin/nsxtool-dev/tests/utils/TestPath.cpp
+string
+-
+nsxlib/NSXTest.h
+-
+nsxlib/Path.h
+-
+nsxlib/StringIO.h
+-
+
+nsxlib/include/nsxlib/NSXTest.h
+cmath
+-
+iostream
+-
+limits
+-
+string
+-
+type_traits
+-
+
+nsxlib/include/nsxlib/Path.h
+string
+-
+utility
+-
+vector
+-
+
+nsxlib/include/nsxlib/StringIO.h
+string
+-
+vector
+-
+

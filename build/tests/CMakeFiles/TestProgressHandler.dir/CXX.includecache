@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/lewisedwards/bin/nsxtool-dev/tests/utils/TestProgressHandler.cpp
+string
+-
+vector
+-
+nsxlib/NSXTest.h
+-
+nsxlib/ProgressHandler.h
+-
+
+nsxlib/include/nsxlib/NSXTest.h
+cmath
+-
+iostream
+-
+limits
+-
+string
+-
+type_traits
+-
+
+nsxlib/include/nsxlib/ProgressHandler.h
+atomic
+-
+functional
+-
+mutex
+-
+string
+-
+vector
+-
+
